@@ -1,13 +1,25 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+//Copyright 2017 Laurent Monasse
 
-Contributors: Laurent Monasse, Maria Adela Puscas
+/*
+  This file is part of Mka3D.
+  
+  Mka3D is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Mka3D is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 /*!
- \mainpage 
+ \mainpage
+\authors Laurent Monasse and Adela Puscas 
  \section intro Introduction
  3d elastic solid simulation code (Mka3d)
 The numerical method uses a Discrete Element method.
@@ -94,7 +106,6 @@ Exemple: \n
  \remark Les proc&eacute;dures concernant le fluide se trouvent dans les fichiers fluide.hpp et fluide.cpp. Celles concernant le solide dans solide.hpp et solide.cpp. Les proc&eacute;dures r&eacute;alisant le couplage sont regroup&eacute;es dans les fichiers couplage.cpp, intersections.hpp et intersections.cpp. Les fichiers parametres.hpp et parametres.cpp sont d&eacute;dies aux d&eacute;finitions des param&eacute;tr&eacute;s du probl&egrave;me (param&eacute;tr&eacute;s physique, li&eacute;s aux maillages fluide et solide, au couplage, etc.). La r&eacute;solution du probl&egrave;me est r&eacute;alis&eacute;e  dans le fichier principal main.cpp. 
  
  
- \authors Maria Adela PUSCAS et Laurent MONASSE
  */
 
 
