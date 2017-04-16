@@ -2359,7 +2359,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 Sn = Vector_3(0.,0.,0.);
 	//Vector_3 Sn = 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos));
 	for(int k=1;k<(*F).size()-1;k++){
-	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos));
+	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos)); //Changer cette expression pour faire le test de la nouvelle expression ?
 	}
 	Point_3 c1 = (*P).mvt_t((*F).centre);
 	Point_3 c2 = (*P).mvt_t((*F).centre);
