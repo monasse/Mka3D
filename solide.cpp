@@ -2364,7 +2364,12 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Point_3 c1 = (*P).mvt_t((*F).centre);
 	Point_3 c2 = (*P).mvt_t((*F).centre);
 	Vector_3 Delta_u(c1,c2);
-	(*P).epsilon += 1./2./((*P).V+N_dim*nu/(1.-2.*nu)*(*P).Vl)*(Sn*Delta_u); //Changer cette expression pour le test !!
+	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
+	double DIJ = sqrt((X1X2.squared_length()));
+	Vector_3 nIJ = X1X2/DIJ;
+	//(*P).epsilon += 1./2./((*P).V+N_dim*nu/(1.-2.*nu)*(*P).Vl)*(Sn*Delta_u); //Changer cette expression pour le test !!
+	(*P).epsilon += (Delta_u*nIJ/(*F).D0); //Nouvelle expression de la déformation du volume de contact !
+	(*P).epsilon *= 1./(1.+N_dim*nu/(1.-2.*nu)*(*P).Vl); //Prise en compte des surfaces libres !
       }
     }
   }
@@ -2387,7 +2392,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//Force de rappel elastique
 	(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
 	//Force de deformation volumique
-	(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ);
+	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
+	(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
 	//Moment des forces appliquees
 	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
 	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
