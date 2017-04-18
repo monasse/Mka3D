@@ -2359,12 +2359,12 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 Sn = Vector_3(0.,0.,0.);
 	//Vector_3 Sn = 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos));
 	for(int k=1;k<(*F).size()-1;k++){
-	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos)); //Changer cette expression pour faire le test de la nouvelle expression ?
+	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos)); //Vaut la surface de cette face calculée par la somme des surfaces des triangles qui la compose !!!
 	}
 	Point_3 c1 = (*P).mvt_t((*F).centre);
 	Point_3 c2 = (*P).mvt_t((*F).centre);
 	Vector_3 Delta_u(c1,c2);
-	(*P).epsilon += 1./2./((*P).V+N_dim*nu/(1.-2.*nu)*(*P).Vl)*(Sn*Delta_u);
+	(*P).epsilon += 1./2./((*P).V+N_dim*nu/(1.-2.*nu)*(*P).Vl)*(Sn*Delta_u); //Changer cette expression pour le test !!
       }
     }
   }
