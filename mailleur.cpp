@@ -24,6 +24,7 @@
 #include <iomanip>
 #include <iostream>
 #include <stdlib.h>
+#include <stdexcept>
 #include "vitesse.hpp"
 #include "geometry.hpp"
 
