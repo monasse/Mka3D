@@ -1,11 +1,24 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+//Copyright 2017 Laurent Monasse
 
-Contributors: Laurent Monasse, Maria Adela Puscas
+/*
+  This file is part of Mka3D.
+  
+  Mka3D is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Mka3D is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*!
+\authors Laurent Monasse and Adela Puscas
  *  \file solide.cpp
  *  \brief Definition of the methods for solid classes.
  * Procedures specific to coupling are preceded by a "warning".
@@ -2362,7 +2375,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos)); //Vaut la surface de cette face calculée par la somme des surfaces des triangles qui la compose !!!
 	}
 	Point_3 c1 = (*P).mvt_t((*F).centre);
-	Point_3 c2 = (*P).mvt_t((*F).centre);
+	Point_3 c2 = solide[part].mvt_t((*F).centre);
 	Vector_3 Delta_u(c1,c2);
 	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
 	double DIJ = sqrt((X1X2.squared_length()));
