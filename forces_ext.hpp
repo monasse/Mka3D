@@ -20,24 +20,17 @@
 
 /*!
 \authors Laurent Monasse
- *  \file forces_ext.cpp
+ *  \file forces_ext.hpp
  *  \brief Definition of the functions giving the external forces.
  */
 
 #include "geometry.hpp"
-#ifndef FORCES_EXT_CPP
-#define FORCES_EXT_CPP
+#ifndef FORCES_EXT_HPP
+#define FORCES_EXT_HPP
 
-Vector_3 Forces_externes(const Point_3 &X, const Vector_3 &e)
-{
-    return Vector_3(0,0,0);
-  
-}
+Vector_3 Forces_externes(const Point_3 &X, const Vector_3 &e);
 
-Vector_3 Moments_externes(const Point_3 &X, const Vector_3 &e)
-{
-  return Vector_3(0,0,0);
-}
+Vector_3 Moments_externes(const Point_3 &X, const Vector_3 &e);
 
 
 #endif

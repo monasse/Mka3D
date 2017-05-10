@@ -25,7 +25,7 @@
  */
 #include "solide.hpp"
 #include "geometry.hpp"
-#include "forces_ext.cpp"
+#include "forces_ext.hpp"
 #include<iostream>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
