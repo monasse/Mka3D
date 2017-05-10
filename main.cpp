@@ -30,7 +30,8 @@ The numerical method uses a Discrete Element method.
  - cmake .
  - make: compilation 
  - ./main: execution 
- 
+
+ A public repository for the code is on <a href="https://github.com/monasse/Mka3D">github</a>.
 
  Ce que vous devez remplir pour lancer une simulation:
  

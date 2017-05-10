@@ -2375,7 +2375,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos));
 	}
 	Point_3 c1 = (*P).mvt_t((*F).centre);
-	Point_3 c2 = (*P).mvt_t((*F).centre);
+	Point_3 c2 = solide[part].mvt_t((*F).centre);
 	Vector_3 Delta_u(c1,c2);
 	(*P).epsilon += 1./2./((*P).V+N_dim*nu/(1.-2.*nu)*(*P).Vl)*(Sn*Delta_u);
       }
