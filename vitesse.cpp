@@ -23,7 +23,10 @@
 Vector_3 velocity(const Point_3 &p)
 {
   //return Vector_3(0.01*(p.x()-1.),0,0);
-  return Vector_3(0.01,0,0);
+  if(p.x() <= 2.)
+     return Vector_3(0.01,0,0);
+  else
+    return Vector_3(0,0,0);
 }
 
 //Initial angular velocity of the solid particles
