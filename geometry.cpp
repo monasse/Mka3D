@@ -24,6 +24,7 @@
  */
 
 #include <iostream>
+#include <stdexcept>
 #include "geometry.hpp"
 
 #ifndef GEOMETRY_CPP
