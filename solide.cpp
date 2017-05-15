@@ -175,7 +175,7 @@ void Face::Inertie(){
     s = s/(sqrt((s.squared_length())));
     t = cross_product(normale,s);
   } else {
-    s = Vector_3(0.,0.,1.);
+    s = Vector_3(1.,0.,0.);
     s = s/(sqrt((s.squared_length())));
     t = cross_product(normale,s);
   }
@@ -205,14 +205,15 @@ void Face::Inertie(){
     double At = (v1*t);
     double Bs = (v2*s);
     double Bt = (v2*t);
-    Tss += 1./12.*(As*As+As*Bs+Bs*Bs);
-    Ttt += 1./12.*(At*At+At*Bt+Bt*Bt);
-    Tst += 1./24.*(2.*As*At+As*Bt+At*Bs+2.*Bs*Bt);
+    Tss += 1./12.*T1*(As*As+As*Bs+Bs*Bs);
+    Ttt += 1./12.*T1*(At*At+At*Bt+Bt*Bt);
+    Tst += 1./24.*T1*(2.*As*At+As*Bt+At*Bs+2.*Bs*Bt);
   }
   //Calcul des moments d'inertie
   double Delta = pow(Tss-Ttt,2)+4.*Tst*Tst;
   Is = (Tss+Ttt+sqrt(Delta))/2.;
   It = (Tss+Ttt-sqrt(Delta))/2.;
+  
   //Diagonalisation
   if(abs(Tss-Ttt)>eps){
     if(abs(Tss-Is)>eps){

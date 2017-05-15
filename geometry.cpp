@@ -284,6 +284,11 @@ Point_3 operator-(const Point_3 &p, const Vector_3 &v)
   return Point_3(p[0]-v[0],p[1]-v[1],p[2]-v[2]);
 }
 
+//Vector difference of two points
+Vector_3 operator-(const Point_3 &p1, const Point_3 &p2)
+{
+  return Vector_3(p1,p2);
+}
 
 //////////////////////////////////////////////////////////
 //  Affine transformations class                        //
