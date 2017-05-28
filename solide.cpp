@@ -33,13 +33,13 @@
 
 
 
-
+/*
 //Function absolute value
 double abs(const double &x)
 {
   return max(x,-x);
 }
-
+*/
 
 //const double eps_relat = numeric_limits<double>::epsilon();
 const double eps_relat =0.000001;
@@ -92,6 +92,7 @@ Face::Face()
   normale = Vector_3(1.,0.,0.);
   voisin = -1;
   D0 = 1.;
+	p = 0.0;
 }
 
 /*!
@@ -113,6 +114,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part)
   normale = normale*1./norm;
   voisin = part;
   D0 = 1.;
+	p = 0.0;
 }
 /*!
 * \fn Face::Face(std::vector<Vertex> & v, int part, double dist)
@@ -2050,6 +2052,7 @@ void Solide::Affiche(){
 */
 void Solide::Init(const char* s, const bool& rep, const int& numrep, const double& rho){
   std::ifstream maillage(s,ios::in);
+	plastique = true;
   if(maillage){
     // cout <<"ouverture de xt.vtk reussie" << endl;
   } else {
@@ -2341,16 +2344,55 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d){
 *\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 *\return void
 */
-void Solide::Forces(const int& N_dim, const double& nu, const double& E){
-  Forces_internes(N_dim,nu,E);
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double &dt){
+	if(plastique){
+  	Forces_internes_plastiques(N_dim,nu,E,dt);
+	}else{	
+  	Forces_internes(N_dim,nu,E);
+	}
+	for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     (*P).Mi = (*P).Mi + Moments_externes((*P).x0+(*P).Dx,(*P).e);
   }
 }
 
 
-
+/*!
+*\fn void Solide::Forces_internes(int N_dim, double nu, double E)
+*\brief Calcul des forces internes. 
+*\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
+*\return void
+*/
+void Solide::Forces_internes_plastiques(const int& N_dim, const double& nu, const double& E, const double &dt){
+	//Initialisation
+	// Parametre de Jonson Cooke
+	double A = 1.0;
+	double B = 1.0;
+	double C = 1.0;
+	double p0 = 1.0;
+	int n = 1;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    (*P).Fi = Vector_3(0.,0.,0.);
+    (*P).Mi = Vector_3(0.,0.,0.);
+  }
+  // Calcul des forces pour chaque particule
+	// EN TRACTION PURE, FAUX SINON!!!!!!!!!!!!!!!!!
+	for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+      if((*F).voisin>=0){
+				// On utilise le fait que les particules sont des carres
+				// de coté $D_0$ ne variant pas (hpp)
+				int part = (*F).voisin;
+				Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
+				double b=(X1X2 * (*F).normale); //vitesse de traction dans la notation de Youssef
+				double dp = b/(*F).D0;
+			  double alpha = 2/3/dp*(	A+B*pow((*F).p,n))* ( 1 + C * log(dp/p0));
+			(*F).p += dp*dt; // passer dt
+			(*P).Fi = (*P).Fi + alpha*b*(*F).D0* (*F).normale;
+			}
+		}
+  }
+} 
 /*!
 *\fn void Solide::Forces_internes(int N_dim, double nu, double E)
 *\brief Calcul des forces internes. 
