@@ -2366,11 +2366,11 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 void Solide::Forces_internes_plastiques(const int& N_dim, const double& nu, const double& E, const double &dt){
 	//Initialisation
 	// Parametre de Jonson Cooke
-	double A = 1.0;
-	double B = 1.0;
-	double C = 1.0;
+	double A = 350; //MPa
+	double B = 275;//MPa
+	double C = 0.022;
 	double p0 = 1.0;
-	int n = 1;
+	double n = 0.36;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
@@ -2383,14 +2383,22 @@ void Solide::Forces_internes_plastiques(const int& N_dim, const double& nu, cons
 				// On utilise le fait que les particules sont des carres
 				// de coté $D_0$ ne variant pas (hpp)
 				int part = (*F).voisin;
-				Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
+				Vector_3 X1X2 = solide[part].u-(*P).u;
+				//Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
 				double b=(X1X2 * (*F).normale); //vitesse de traction dans la notation de Youssef
-				double dp = b/(*F).D0;
-			  double alpha = 2/3/dp*(	A+B*pow((*F).p,n))* ( 1 + C * log(dp/p0));
+				double dp = abs(b/(*F).D0);
+			  double alpha = 0.0;
+				if(dp > 1e-17) {// arbitraire
+					alpha = 2./3./dp*(	A+B*pow((*F).p,n))* ( 1. + C * log(dp/p0));}
 			(*F).p += dp*dt; // passer dt
-			(*P).Fi = (*P).Fi + alpha*b*(*F).D0* (*F).normale;
+			(*P).Fi = (*P).Fi - alpha*b*(*F).D0 * (*F).normale;// tente de changer le + par un -
+			// Test
+			//if(alpha*b*(*F).D0*alpha*b*(*F).D0 >0.001){ cout << X1X2<< endl;}
 			}
+
 		}
+		//cout << (*P).Fi << endl;
+		if((*P).x0.x() <=1.9){ cout << (*P).Fi<< endl; }
   }
 } 
 /*!
