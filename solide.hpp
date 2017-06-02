@@ -70,7 +70,9 @@ public:
   std::vector<Vertex> vertex; //!< Les sommets de la face
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
+	double p; //utile pour la plasticite
 };
+
 
   
 //! D&eacute;finition de la classe Particule
@@ -230,8 +232,9 @@ public:
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
   void Solve_position(const double &dt, const bool &flag_2d);
   void Solve_vitesse(const double &dt, const bool &flag_2d);
-  void Forces(const int &N_dim, const double &nu, const double &E);
+  void Forces(const int &N_dim, const double &nu, const double &E,const double &dt);
   void Forces_internes(const int &N_dim, const double &nu, const double &E);
+	  void Forces_internes_plastiques(const int &N_dim, const double &nu, const double &E,const double &dt);
   void update_triangles();
   //void breaking_criterion();
   double Energie(const int &N_dim, const double &nu, const double &E);
@@ -240,6 +243,7 @@ public:
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   // private :
   std::vector<Particule> solide; //!< Maillage solide
+	bool plastique; // savoir si le solide est plastique
 };
 
 

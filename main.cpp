@@ -284,7 +284,7 @@ int main(){
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d);
     //Computation of forces
-    S.Forces(N_dim, nu, E);
+    S.Forces(N_dim, nu, E, dt);
     //Second half-step of the Verlet+RATTLE Scheme
     S.Solve_vitesse(dt,flag_2d);
     //Update of time
