@@ -2366,8 +2366,8 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 void Solide::Forces_internes_plastiques(const int& N_dim, const double& nu, const double& E, const double &dt){
 	//Initialisation
 	// Parametre de Jonson Cooke
-	double A = 350; //MPa
-	double B = 275;//MPa
+	double A = 350e6; //MPa
+	double B = 275e6;//MPa
 	double C = 0.022;
 	double p0 = 1.0;
 	double n = 0.36;
@@ -2388,17 +2388,17 @@ void Solide::Forces_internes_plastiques(const int& N_dim, const double& nu, cons
 				double b=(X1X2 * (*F).normale); //vitesse de traction dans la notation de Youssef
 				double dp = abs(b/(*F).D0);
 			  double alpha = 0.0;
-				if(dp > 1e-17) {// arbitraire
+				if(dp > 1e-17) {// arbitraire, il ne faut appliquer la plasticite que s'il y a plasticite
 					alpha = 2./3./dp*(	A+B*pow((*F).p,n))* ( 1. + C * log(dp/p0));}
 			(*F).p += dp*dt; // passer dt
-			(*P).Fi = (*P).Fi - alpha*b*(*F).D0 * (*F).normale;// tente de changer le + par un -
+			(*P).Fi = (*P).Fi + alpha*b*(*F).D0 * (*F).normale;// tente de changer le + par un -
 			// Test
 			//if(alpha*b*(*F).D0*alpha*b*(*F).D0 >0.001){ cout << X1X2<< endl;}
 			}
 
 		}
 		//cout << (*P).Fi << endl;
-		if((*P).x0.x() <=1.9){ cout << (*P).Fi<< endl; }
+		//if((*P).x0.x() <=1.9){ cout << (*P).Fi<< endl; }
   }
 } 
 /*!
