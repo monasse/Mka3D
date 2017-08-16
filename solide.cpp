@@ -2394,7 +2394,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double S = (*F).S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
 	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
 	double DIJ = sqrt((X1X2.squared_length()));
-	Vector_3 nIJ = X1X2/DIJ;
+	//Vector_3 nIJ = X1X2/DIJ;
 	Point_3 c1 = (*P).mvt_t((*F).centre);
 	Point_3 c2 = solide[part].mvt_t((*F).centre);
 	Vector_3 Delta_u(c1,c2);
@@ -2402,11 +2402,23 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 XC2(solide[part].x0,(*F).centre);
 	double alpha = sqrt((XC1.squared_length()))/((*F).D0);
 	double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
+
+	double B = 292.; //Valeur vient de l'article de JC. En MPa.
+	double n = .31; //JC.
+        Point_3 xi((*P).x0); //Position particule i en config initiale
+        Point_3 xj(solide[part].x0); //Position particule j en config initiale
+	Vector_3 lij(xi, xj);
+	double dij = sqrt( lij.squared_length() );
+	Vector_3 nIJ = lij / dij;
+	double volume_diam = dij / 2. * S / 3.;
+	double Dij_n = ((*P).Dx - solide[part].Dx - cross_product((*P).omega + solide[part].omega, lij / 2.) ) * nIJ;
+	(*P).Fi = -B * volume_diam / pow(dij, n+1) * pow(Dij_n, n) * nIJ; //Fonctionne ?
+	
 	//Force de rappel elastique
-	(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
+	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
 	//Force de deformation volumique
 	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
-	(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
+	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
 	//Moment des forces appliquees
 	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
 	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
