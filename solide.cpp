@@ -2412,7 +2412,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = lij / dij;
 	double volume_diam = dij / 2. * S / 3.;
 	double Dij_n = ((*P).Dx - solide[part].Dx - cross_product((*P).omega + solide[part].omega, lij / 2.) ) * nIJ;
-	(*P).Fi = -B * volume_diam / pow(dij, n+1) * pow(Dij_n, n) * nIJ; //Fonctionne ?
+	(*P).Fi = (*P).Fi + E * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; //B
 	
 	//Force de rappel elastique
 	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
