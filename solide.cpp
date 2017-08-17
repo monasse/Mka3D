@@ -2412,7 +2412,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = lij / dij;
 	double volume_diam = dij / 2. * S / 3.;
 	double Dij_n = ((*P).Dx - solide[part].Dx - cross_product((*P).omega + solide[part].omega, lij / 2.) ) * nIJ;
-	(*P).Fi = (*P).Fi + E * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; //B
+	(*P).Fi = (*P).Fi - signe(Dij_n)* E * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; //B
 	
 	//Force de rappel elastique
 	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
@@ -2497,10 +2497,10 @@ double Solide::Energie_cinetique(){
 * \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 * \return void
 */
-double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
+double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){ //Faire des modifs ici pour avoir énergie plastique !!!!
   double Ep = 0.;
   //Calcul de la dï¿½formation volumique epsilon de chaque particule
-  for(int i=0;i<size();i++){
+  /*for(int i=0;i<size();i++){
     solide[i].Volume_libre();
     solide[i].epsilon = 0.;
     for(int j=0;j<solide[i].faces.size();j++){
@@ -2520,14 +2520,28 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
     }
     //Energie de deformation volumique de la particule
     Ep += E*nu/2./(1.+nu)/(1.-2.*nu)*(solide[i].V+N_dim*nu/(1.-2.*nu)*solide[i].Vl)*pow(solide[i].epsilon,2);
-  }
+    } */
   //Calcul de l'energie pour chaque lien
   for(int i=0;i<size();i++){
     for(int j=0;j<solide[i].faces.size();j++){
       if(solide[i].faces[j].voisin>=0){
 	int part = solide[i].faces[j].voisin;
 	double S = solide[i].faces[j].S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
-	Vector_3 X1X2(solide[i].mvt_t(solide[i].x0),solide[part].mvt_t(solide[part].x0));
+
+	//Changer à partir de là ?
+	double B = 292.; //Valeur vient de l'article de JC. En MPa.
+	double n = .31; //JC.
+        Point_3 xi(solide[i].x0); //Position particule i en config initiale
+        Point_3 xj(solide[part].x0); //Position particule j en config initiale
+	Vector_3 lij(xi, xj);
+	double dij = sqrt( lij.squared_length() );
+	Vector_3 nIJ = lij / dij;
+	double volume_diam = dij / 2. * S / 3.;
+	double Dij_n = (solide[i].Dx - solide[part].Dx - cross_product(solide[i].omega + solide[part].omega, lij / 2.) ) * nIJ;
+	double Fij_n = signe(Dij_n)* E * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n);
+	Ep += abs(Fij_n) * abs(Dij_n);
+	
+	/*Vector_3 X1X2(solide[i].mvt_t(solide[i].x0),solide[part].mvt_t(solide[part].x0));
 	double DIJ = sqrt((X1X2.squared_length()));
 	Vector_3 nIJ = X1X2/DIJ;
 	Point_3 c1 = solide[i].mvt_t(solide[i].faces[j].centre);
@@ -2544,7 +2558,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*(solide[i].faces[j].Is+solide[i].faces[j].It);
 	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*solide[i].faces[j].Is-(2.+2.*nu-kappa)*solide[i].faces[j].It);
 	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*solide[i].faces[j].It-(2.+2.*nu-kappa)*solide[i].faces[j].Is);
-	Ep += S/2./solide[i].faces[j].D0*(alphan*(1.-(solide[i].mvt_t(solide[i].faces[j].normale)*solide[part].mvt_t(solide[i].faces[j].normale)))+alphas*(1.-(solide[i].mvt_t(solide[i].faces[j].s)*solide[part].mvt_t(solide[i].faces[j].s)))+alphat*(1.-(solide[i].mvt_t(solide[i].faces[j].t)*solide[part].mvt_t(solide[i].faces[j].t))));
+	Ep += S/2./solide[i].faces[j].D0*(alphan*(1.-(solide[i].mvt_t(solide[i].faces[j].normale)*solide[part].mvt_t(solide[i].faces[j].normale)))+alphas*(1.-(solide[i].mvt_t(solide[i].faces[j].s)*solide[part].mvt_t(solide[i].faces[j].s)))+alphat*(1.-(solide[i].mvt_t(solide[i].faces[j].t)*solide[part].mvt_t(solide[i].faces[j].t)))); */
       }
     }
   }
