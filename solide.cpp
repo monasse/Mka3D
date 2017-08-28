@@ -2392,27 +2392,26 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	double S = (*F).S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
-	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
-	double DIJ = sqrt((X1X2.squared_length()));
-	//Vector_3 nIJ = X1X2/DIJ;
-	Point_3 c1 = (*P).mvt_t((*F).centre);
-	Point_3 c2 = solide[part].mvt_t((*F).centre);
-	Vector_3 Delta_u(c1,c2);
-	Vector_3 XC1((*P).x0,(*F).centre);
-	Vector_3 XC2(solide[part].x0,(*F).centre);
-	double alpha = sqrt((XC1.squared_length()))/((*F).D0);
-	double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
-
-	double B = 292.; //Valeur vient de l'article de JC. En MPa.
-	double n = .31; //JC.
-        Point_3 xi((*P).x0); //Position particule i en config initiale
+	Point_3 xi((*P).x0); //Position particule i en config initiale
         Point_3 xj(solide[part].x0); //Position particule j en config initiale
 	Vector_3 lij(xi, xj);
 	double dij = sqrt( lij.squared_length() );
 	Vector_3 nIJ = lij / dij;
-	double volume_diam = dij / 2. * S / 3.;
-	double Dij_n = ((*P).Dx - solide[part].Dx - cross_product((*P).omega + solide[part].omega, lij / 2.) ) * nIJ;
-	(*P).Fi = (*P).Fi - signe(Dij_n)* E * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; //B
+	double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
+	//double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
+	double K = E/(1.-2.*nu)/3.;
+	double Fij = S/dij/3.*K*Dij_n; //Force élastique du lien
+	(*P).Fi = (*P).Fi + Fij; //Force élastique sur particule
+
+	double A = 90.; //Limite elastique en MPa
+
+	//Forces plastiques
+	if(abs(Fij) > A * S) {
+	  double B = 292.; //Valeur vient de l'article de JC. En MPa.
+	  double n = .31; //JC.
+	  double volume_diam = dij / 2. * S / 3.;
+	  (*P).Fi = (*P).Fi - signe(Dij_n)* B * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; 
+	}
 	
 	//Force de rappel elastique
 	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
@@ -2420,14 +2419,14 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
 	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
 	//Moment des forces appliquees
-	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
+	/*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
 	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
 	//Moments de flexion/torsion
 	double kappa = 1.;
 	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
 	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
 	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
-	(*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t)));
+	(*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
 	// cout << alphan << " " << alphas << " " << alphat  << endl;
 	// cout << S/(*F).D0*alphan << endl;
 	// cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
