@@ -2363,7 +2363,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     (*P).Mi = Vector_3(0.,0.,0.);
   }
   //Calcul de la deformation volumique epsilon de chaque particule
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Volume_libre();
     (*P).epsilon = 0.;
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
@@ -2385,7 +2385,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	(*P).epsilon *= 1./(1.+N_dim*nu/(1.-2.*nu)*(*P).Vl); //Prise en compte des surfaces libres !
       }
     }
-  }
+  }*/
+  
   //Calcul des forces pour chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){

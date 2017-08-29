@@ -70,6 +70,9 @@ public:
   std::vector<Vertex> vertex; //!< Les sommets de la face
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
+
+  void Forces_elas(const int &N_dim, const double &nu, const double &E); //Forces élastiques
+  void Forces_plas(const int &N_dim, const double &n, const double &B);
 };
 
   
