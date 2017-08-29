@@ -97,8 +97,9 @@ class Particule
   void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
   void Inertie(const double &rho);
   void Volume_libre();
-void solve_position(const double &dt, const bool &flag_2d);
-void solve_vitesse(const double &dt, const bool &flag_2d);
+  void solve_position(const double &dt, const bool &flag_2d);
+  void solve_vitesse(const double &dt, const bool &flag_2d);
+  void solve_vitesse_plas(const double &dt, const bool &flag_2d);
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);  
   //double min_x; //!< la plus petite coordonn&eacute;e  de la particule selon x
@@ -188,6 +189,7 @@ Bbox bbox;
   Vector_3 Dx_plas; //Déplacements plastiques...
   Vector_3 Dxprev; //!<D&eacute;placement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
+  Vector_3 Fi_plas; //Forces plastiques dans particule
     /*! 
      * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
@@ -206,6 +208,7 @@ Bbox bbox;
      */
 		Vector_3 Mfprev; //!< Moments fluides exerc&eacute;s sur le solide entre t-dt/2 et t
   Vector_3 u; //!< Vitesse de la particule au temps t
+  Vector_3 u_plas; //Vitesse palstique
   Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
   Vector_3 omega; //!< Vecteur rotation au temps t
   Vector_3 omega_half;//!< Vecteur rotation au temps t-dt/2

@@ -1362,6 +1362,37 @@ void Particule::solve_position(const double& dt, const bool& flag_2d){
 	//cout<<"position du centre de la particule "<<x0+Dx<<endl;
 }
 
+void Particule::solve_position_plas(const double& dt, const bool& flag_2d){
+  double eps = 1e-14;//std::numeric_limits<double>::epsilon();
+  double rot[3][3];
+  if(fixe==1){
+    Dx_plas = Vector_3(0.,0.,0.);
+    //Dxprev = Vector_3(0.,0.,0.);
+    u = Vector_3(0.,0.,0.);
+    u_half = u;
+    e = Vector_3(0.,0.,0.);
+    eref = Vector_3(0.,0.,0.);
+    rot[0][0] = rot[1][1]= rot[2][2] =1.;
+    rot[0][1]=rot[0][2]=rot[1][0]=rot[1][2]=rot[2][0]=rot[2][1]=0.;
+    eprev = Vector_3(0.,0.,0.);
+    omega = Vector_3(0.,0.,0.);
+    omega_half = omega;
+  } else {
+    if(fixe==0){ //fixe=0: particule mobile
+      //Dxprev = Dx;
+      u = u +  Fi_plas/2.*(dt/m);
+      u_half = u;
+      Dx = Dx+u*dt;
+    }
+    else if(fixe==2 || fixe==3){//fixe=2: fixee en deplacement ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
+      Dx = Vector_3(0.,0.,0.);
+      //Dxprev = Vector_3(0.,0.,0.);
+      u = Vector_3(0.,0.,0.);
+      u_half = u;
+    }
+  }
+}
+
 /*!
 * \fn void Particule::solve_vitesse(double dt, bool flag_2d)
 * \brief Calcul de la vitesse de la particule.
@@ -1510,6 +1541,20 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d){
 		//fin test */
   }//Fin du calcul dans le cas d'une particule libre
 }
+
+void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
+  if(fixe==1){
+    u_plas = Vector_3(0.,0.,0.);
+  } else {
+    if(fixe==0){
+      u_plas = u_plas + Fi_plas/2.*(dt/m);
+    }
+    else if(fixe==2 || fixe==3){
+      u_plas = Vector_3(0.,0.,0.);
+    }
+  }
+}
+
 /*!
 * \fn double Particule::volume()
 * \brief Fonction auxilaire utile pour les tests. Calcul du volume de la particule.
@@ -2350,6 +2395,23 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 	
 }
 
+void Solide::Solve_position_plas(const double& dt, const bool& flag_2d){
+  for(int i=0;i<size();i++){
+    solide[i].solve_position_plas(dt, flag_2d);
+  }
+  //breaking_criterion();
+  update_triangles();
+	for(int i=0;i<size();i++){
+	  //double x_min = solide[i].max_x, y_min=solide[i].max_y, z_min=solide[i].max_z, x_max =solide[i].max_x, y_max=solide[i].max_y, z_max =solide[i].max_z;
+	
+	  for(std::vector<Triangle_3>::iterator it=solide[i].triangles.begin();it!=solide[i].triangles.end();it++){
+	    for(int k=0;k<3;k++){
+	      solide[i].bbox = Bbox(min(solide[i].bbox.xmin(),((*it).vertex(k).x())),min(solide[i].bbox.ymin(),((*it).vertex(k).y())),min(solide[i].bbox.zmin(),((*it).vertex(k).z())),max(solide[i].bbox.xmax(),((*it).vertex(k).x())),max(solide[i].bbox.ymax(),((*it).vertex(k).y())),max(solide[i].bbox.zmax(),((*it).vertex(k).z())));
+	    } //Ce truc fait quoi ???
+	  }
+	}
+}
+
 /*!
 *\fn void Solide::Solve_vitesse(double dt)
 *\brief Calcul de la vitesse du solide.
@@ -2360,6 +2422,12 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d){
   for(int i=0;i<size();i++){
     solide[i].solve_vitesse(dt, flag_2d);
+  }
+}
+
+void Solide::Solve_vitesse_plas(const double& dt, const bool& flag_2d){
+  for(int i=0;i<size();i++){
+    solide[i].solve_vitesse_plas(dt, flag_2d);
   }
 }
 
@@ -2389,6 +2457,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   //Initialisation
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
+    (*P).Fi_plas = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
   }
   //Calcul de la deformation volumique epsilon de chaque particule
@@ -2431,18 +2500,19 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double K = E/(1.-2.*nu)/3.;*/
 	double Fij_elas = (*F).Forces_elas(P, solide, nu, E); //Force élastique du lien
 	
-	//(*P).Fi = (*P).Fi + Fij; //Force élastique sur particule
+	(*P).Fi = (*P).Fi + Fij_elas; //Force élastique sur particule
 
 	double A = 90.; //Limite elastique en MPa
 
-	//Forces plastiques
-	if(abs(Fij) > A * S) {
-	  double B = 292.; //Valeur vient de l'article de JC. En MPa.
-	  double n = .31; //JC.
-	  double Fij_plas = (*F).Forces_plas(P, solide, n, B); //Force plastique du lien
+	//Forces plastiques calculées à chaque fois même si nulles...
+	//if(abs(Fij_elas) > A * S) {
+	double B = 292.; //Valeur vient de l'article de JC. En MPa.
+	double n = .31; //JC.
+	double Fij_plas = (*F).Forces_plas(P, solide, n, B); //Force plastique du lien
+	(*P).Fi_plas = (*P).Fi_plas + Fij_plas
 	  //double volume_diam = dij / 2. * S / 3.;
 	  //(*P).Fi = (*P).Fi - signe(Dij_n)* B * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; 
-	}
+	  //}
 	
 	//Force de rappel elastique
 	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
@@ -2558,7 +2628,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 	int part = solide[i].faces[j].voisin;
 	double S = solide[i].faces[j].S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
 
-	//Changer à partir de là ?
+	//Prendre en compte modifs ici !!!!
 	double B = 292.; //Valeur vient de l'article de JC. En MPa.
 	double n = .31; //JC.
         Point_3 xi(solide[i].x0); //Position particule i en config initiale

@@ -283,6 +283,7 @@ int main(){
     dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d);
+    //Ajouter Solve_position_plas quand nécessaire...
     //Computation of forces
     S.Forces(N_dim, nu, E);
     //Second half-step of the Verlet+RATTLE Scheme
