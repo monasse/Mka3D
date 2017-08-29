@@ -465,6 +465,35 @@ Particule::Particule()
 * \param (x_min, y_min, z_min) : coordonn&eacute;es du sommet le plus &agrave; gauche de la particule
 * \param (x_max, y_max, z_max) : coordonn&eacute;es du sommet le plus &agrave; droite de la particule
 */
+
+void Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
+  //Mettre ici forces élastiques !
+  int part = voisin;
+  Point_3 xi((*P).x0); //Position particule i en config initiale
+  Point_3 xj(solide[part].x0); //Position particule j en config initiale
+  Vector_3 lij(xi, xj);
+  double dij = sqrt( lij.squared_length() );
+  Vector_3 nIJ = lij / dij;
+  double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
+  //double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
+  double K = E/(1.-2.*nu)/3.;
+  return S/dij/3.*K*Dij_n; //Force élastique du lien
+}
+
+void Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
+  //Mettre ici forces élastiques !
+  int part = voisin;
+  Point_3 xi((*P).x0); //Position particule i en config initiale
+  Point_3 xj(solide[part].x0); //Position particule j en config initiale
+  Vector_3 lij(xi, xj);
+  double dij = sqrt( lij.squared_length() );
+  Vector_3 nIJ = lij / dij;
+  double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
+  //double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
+  double volume_diam = dij / 2. * S / 3.;
+  return -signe(Dij_n)* B * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; //Force plastique du lien
+}
+
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
 		     const double &x_max, const double &y_max, const double &z_max)
 {   
@@ -2392,17 +2421,17 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	double S = (*F).S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
-	Point_3 xi((*P).x0); //Position particule i en config initiale
+	double S = (*F).S;
+	/*Point_3 xi((*P).x0); //Position particule i en config initiale
         Point_3 xj(solide[part].x0); //Position particule j en config initiale
 	Vector_3 lij(xi, xj);
 	double dij = sqrt( lij.squared_length() );
 	Vector_3 nIJ = lij / dij;
-	double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
-	//double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
-	double K = E/(1.-2.*nu)/3.;
-	double Fij = S/dij/3.*K*Dij_n; //Force élastique du lien
-	(*P).Fi = (*P).Fi + Fij; //Force élastique sur particule
+	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
+	double K = E/(1.-2.*nu)/3.;*/
+	double Fij_elas = (*F).Forces_elas(P, solide, nu, E); //Force élastique du lien
+	
+	//(*P).Fi = (*P).Fi + Fij; //Force élastique sur particule
 
 	double A = 90.; //Limite elastique en MPa
 
@@ -2410,8 +2439,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	if(abs(Fij) > A * S) {
 	  double B = 292.; //Valeur vient de l'article de JC. En MPa.
 	  double n = .31; //JC.
-	  double volume_diam = dij / 2. * S / 3.;
-	  (*P).Fi = (*P).Fi - signe(Dij_n)* B * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; 
+	  double Fij_plas = (*F).Forces_plas(P, solide, n, B); //Force plastique du lien
+	  //double volume_diam = dij / 2. * S / 3.;
+	  //(*P).Fi = (*P).Fi - signe(Dij_n)* B * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; 
 	}
 	
 	//Force de rappel elastique
