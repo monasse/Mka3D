@@ -2455,13 +2455,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double B = 292.; //En MPa. JC.
 	double n = .31; //JC.
 	double A = 90.; //En MPa. Vient de JC
-	double Fij_elas = S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //Force élastique du lien
-	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
-	  double volume_diam = -signe(Dij_n) * (*F).D0 / 2. * S / 3.;
-	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //Force plastique du lien
+	double Fij_elas = S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
+									      /*if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
+	  double volume_diam = (*F).D0 / 2. * S / 3.;
+	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
 	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
-	else
+	else*/
 	  (*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force élastique sur particule
 	
 	  
