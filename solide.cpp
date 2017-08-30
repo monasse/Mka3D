@@ -2457,7 +2457,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double A = 90.; //En MPa. Vient de JC
 	double Fij_elas = S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //Force élastique du lien
 	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
-	  double volume_diam = (*F).D0 / 2. * S / 3.;
+	  double volume_diam = -signe(Dij_n) * (*F).D0 / 2. * S / 3.;
 	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //Force plastique du lien
 	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
@@ -2588,9 +2588,9 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 	Vector_3 nIJ = lij / (*F).D0;
 	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
 	
-	double B = 292.; //En MPa. JC.
+	double B = 292000.; //En Pa. JC.
 	double n = .31; //JC.
-	double A = 90.; //En MPa. Vient de JC
+	double A = 90000.; //En MPa. Vient de JC
 	double volume_diam = (*F).D0 / 2. * S / 3.;
 	double Eij_elas = volume_diam * E*pow(Dij_n/(*F).D0 - (*F).def_plas_cumulee, 2.); //Force élastique du lien
 	double Eij_plas = B / (n+1.) * volume_diam * pow((*F).def_plas_cumulee, n+1.); //Force plastique du lien
