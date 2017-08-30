@@ -71,10 +71,10 @@ public:
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
   double def_plas_cumulee; //Déformation plastique cumulée du lien
-  double rayon_plastique; //Taille du domaine élastique
+  //double rayon_plastique; //Taille du domaine élastique
 
   void Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
-  void Forces_plas(const int &N_dim, const double &n, const double &B, const double &A);
+  void Forces_plas(const int &N_dim, const double &n, const double &B);
 };
 
   
