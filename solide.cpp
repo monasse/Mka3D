@@ -466,7 +466,7 @@ Particule::Particule()
 * \param (x_max, y_max, z_max) : coordonn&eacute;es du sommet le plus &agrave; droite de la particule
 */
 
-void Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
+double Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
   //Mettre ici forces élastiques !
   int part = voisin;
   Point_3 xi((*P).x0); //Position particule i en config initiale
@@ -479,7 +479,7 @@ void Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double
   return S/6.*E*(Dij_n/D0 - def_plas_cumulee); //Force élastique du lien
 }
 
-void Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
+double Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
   //Mettre ici forces élastiques !
   int part = voisin;
   Point_3 xi((*P).x0); //Position particule i en config initiale
@@ -1359,37 +1359,6 @@ void Particule::solve_position(const double& dt, const bool& flag_2d){
   Aff_transformation_3 translation_inv(Vector_3(x0,Point_3(0.,0.,0.)));
   mvt_t = translation*(rotation*translation_inv);
 	//cout<<"position du centre de la particule "<<x0+Dx<<endl;
-}
-
-void Particule::solve_position_plas(const double& dt, const bool& flag_2d){
-  double eps = 1e-14;//std::numeric_limits<double>::epsilon();
-  double rot[3][3];
-  if(fixe==1){
-    Dx_plas = Vector_3(0.,0.,0.);
-    //Dxprev = Vector_3(0.,0.,0.);
-    u = Vector_3(0.,0.,0.);
-    u_half = u;
-    e = Vector_3(0.,0.,0.);
-    eref = Vector_3(0.,0.,0.);
-    rot[0][0] = rot[1][1]= rot[2][2] =1.;
-    rot[0][1]=rot[0][2]=rot[1][0]=rot[1][2]=rot[2][0]=rot[2][1]=0.;
-    eprev = Vector_3(0.,0.,0.);
-    omega = Vector_3(0.,0.,0.);
-    omega_half = omega;
-  } else {
-    if(fixe==0){ //fixe=0: particule mobile
-      //Dxprev = Dx;
-      u = u +  Fi_plas/2.*(dt/m);
-      u_half = u;
-      Dx = Dx+u*dt;
-    }
-    else if(fixe==2 || fixe==3){//fixe=2: fixee en deplacement ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
-      Dx = Vector_3(0.,0.,0.);
-      //Dxprev = Vector_3(0.,0.,0.);
-      u = Vector_3(0.,0.,0.);
-      u_half = u;
-    }
-  }
 }
 
 /*!
@@ -2475,17 +2444,25 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	double S = (*F).S;
+
+	Point_3 xi(solide[P].x0); //Position particule i en config initiale
+        Point_3 xj(solide[part].x0); //Position particule j en config initiale
+	Vector_3 lij(xi, xj);
+	//double dij = sqrt( lij.squared_length() );
+	Vector_3 nIJ = lij / (*F).D0;
+
+	
 	double B = 292.; //En MPa. JC.
 	double n = .31; //JC.
 	double A = 90.; //En MPa. Vient de JC
 	//double p_pt = ((*P).u - solide[part].u /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ / D0;
 	double Fij_elas = (*F).Forces_elas(P, solide, nu, E); //Force élastique du lien
-	if(abs(Fij_elas) >= (A + B * pow(def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
+	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
 	  double Fij_plas = (*F).Forces_plas(P, solide, n, B); //Force plastique du lien
-	(*P).Fi = (*P).Fi + Fij_plas
+	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
 	else
-	  (*P).Fi = (*P).Fi + Fij_elas; //Force élastique sur particule
+	  (*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force élastique sur particule
 	
 	  
 	
@@ -2603,7 +2580,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 	int part = solide[i].faces[j].voisin;
 	double S = solide[i].faces[j].S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
 
-	//Prendre en compte modifs ici !!!!
+	//Modifier énergie ici !!!!
 	double B = 292.; //Valeur vient de l'article de JC. En MPa.
 	double n = .31; //JC.
         Point_3 xi(solide[i].x0); //Position particule i en config initiale

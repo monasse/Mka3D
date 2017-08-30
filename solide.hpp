@@ -46,6 +46,8 @@ public:
   std::vector<int> particules; //!< Vecteur de particules auxquelles \a pos appartient 
 };
 
+class Particule;
+
 //! D&eacute;finition de la classe Face
 class Face
 {
@@ -73,8 +75,8 @@ public:
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   //double rayon_plastique; //Taille du domaine élastique
 
-  void Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
-  void Forces_plas(const int &N_dim, const double &n, const double &B);
+  double Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
+  double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
 };
 
   
