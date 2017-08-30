@@ -2361,6 +2361,7 @@ void Solide::Init(const char* s, const bool& rep, const int& numrep, const doubl
 */
 void Solide::Solve_position(const double& dt, const bool& flag_2d){
   for(int i=0;i<size();i++){
+    //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
   //breaking_criterion();
@@ -2395,23 +2396,6 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 	
 }
 
-void Solide::Solve_position_plas(const double& dt, const bool& flag_2d){
-  for(int i=0;i<size();i++){
-    solide[i].solve_position_plas(dt, flag_2d);
-  }
-  //breaking_criterion();
-  update_triangles();
-	for(int i=0;i<size();i++){
-	  //double x_min = solide[i].max_x, y_min=solide[i].max_y, z_min=solide[i].max_z, x_max =solide[i].max_x, y_max=solide[i].max_y, z_max =solide[i].max_z;
-	
-	  for(std::vector<Triangle_3>::iterator it=solide[i].triangles.begin();it!=solide[i].triangles.end();it++){
-	    for(int k=0;k<3;k++){
-	      solide[i].bbox = Bbox(min(solide[i].bbox.xmin(),((*it).vertex(k).x())),min(solide[i].bbox.ymin(),((*it).vertex(k).y())),min(solide[i].bbox.zmin(),((*it).vertex(k).z())),max(solide[i].bbox.xmax(),((*it).vertex(k).x())),max(solide[i].bbox.ymax(),((*it).vertex(k).y())),max(solide[i].bbox.zmax(),((*it).vertex(k).z())));
-	    } //Ce truc fait quoi ???
-	  }
-	}
-}
-
 /*!
 *\fn void Solide::Solve_vitesse(double dt)
 *\brief Calcul de la vitesse du solide.
@@ -2441,6 +2425,7 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E){
   Forces_internes(N_dim,nu,E);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e);
+    (*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     (*P).Mi = (*P).Mi + Moments_externes((*P).x0+(*P).Dx,(*P).e);
   }
 }
@@ -2501,8 +2486,6 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double Fij_elas = (*F).Forces_elas(P, solide, nu, E); //Force élastique du lien
 	
 	(*P).Fi = (*P).Fi + Fij_elas; //Force élastique sur particule
-
-	double A = 90.; //Limite elastique en MPa
 
 	//Forces plastiques calculées à chaque fois même si nulles...
 	//if(abs(Fij_elas) > A * S) {
