@@ -32,7 +32,10 @@
 
 
 
-
+inline double signe(const double &x)
+{
+  return (x < 0.) ? -1. : 1. ;
+}
 
 //Function absolute value
 double abs(const double &x)
@@ -465,38 +468,6 @@ Particule::Particule()
 * \param (x_min, y_min, z_min) : coordonn&eacute;es du sommet le plus &agrave; gauche de la particule
 * \param (x_max, y_max, z_max) : coordonn&eacute;es du sommet le plus &agrave; droite de la particule
 */
-
-double Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
-  //Mettre ici forces élastiques !
-  int part = voisin;
-  Point_3 xi((*P).x0); //Position particule i en config initiale
-  Point_3 xj(solide[part].x0); //Position particule j en config initiale
-  Vector_3 lij(xi, xj);
-  //double dij = sqrt( lij.squared_length() );
-  Vector_3 nIJ = lij / D0;
-  double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
-  //double K = E/(1.-2.*nu)/3.;
-  return S/6.*E*(Dij_n/D0 - def_plas_cumulee); //Force élastique du lien
-}
-
-inline double signe(const double &x)
-{
-  return (x < 0.) ? -1. : 1. ;
-}
-
-double Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
-  //Mettre ici forces élastiques !
-  int part = voisin;
-  Point_3 xi((*P).x0); //Position particule i en config initiale
-  Point_3 xj(solide[part].x0); //Position particule j en config initiale
-  Vector_3 lij(xi, xj);
-  //double dij = sqrt( lij.squared_length() );
-  Vector_3 nIJ = lij / D0;
-  double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
-  double volume_diam = D0 / 2. * S / 3.;
-  //return -signe(Dij_n)* B * volume_diam / pow(D0, n+1) * pow(abs(Dij_n), n) * nIJ; //Force plastique du lien
-  return -signe(Dij_n) * B * volume_diam * pow(def_plas_cumulee, n); //Force plastique du lien
-}
 
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
 		     const double &x_max, const double &y_max, const double &z_max)
@@ -2407,6 +2378,34 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E){
 *\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 *\return void
 */
+
+double Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
+  //Mettre ici forces élastiques !
+  int part = voisin;
+  Point_3 xi((*P).x0); //Position particule i en config initiale
+  Point_3 xj(solide[part].x0); //Position particule j en config initiale
+  Vector_3 lij(xi, xj);
+  //double dij = sqrt( lij.squared_length() );
+  Vector_3 nIJ = lij / D0;
+  double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
+  //double K = E/(1.-2.*nu)/3.;
+  return S/6.*E*(Dij_n/D0 - def_plas_cumulee); //Force élastique du lien
+}
+
+double Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
+  //Mettre ici forces élastiques !
+  int part = voisin;
+  Point_3 xi((*P).x0); //Position particule i en config initiale
+  Point_3 xj(solide[part].x0); //Position particule j en config initiale
+  Vector_3 lij(xi, xj);
+  //double dij = sqrt( lij.squared_length() );
+  Vector_3 nIJ = lij / D0;
+  double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
+  double volume_diam = D0 / 2. * S / 3.;
+  //return -signe(Dij_n)* B * volume_diam / pow(D0, n+1) * pow(abs(Dij_n), n) * nIJ; //Force plastique du lien
+  return -signe(Dij_n) * B * volume_diam * pow(def_plas_cumulee, n); //Force plastique du lien
+}
+
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E){
   //Initialisation
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -2451,15 +2450,15 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 lij(xi, xj);
 	//double dij = sqrt( lij.squared_length() );
 	Vector_3 nIJ = lij / (*F).D0;
-
+	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
 	
 	double B = 292.; //En MPa. JC.
 	double n = .31; //JC.
 	double A = 90.; //En MPa. Vient de JC
-	//double p_pt = ((*P).u - solide[part].u /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ / D0;
-	double Fij_elas = (*F).Forces_elas(*P, solide, nu, E); //Force élastique du lien
+	double Fij_elas = S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //Force élastique du lien
 	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
-	  double Fij_plas = (*F).Forces_plas(*P, solide, n, B); //Force plastique du lien
+	  double volume_diam = (*F).D0 / 2. * S / 3.;
+	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //Force plastique du lien
 	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
 	else
