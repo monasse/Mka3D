@@ -210,7 +210,7 @@ Bbox bbox;
      */
 		Vector_3 Mfprev; //!< Moments fluides exerc&eacute;s sur le solide entre t-dt/2 et t
   Vector_3 u; //!< Vitesse de la particule au temps t
-  Vector_3 u_plas; //Vitesse palstique
+  //Vector_3 u_plas; //Vitesse palstique
   Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
   Vector_3 omega; //!< Vecteur rotation au temps t
   Vector_3 omega_half;//!< Vecteur rotation au temps t-dt/2
