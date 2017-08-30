@@ -480,7 +480,7 @@ void Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double
   return S/dij/3.*K*Dij_n; //Force élastique du lien
 }
 
-void Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
+void Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B, const double &A) {
   //Mettre ici forces élastiques !
   int part = voisin;
   Point_3 xi((*P).x0); //Position particule i en config initiale
@@ -1542,7 +1542,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d){
   }//Fin du calcul dans le cas d'une particule libre
 }
 
-void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
+/*void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
   if(fixe==1){
     u_plas = Vector_3(0.,0.,0.);
   } else {
@@ -1553,7 +1553,7 @@ void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
       u_plas = Vector_3(0.,0.,0.);
     }
   }
-}
+  }*/
 
 /*!
 * \fn double Particule::volume()
@@ -2409,11 +2409,11 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d){
   }
 }
 
-void Solide::Solve_vitesse_plas(const double& dt, const bool& flag_2d){
+/*void Solide::Solve_vitesse_plas(const double& dt, const bool& flag_2d){
   for(int i=0;i<size();i++){
     solide[i].solve_vitesse_plas(dt, flag_2d);
   }
-}
+  }*/
 
 /*!
 *\fn void Solide::Forces(int N_dim, double nu, double E)
@@ -2425,7 +2425,7 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E){
   Forces_internes(N_dim,nu,E);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e);
-    (*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
+    //(*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     (*P).Mi = (*P).Mi + Moments_externes((*P).x0+(*P).Dx,(*P).e);
   }
 }
@@ -2442,7 +2442,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   //Initialisation
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
-    (*P).Fi_plas = Vector_3(0.,0.,0.);
+    //(*P).Fi_plas = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
   }
   //Calcul de la deformation volumique epsilon de chaque particule
@@ -2476,13 +2476,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	double S = (*F).S;
-	/*Point_3 xi((*P).x0); //Position particule i en config initiale
-        Point_3 xj(solide[part].x0); //Position particule j en config initiale
-	Vector_3 lij(xi, xj);
-	double dij = sqrt( lij.squared_length() );
-	Vector_3 nIJ = lij / dij;
-	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
-	double K = E/(1.-2.*nu)/3.;*/
+
+	if( )
 	double Fij_elas = (*F).Forces_elas(P, solide, nu, E); //Force élastique du lien
 	
 	(*P).Fi = (*P).Fi + Fij_elas; //Force élastique sur particule
@@ -2491,8 +2486,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//if(abs(Fij_elas) > A * S) {
 	double B = 292.; //Valeur vient de l'article de JC. En MPa.
 	double n = .31; //JC.
+	double A = 90.; //En MPa. Vient de JC
 	double Fij_plas = (*F).Forces_plas(P, solide, n, B); //Force plastique du lien
-	(*P).Fi_plas = (*P).Fi_plas + Fij_plas
+	(*P).Fi = (*P).Fi_plas + Fij_plas
 	  //double volume_diam = dij / 2. * S / 3.;
 	  //(*P).Fi = (*P).Fi - signe(Dij_n)* B * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n) * nIJ; 
 	  //}

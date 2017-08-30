@@ -70,9 +70,11 @@ public:
   std::vector<Vertex> vertex; //!< Les sommets de la face
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
+  double def_plas_cumulee; //Déformation plastique cumulée du lien
+  double rayon_plastique; //Taille du domaine élastique
 
-  void Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
-  void Forces_plas(const int &N_dim, const double &n, const double &B);
+  void Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
+  void Forces_plas(const int &N_dim, const double &n, const double &B, const double &A);
 };
 
   
@@ -186,10 +188,10 @@ Bbox bbox;
   double rotref[3][3]; //!<Matrice de rotation \f$ Q_0 \f$ telle que la matrice d'inertie \f$ R \f$ s'&eacute;crit :\f$ R = Q_0 R_0 Q_0^{-1}\f$, avec \f$R_0=diag(I_1,I_2,I_3)\f$.
   Point_3 x0; //!<Position du centre de la particule &agrave; t=0
   Vector_3 Dx; //!<D&eacute;placement du centre de la particule en t
-  Vector_3 Dx_plas; //Déplacements plastiques...
+  //Vector_3 Dx_plas; //Déplacements plastiques...
   Vector_3 Dxprev; //!<D&eacute;placement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
-  Vector_3 Fi_plas; //Forces plastiques dans particule
+  //Vector_3 Fi_plas; //Forces plastiques dans particule
     /*! 
      * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
