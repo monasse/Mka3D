@@ -2574,24 +2574,29 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
     Ep += E*nu/2./(1.+nu)/(1.-2.*nu)*(solide[i].V+N_dim*nu/(1.-2.*nu)*solide[i].Vl)*pow(solide[i].epsilon,2);
     } */
   //Calcul de l'energie pour chaque lien
-  for(int i=0;i<size();i++){
-    for(int j=0;j<solide[i].faces.size();j++){
-      if(solide[i].faces[j].voisin>=0){
-	int part = solide[i].faces[j].voisin;
-	double S = solide[i].faces[j].S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
 
-	//Modifier énergie ici !!!!
-	double B = 292.; //Valeur vient de l'article de JC. En MPa.
-	double n = .31; //JC.
-        Point_3 xi(solide[i].x0); //Position particule i en config initiale
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+      if((*F).voisin>=0){
+	int part = (*F).voisin;
+	double S = (*F).S;
+
+	Point_3 xi((*P).x0); //Position particule i en config initiale
         Point_3 xj(solide[part].x0); //Position particule j en config initiale
 	Vector_3 lij(xi, xj);
-	double dij = sqrt( lij.squared_length() );
-	Vector_3 nIJ = lij / dij;
-	double volume_diam = dij / 2. * S / 3.;
-	double Dij_n = (solide[i].Dx - solide[part].Dx - cross_product(solide[i].omega + solide[part].omega, lij / 2.) ) * nIJ;
-	double Fij_n = signe(Dij_n)* E * volume_diam / pow(dij, n+1) * pow(abs(Dij_n), n);
-	Ep += abs(Fij_n) * abs(Dij_n);
+	//double dij = sqrt( lij.squared_length() );
+	Vector_3 nIJ = lij / (*F).D0;
+	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
+	
+	double B = 292.; //En MPa. JC.
+	double n = .31; //JC.
+	double A = 90.; //En MPa. Vient de JC
+	double volume_diam = (*F).D0 / 2. * S / 3.;
+	double Eij_elas = volume_diam * E*pow(Dij_n/(*F).D0 - (*F).def_plas_cumulee, 2.); //Force élastique du lien
+	double Eij_plas = B / (n+1.) * volume_diam * pow((*F).def_plas_cumulee, n+1.); //Force plastique du lien
+	Ep += Eij_elas - Eij_plas; //Energie totale
+
+	//Mettre vérification pour voir si on a la bonne dissipation ?
 	
 	/*Vector_3 X1X2(solide[i].mvt_t(solide[i].x0),solide[part].mvt_t(solide[part].x0));
 	double DIJ = sqrt((X1X2.squared_length()));
