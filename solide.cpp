@@ -95,6 +95,7 @@ Face::Face()
   normale = Vector_3(1.,0.,0.);
   voisin = -1;
   D0 = 1.;
+  def_plas_cumulee = 0.;
 }
 
 /*!
@@ -116,6 +117,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part)
   normale = normale*1./norm;
   voisin = part;
   D0 = 1.;
+  def_plas_cumulee = 0.;
 }
 /*!
 * \fn Face::Face(std::vector<Vertex> & v, int part, double dist)
@@ -137,6 +139,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
   normale = normale*1./norm;
   voisin = part;
   D0 = dist;
+  def_plas_cumulee = 0.;
 }
 /*!
 * \fn Face & Face:: operator=(const Face &F)
@@ -2452,16 +2455,16 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = lij / (*F).D0;
 	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
 	
-	double B = 292.; //En MPa. JC.
+	double B = 292000.; //En Pa. JC.
 	double n = .31; //JC.
-	double A = 90.; //En MPa. Vient de JC
+	double A = 90000.; //En Pa. Vient de JC
 	double Fij_elas = signe(Dij_n) * S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
-									      /*if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
+	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
 	  double volume_diam = (*F).D0 / 2. * S / 3.;
 	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
 	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
-	else*/
+	else
 	  (*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force élastique sur particule
 	
 	  
