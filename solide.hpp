@@ -241,7 +241,7 @@ public:
   void Impression(const int &n, const bool &reconstruction);
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
   void Solve_position(const double &dt, const bool &flag_2d);
-  void stock_def_plas(const double &dt);
+  void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d);
   void Forces(const int &N_dim, const double &nu, const double &E);
   void Forces_internes(const int &N_dim, const double &nu, const double &E);

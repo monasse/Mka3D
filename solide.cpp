@@ -2310,7 +2310,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
     //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
-  stock_def_plas(); //Permet de faire croitre la deformation plastique cumulee
+  stock_def_plastique(dt); //Permet de faire croitre la deformation plastique cumulee
   //breaking_criterion();
   update_triangles();
 	for(int i=0;i<size();i++){
@@ -2345,13 +2345,13 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 
 void Solide::stock_def_plastique(const double &dt) {
   for(int i=0;i<size();i++){
-    Particule* P = solide[i];
+    Particule* P = &solide[i];
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0 && (*F).plastifie){
 	int part = (*F).voisin;
 	double S = (*F).S;
 	//Demi-incrément car on passe 2 fois par face...
-	(*F).def_plas_cumulee += 0.5 * abs((*P).u - solide[part].u) / (*F).D0 * dt; //Bien codé ?
+	(*F).def_plas_cumulee += 0.5 * abs( ((*P).u - solide[part].u) * ((*P).u - solide[part].u) ) / (*F).D0 * dt; //Bien codé ?
       }
     }
   }
