@@ -2480,7 +2480,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
 	  (*F).plastifie = true;
 	  double volume_diam = (*F).D0 / 2. * S / 3.;
-	  double Fij_plas = signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
+	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
 	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
 	else {
