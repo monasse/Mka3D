@@ -96,6 +96,7 @@ Face::Face()
   voisin = -1;
   D0 = 1.;
   def_plas_cumulee = 0.;
+  plastifie = false;
 }
 
 /*!
@@ -118,6 +119,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part)
   voisin = part;
   D0 = 1.;
   def_plas_cumulee = 0.;
+  plastifie = false;
 }
 /*!
 * \fn Face::Face(std::vector<Vertex> & v, int part, double dist)
@@ -140,6 +142,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
   voisin = part;
   D0 = dist;
   def_plas_cumulee = 0.;
+  plastifie = false;
 }
 /*!
 * \fn Face & Face:: operator=(const Face &F)
@@ -2307,6 +2310,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
     //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
+  stock_def_plas(); //Permet de faire croitre la deformation plastique cumulee
   //breaking_criterion();
   update_triangles();
 	for(int i=0;i<size();i++){
@@ -2337,6 +2341,20 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 		solide[i].max_x = x_max; solide[i].max_y = y_max; solide[i].max_z = z_max;*/
 	}
 	
+}
+
+void Solide::stock_def_plastique(const double &dt) {
+  for(int i=0;i<size();i++){
+    Particule* P = solide[i];
+    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+      if((*F).voisin>=0 && (*F).plastifie){
+	int part = (*F).voisin;
+	double S = (*F).S;
+	//Demi-incrément car on passe 2 fois par face...
+	(*F).def_plas_cumulee += 0.5 * abs((*P).u - solide[part].u) / (*F).D0 * dt; //Bien codé ?
+      }
+    }
+  }
 }
 
 /*!
@@ -2460,12 +2478,15 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double A = 90000.; //En Pa. Vient de JC
 	double Fij_elas = signe(Dij_n) * S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
 	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
+	  (*F).plastifie = true;
 	  double volume_diam = (*F).D0 / 2. * S / 3.;
-	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
+	  double Fij_plas = signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
 	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	}
-	else
+	else {
+	  (*F).plastifie = false;
 	  (*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force élastique sur particule
+	}
 	
 	  
 	

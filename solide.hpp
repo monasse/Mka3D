@@ -74,6 +74,7 @@ public:
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   //double rayon_plastique; //Taille du domaine élastique
+  bool plastifie; //Test si le materiau a plastifié sur le dernier pas de temps...
 
   double Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
   double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
@@ -240,6 +241,7 @@ public:
   void Impression(const int &n, const bool &reconstruction);
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
   void Solve_position(const double &dt, const bool &flag_2d);
+  void stock_def_plas(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d);
   void Forces(const int &N_dim, const double &nu, const double &E);
   void Forces_internes(const int &N_dim, const double &nu, const double &E);
