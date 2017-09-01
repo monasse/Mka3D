@@ -2478,7 +2478,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double A = 90000000.; //En Pa. Vient de JC
 	if((*F).def_plas_cumulee - abs(Dij_n)/(*F).D0 > 0.)
 	  cout << "Probleme valeur de la def plas cumulee !!!" << endl;
-	double Fij_elas = -signe(Dij_n) * S/6.*E*abs(abs(Dij_n)/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
+	double Fij_elas = -signe(Dij_n) * 2./3*E*abs(abs(Dij_n)/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
 	double Rayon_plas = B * pow((*F).def_plas_cumulee, n) * S;
 	if(abs(Fij_elas) >= (A * S + Rayon_plas  )) { //On sort du domaine élastique.
 	  //(*F).plastifie = true;
@@ -2619,13 +2619,13 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 	double B = 292000000.; //En Pa. JC.
 	double n = .31; //JC.
 	double A = 90000000.; //En MPa. Vient de JC
-	double volume_diam = (*F).D0 / 2. * S / 3.;
+	double volume_diam = (*F).D0 * 2. * S / 3.;
 	double Eij_elas = volume_diam * E*pow(abs(Dij_n/(*F).D0 - (*F).def_plas_cumulee), 2.); //Force élastique du lien
 	double Eij_plas = B / (n+1.) * volume_diam * pow((*F).def_plas_cumulee, n+1.); //Force plastique du lien
 	Ep += Eij_elas - Eij_plas; //Energie totale
 
 	//Mettre vérification pour voir si on a la bonne dissipation ?
-	Ep += Eij_elas - Eij_plas + A*(*F).def_plas_cumulee; //Energie totale
+	//Ep += Eij_elas - Eij_plas + A*(*F).def_plas_cumulee; //Energie totale
 	
 	/*Vector_3 X1X2(solide[i].mvt_t(solide[i].x0),solide[part].mvt_t(solide[part].x0));
 	double DIJ = sqrt((X1X2.squared_length()));
