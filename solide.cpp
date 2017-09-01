@@ -2616,7 +2616,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 	double n = .31; //JC.
 	double A = 90000.; //En MPa. Vient de JC
 	double volume_diam = (*F).D0 / 2. * S / 3.;
-	double Eij_elas = volume_diam * E*pow(Dij_n/(*F).D0 - (*F).def_plas_cumulee, 2.); //Force élastique du lien
+	double Eij_elas = volume_diam * E*pow(abs(Dij_n/(*F).D0 - (*F).def_plas_cumulee), 2.); //Force élastique du lien
 	double Eij_plas = B / (n+1.) * volume_diam * pow((*F).def_plas_cumulee, n+1.); //Force plastique du lien
 	Ep += Eij_elas - Eij_plas; //Energie totale
 
