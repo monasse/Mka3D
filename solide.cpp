@@ -2476,6 +2476,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double B = 292000000.; //En Pa. JC.
 	double n = .31; //JC.
 	double A = 90000000.; //En Pa. Vient de JC
+	if((*F).def_plas_cumulee - abs(Dij_n)/(*F).D0 > 0.)
+	  cout << "Probleme valeur de la def plas cumulee !!!" << endl;
 	double Fij_elas = -signe(Dij_n) * S/6.*E*abs(abs(Dij_n)/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
 	double Rayon_plas = B * pow((*F).def_plas_cumulee, n) * S;
 	if(abs(Fij_elas) >= (A * S + Rayon_plas  )) { //On sort du domaine élastique.
