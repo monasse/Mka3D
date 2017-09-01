@@ -24,7 +24,7 @@ Vector_3 velocity(const Point_3 &p)
 {
   //return Vector_3(0.01*(p.x()-1.),0,0);
   if(p.x() <= 1.)
-     return Vector_3(-1.,0,0);
+     return Vector_3(-10.,0,0);
   else if(p.x() >= 19.)
     return Vector_3(0,0,0);
 }
