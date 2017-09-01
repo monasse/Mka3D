@@ -2310,7 +2310,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
     //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
-  stock_def_plastique(dt); //Permet de faire croitre la deformation plastique cumulee
+  //stock_def_plastique(dt); //Permet de faire croitre la deformation plastique cumulee. Pas bien codé semblerait...
   //breaking_criterion();
   update_triangles();
 	for(int i=0;i<size();i++){
@@ -2351,7 +2351,7 @@ void Solide::stock_def_plastique(const double &dt) {
 	int part = (*F).voisin;
 	double S = (*F).S;
 	//Demi-incrément car on passe 2 fois par face...
-	(*F).def_plas_cumulee += 0.5 * abs( ((*P).u - solide[part].u) * ((*P).u - solide[part].u) ) / (*F).D0 * dt; //Bien codé ?
+	(*F).def_plas_cumulee += 0.5 * abs( ((*P).u - solide[part].u) * ((*P).u - solide[part].u) ) / (*F).D0 * dt; //Bien codé ? Semblerait pas...
       }
     }
   }
@@ -2477,16 +2477,18 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double n = .31; //JC.
 	double A = 90000.; //En Pa. Vient de JC
 	double Fij_elas = signe(Dij_n) * S/6.*E*(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
-	if(abs(Fij_elas) >= (A + B * pow((*F).def_plas_cumulee, n))*S ) { //On sort du domaine élastique.
-	  (*F).plastifie = true;
-	  double volume_diam = (*F).D0 / 2. * S / 3.;
-	  double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
-	  (*P).Fi = (*P).Fi + Fij_plas * nIJ;
+	double Rayon_plas = B * pow((*F).def_plas_cumulee, n) * S;
+	if(abs(Fij_elas) >= (A * S + Rayon_plas  )) { //On sort du domaine élastique.
+	  //(*F).plastifie = true;
+	  //double volume_diam = (*F).D0 / 2. * S / 3.;
+	  //double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
+	  //(*P).Fi = (*P).Fi + Fij_plas * nIJ;
+	  (*F).def_plas_cumulee = pow((abs(Fij_elas) / S - A) / B , 1./n); //Nouvelle déformation palstique. Bien codée ???
 	}
-	else {
-	  (*F).plastifie = false;
-	  (*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force élastique sur particule
-	}
+	  /*else
+	    (*F).plastifie = false; */
+
+	(*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force sur particule
 	
 	  
 	
