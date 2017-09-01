@@ -2471,20 +2471,21 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 lij(xi, xj);
 	//double dij = sqrt( lij.squared_length() );
 	Vector_3 nIJ = lij / (*F).D0;
-	double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
+	double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
 	
 	double B = 292000000.; //En Pa. JC.
 	double n = .31; //JC.
 	double A = 90000000.; //En Pa. Vient de JC
 	if((*F).def_plas_cumulee - abs(Dij_n)/(*F).D0 > 0.)
 	  cout << "Probleme valeur de la def plas cumulee !!!" << endl;
-	double Fij_elas = -signe(Dij_n) * 2./3*E*abs(abs(Dij_n)/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
+	double Fij_elas = -2./3 * S * E*abs(Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n) //Force élastique du lien
 	double Rayon_plas = B * pow((*F).def_plas_cumulee, n) * S;
 	if(abs(Fij_elas) >= (A * S + Rayon_plas  )) { //On sort du domaine élastique.
 	  //(*F).plastifie = true;
 	  //double volume_diam = (*F).D0 / 2. * S / 3.;
 	  //double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
 	  //(*P).Fi = (*P).Fi + Fij_plas * nIJ;
+	  //cout << "P point : " << ( pow((abs(Fij_elas) / S - A) / B , 1./n) - (*F).def_plas_cumulee) / dt;
 	  (*F).def_plas_cumulee = pow((abs(Fij_elas) / S - A) / B , 1./n); //Nouvelle déformation palstique. Bien codée ???
 	}
 	  /*else
