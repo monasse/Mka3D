@@ -73,6 +73,7 @@ public:
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
   double def_plas_cumulee; //Déformation plastique cumulée du lien
+  double epsilon_p;
   //double rayon_plastique; //Taille du domaine élastique
   bool plastifie; //Test si le materiau a plastifié sur le dernier pas de temps...
 
@@ -243,8 +244,8 @@ public:
   void Solve_position(const double &dt, const bool &flag_2d);
   void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d);
-  void Forces(const int &N_dim, const double &nu, const double &E);
-  void Forces_internes(const int &N_dim, const double &nu, const double &E);
+  void Forces(const int &N_dim, const double &nu, const double &E, const double& dt);
+  void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
   void update_triangles();
   //void breaking_criterion();
   double Energie(const int &N_dim, const double &nu, const double &E);

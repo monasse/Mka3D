@@ -96,6 +96,7 @@ Face::Face()
   voisin = -1;
   D0 = 1.;
   def_plas_cumulee = 0.;
+  epsilon_p = 0.;
   plastifie = false;
 }
 
@@ -120,6 +121,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part)
   D0 = 1.;
   def_plas_cumulee = 0.;
   plastifie = false;
+  epsilon_p = 0.;
 }
 /*!
 * \fn Face::Face(std::vector<Vertex> & v, int part, double dist)
@@ -143,6 +145,7 @@ Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
   D0 = dist;
   def_plas_cumulee = 0.;
   plastifie = false;
+  epsilon_p = 0.;
 }
 /*!
 * \fn Face & Face:: operator=(const Face &F)
@@ -2382,8 +2385,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d){
 *\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 *\return void
 */
-void Solide::Forces(const int& N_dim, const double& nu, const double& E){
-  Forces_internes(N_dim,nu,E);
+void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt){
+  Forces_internes(N_dim,nu,E, dt);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     //(*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
@@ -2427,7 +2430,7 @@ double Face::Forces_plas(Particule* P, std::vector<Particule> solide, const doub
   return -signe(Dij_n) * B * volume_diam * pow(def_plas_cumulee, n); //Force plastique du lien
 }
 
-void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E){
+void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
   //Initialisation
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
@@ -2489,8 +2492,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	  //double Fij_plas = -signe(Dij_n) * B * volume_diam * pow((*F).def_plas_cumulee, n); //-signe(Dij_n) *  //Force plastique du lien
 	  //(*P).Fi = (*P).Fi + Fij_plas * nIJ;
 	  //cout << "P point : " << ( pow((abs(Fij_elas) / S - A) / B , 1./n) - (*F).def_plas_cumulee) / dt;
+	  double lambda = abs( pow((abs(Fij_elas) / S - A) / B , 1./n) - (*F).def_plas_cumulee) /dt;
 	  (*F).def_plas_cumulee = pow((abs(Fij_elas) / S - A) / B , 1./n); //Nouvelle déformation palstique. Bien codée ???
 	  cout << "Def plastique cumulee : " << (*F).def_plas_cumulee << endl;
+	  (*F).epsilon_p += lambda* dt * signe(Fij_elas);
+	  cout << "Epsilon_p : " << (*F).epsilon_p << endl;
 	}
 	  /*else
 	    (*F).plastifie = false; */

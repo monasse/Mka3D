@@ -256,7 +256,7 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
-  S.Forces_internes(N_dim, nu, E);
+  S.Forces_internes(N_dim, nu, E, dt);
   int nb_part = S.size();
 
   //Iterations on the time-steps
@@ -288,7 +288,7 @@ int main(){
     S.Solve_position(dt,flag_2d);
     //Ajouter Solve_position_plas quand nécessaire...
     //Computation of forces
-    S.Forces(N_dim, nu, E); //Fait plastiques et élastiques
+    S.Forces(N_dim, nu, E, dt); //Fait plastiques et élastiques
     //Second half-step of the Verlet+RATTLE Scheme
     S.Solve_vitesse(dt,flag_2d);
     //Update of time
