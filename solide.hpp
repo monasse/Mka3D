@@ -48,7 +48,7 @@ public:
 
 class Particule;
 
-//! D&eacute;finition de la classe Face
+//Encore utile ???
 class Face
 {
 public:
