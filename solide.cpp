@@ -2473,7 +2473,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       }
     }
     (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).epsilon_p); //Scalaire car cas 1D !
-    cout << "Contrainte : " << (*P).contrainte << endl;
+    //cout << "Contrainte : " << (*P).contrainte << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
     double B = 292000000.; //En Pa. JC.
@@ -2483,7 +2483,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
     if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
       (*P).def_plas_cumulee = pow((abs((*P).contrainte) - A) / B , 1./n); //Nouvelle déformation plastique.
-      cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       double delta_epsilon_p = ( pow((abs((*P).contrainte) - A) / B , 1./n) - (*P).def_plas_cumulee) * signe( (*P).contrainte );
       (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
     }
