@@ -32,7 +32,10 @@
 
 
 
-
+inline double signe(const double &x)
+{
+  return (x < 0.) ? -1. : 1. ;
+}
 
 //Function absolute value
 double abs(const double &x)
@@ -242,7 +245,13 @@ void Face::Inertie(){
  */
 
 Particule::Particule()
-{   
+{
+  discrete_gradient = 0.; //Gradient reconstruit par particule
+  contrainte = 0.; //Contrainte par particule
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+  epsilon_p = 0.;
+  
   /*min_x = 0.; 
   min_y = 0.;
   min_z = 0.;
@@ -466,9 +475,16 @@ Particule::Particule()
 * \param (x_min, y_min, z_min) : coordonn&eacute;es du sommet le plus &agrave; gauche de la particule
 * \param (x_max, y_max, z_max) : coordonn&eacute;es du sommet le plus &agrave; droite de la particule
 */
+
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
 		     const double &x_max, const double &y_max, const double &z_max)
-{   
+{
+  discrete_gradient = 0.; //Gradient reconstruit par particule
+  contrainte = 0.; //Contrainte par particule
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+  epsilon_p = 0.;
+  
   /*min_x = x_min; 
   min_y = y_min;
   min_z = z_min;
@@ -697,7 +713,13 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
 Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
 		     const std::vector<Face> & F)
-{   
+{
+  discrete_gradient = 0.; //Gradient reconstruit par particule
+  contrainte = 0.; //Contrainte par particule
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+  epsilon_p = 0.;
+  
   /*min_x = x_min; 
   min_y = y_min;
   min_z = z_min;
@@ -982,10 +1004,6 @@ void Particule::Affiche(){
 
 }
 
-inline double signe(const double &x)
-{
-  return (x < 0.) ? -1. : 1. ;
-}
 /*!
 * \fn void Particule::solve_position(double dt, bool flag_2d)
 * \brief Calcul de la position de la particule.
@@ -1482,6 +1500,20 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d){
 		//fin test */
   }//Fin du calcul dans le cas d'une particule libre
 }
+
+/*void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
+  if(fixe==1){
+    u_plas = Vector_3(0.,0.,0.);
+  } else {
+    if(fixe==0){
+      u_plas = u_plas + Fi_plas/2.*(dt/m);
+    }
+    else if(fixe==2 || fixe==3){
+      u_plas = Vector_3(0.,0.,0.);
+    }
+  }
+  }*/
+
 /*!
 * \fn double Particule::volume()
 * \brief Fonction auxilaire utile pour les tests. Calcul du volume de la particule.
@@ -2288,8 +2320,10 @@ void Solide::Init(const char* s, const bool& rep, const int& numrep, const doubl
 */
 void Solide::Solve_position(const double& dt, const bool& flag_2d){
   for(int i=0;i<size();i++){
+    //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
+  //stock_def_plastique(dt); //Permet de faire croitre la deformation plastique cumulee. Pas bien codé semblerait...
   //breaking_criterion();
   update_triangles();
 	for(int i=0;i<size();i++){
@@ -2322,6 +2356,20 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 	
 }
 
+/*void Solide::stock_def_plastique(const double &dt) {
+  for(int i=0;i<size();i++){
+    Particule* P = &solide[i];
+    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+      if((*F).voisin>=0 && (*F).plastifie){
+	int part = (*F).voisin;
+	double S = (*F).S;
+	//Demi-incrément car on passe 2 fois par face...
+	(*F).def_plas_cumulee += 0.5 * abs( ((*P).u - solide[part].u) * ((*P).u - solide[part].u) ) / (*F).D0 * dt; //Bien codé ? Semblerait pas...
+      }
+    }
+  }
+  }*/
+
 /*!
 *\fn void Solide::Solve_vitesse(double dt)
 *\brief Calcul de la vitesse du solide.
@@ -2335,16 +2383,23 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d){
   }
 }
 
+/*void Solide::Solve_vitesse_plas(const double& dt, const bool& flag_2d){
+  for(int i=0;i<size();i++){
+    solide[i].solve_vitesse_plas(dt, flag_2d);
+  }
+  }*/
+
 /*!
 *\fn void Solide::Forces(int N_dim, double nu, double E)
 *\brief Calcul des forces. 
 *\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 *\return void
 */
-void Solide::Forces(const int& N_dim, const double& nu, const double& E){
-  Forces_internes(N_dim,nu,E);
+void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt){
+  Forces_internes(N_dim,nu,E, dt);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e);
+    //(*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     (*P).Mi = (*P).Mi + Moments_externes((*P).x0+(*P).Dx,(*P).e);
   }
 }
@@ -2357,60 +2412,121 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E){
 *\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 *\return void
 */
-void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E){
+
+// double Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
+//   //Mettre ici forces élastiques !
+//   int part = voisin;
+//   Point_3 xi((*P).x0); //Position particule i en config initiale
+//   Point_3 xj(solide[part].x0); //Position particule j en config initiale
+//   Vector_3 lij(xi, xj);
+//   //double dij = sqrt( lij.squared_length() );
+//   Vector_3 nIJ = lij / D0;
+//   double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
+//   //double K = E/(1.-2.*nu)/3.;
+//   return S/6.*E*(Dij_n/D0 - def_plas_cumulee); //Force élastique du lien
+// }
+
+// double Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
+//   //Mettre ici forces élastiques !
+//   int part = voisin;
+//   Point_3 xi((*P).x0); //Position particule i en config initiale
+//   Point_3 xj(solide[part].x0); //Position particule j en config initiale
+//   Vector_3 lij(xi, xj);
+//   //double dij = sqrt( lij.squared_length() );
+//   Vector_3 nIJ = lij / D0;
+//   double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
+//   double volume_diam = D0 / 2. * S / 3.;
+//   //return -signe(Dij_n)* B * volume_diam / pow(D0, n+1) * pow(abs(Dij_n), n) * nIJ; //Force plastique du lien
+//   return -signe(Dij_n) * B * volume_diam * pow(def_plas_cumulee, n); //Force plastique du lien
+// }
+
+void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
   //Initialisation
+  double lambda_mat = E * nu / (1. + nu) / (1. - 2.*nu);
+  double mu = E / 2. / (1. + nu);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
   }
-  //Calcul de la deformation volumique epsilon de chaque particule
+  
+  //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (*P).Volume_libre();
-    (*P).epsilon = 0.;
+    //(*P).Volume_libre();
+    (*P).discrete_gradient = 0.;
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	Vector_3 Sn = Vector_3(0.,0.,0.);
+	//Vector_3 Sn = Vector_3(0.,0.,0.);
 	//Vector_3 Sn = 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos));
-	for(int k=1;k<(*F).size()-1;k++){
-	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos));
-	}
+	/*for(int k=1;k<(*F).size()-1;k++){
+	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos)); //Vaut la surface de cette face calculée par la somme des surfaces des triangles qui la compose !!!
+	}*/
 	Point_3 c1 = (*P).mvt_t((*F).centre);
 	Point_3 c2 = solide[part].mvt_t((*F).centre);
-	Vector_3 Delta_u(c1,c2);
-	(*P).epsilon += 1./2./((*P).V+N_dim*nu/(1.-2.*nu)*(*P).Vl)*(Sn*Delta_u);
+	//Vector_3 Delta_u(c1,c2);
+	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
+	double DIJ = sqrt((X1X2.squared_length()));
+	Vector_3 nIJ = X1X2/DIJ;
+	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
+	double Dij_n = (solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ; //Faire quadrature au point milieu ici pour calcul des forces ! Sortir les vitesses des particules !
+
+	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
+
       }
     }
+    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).def_plas_cumulee); //Scalaire car cas 1D !
+    cout << "Contrainte : " << (*P).contrainte << endl;
+
+    //Mettre ces valeurs dans le param.dat !!!!!
+    double B = 292000000.; //En Pa. JC.
+    double n = .31; //JC.
+    double A = 90000000.; //En Pa. Vient de JC
+	
+    (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
+    if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
+      (*P).def_plas_cumulee = pow((abs((*P).contrainte) - A) / B , 1./n); //Nouvelle déformation plastique.
+      cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      double delta_epsilon_p = ( pow((abs((*P).contrainte) - A) / B , 1./n) - (*P).def_plas_cumulee) * signe( (*P).contrainte );
+      (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+    }
   }
+
+  
   //Calcul des forces pour chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	double S = (*F).S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
-	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
-	double DIJ = sqrt((X1X2.squared_length()));
-	Vector_3 nIJ = X1X2/DIJ;
-	Point_3 c1 = (*P).mvt_t((*F).centre);
-	Point_3 c2 = solide[part].mvt_t((*F).centre);
-	Vector_3 Delta_u(c1,c2);
-	Vector_3 XC1((*P).x0,(*F).centre);
-	Vector_3 XC2(solide[part].x0,(*F).centre);
-	double alpha = sqrt((XC1.squared_length()))/((*F).D0);
-	double epsilonIJ = alpha*(*P).epsilon+(1.-alpha)*solide[part].epsilon;
+	double S = (*F).S;
+	Point_3 xi((*P).x0); //Position particule i en config initiale
+        Point_3 xj(solide[part].x0); //Position particule j en config initiale
+	Vector_3 lij(xi, xj);
+	Vector_3 nIJ = lij / (*F).D0;
+	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
+
+	double Fij_elas = S / 2. * ((*P).contrainte + solide[part].contrainte); //Force du lien IJ !
+	//double Fij_elas = S / 3. * E* (Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n)
+	//cout << "Force : " << Fij_elas << endl;
+
+
+	(*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force sur particule
+	
+	  
+	
 	//Force de rappel elastique
-	(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
+	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
 	//Force de deformation volumique
-	(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ);
+	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
+	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
 	//Moment des forces appliquees
-	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
-	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
-	//Moments de flexion/torsion
-	double kappa = 1.;
-	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
-	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
-	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
-	(*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t)));
+	/*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
+	  (*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
+	  //Moments de flexion/torsion
+	  double kappa = 1.;
+	  double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
+	  double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
+	  double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
+	  (*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
 	// cout << alphan << " " << alphas << " " << alphat  << endl;
 	// cout << S/(*F).D0*alphan << endl;
 	// cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
@@ -2480,56 +2596,14 @@ double Solide::Energie_cinetique(){
 * \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 * \return void
 */
-double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
+double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){ //Faire des modifs ici pour avoir énergie plastique !!!!
   double Ep = 0.;
-  //Calcul de la dï¿½formation volumique epsilon de chaque particule
-  for(int i=0;i<size();i++){
-    solide[i].Volume_libre();
-    solide[i].epsilon = 0.;
-    for(int j=0;j<solide[i].faces.size();j++){
-      if(solide[i].faces[j].voisin>=0){
-	int part = solide[i].faces[j].voisin;
-	Vector_3 Sn = Vector_3(0.,0.,0.);
-	//Vector_3 Sn = 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos));
-	for(int k=1;k<solide[i].faces[j].size()-1;k++){
-	  Sn = Sn + 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[k].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[k+1].pos));
-	}
-	//Vector_3 Sn = 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos));
-	Point_3 c1 = solide[i].mvt_t(solide[i].faces[j].centre);
-	Point_3 c2 = solide[part].mvt_t(solide[i].faces[j].centre);
-	Vector_3 Delta_u(c1,c2);
-	solide[i].epsilon += 1./2./(solide[i].V+N_dim*nu/(1.-2.*nu)*solide[i].Vl)*(Sn*Delta_u);
-      }
-    }
-    //Energie de deformation volumique de la particule
-    Ep += E*nu/2./(1.+nu)/(1.-2.*nu)*(solide[i].V+N_dim*nu/(1.-2.*nu)*solide[i].Vl)*pow(solide[i].epsilon,2);
-  }
-  //Calcul de l'energie pour chaque lien
-  for(int i=0;i<size();i++){
-    for(int j=0;j<solide[i].faces.size();j++){
-      if(solide[i].faces[j].voisin>=0){
-	int part = solide[i].faces[j].voisin;
-	double S = solide[i].faces[j].S;//1./2.*sqrt((cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos)).squared_length()));
-	Vector_3 X1X2(solide[i].mvt_t(solide[i].x0),solide[part].mvt_t(solide[part].x0));
-	double DIJ = sqrt((X1X2.squared_length()));
-	Vector_3 nIJ = X1X2/DIJ;
-	Point_3 c1 = solide[i].mvt_t(solide[i].faces[j].centre);
-	Point_3 c2 = solide[part].mvt_t(solide[i].faces[j].centre);
-	Vector_3 Delta_u(c1,c2);
-	Vector_3 XC1(solide[i].x0,solide[i].faces[j].centre);
-	Vector_3 XC2(solide[part].x0,solide[i].faces[j].centre);
-	double alpha = sqrt((XC1.squared_length()))/(solide[i].faces[j].D0);
-	double epsilonIJ = alpha*solide[i].epsilon+(1.-alpha)*solide[part].epsilon;
-	//Energie de rappel elastique
-	Ep += 1./4.*S/solide[i].faces[j].D0*E/(1.+nu)*(Delta_u*Delta_u);
-	//Moments de flexion/torsion
-	double kappa = 1.;
-	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*(solide[i].faces[j].Is+solide[i].faces[j].It);
-	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*solide[i].faces[j].Is-(2.+2.*nu-kappa)*solide[i].faces[j].It);
-	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*solide[i].faces[j].It-(2.+2.*nu-kappa)*solide[i].faces[j].Is);
-	Ep += S/2./solide[i].faces[j].D0*(alphan*(1.-(solide[i].mvt_t(solide[i].faces[j].normale)*solide[part].mvt_t(solide[i].faces[j].normale)))+alphas*(1.-(solide[i].mvt_t(solide[i].faces[j].s)*solide[part].mvt_t(solide[i].faces[j].s)))+alphat*(1.-(solide[i].mvt_t(solide[i].faces[j].t)*solide[part].mvt_t(solide[i].faces[j].t))));
-      }
-    }
+
+  double B = 292000000.; //En Pa. JC.
+  double n = .31; //JC.
+
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    Ep += 0.5 * ((*P).contrainte * ((*P).discrete_gradient - (*P).def_plas_cumulee)) * (*P).volume() + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.); 
   }
   return Ep;
 }

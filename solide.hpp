@@ -46,7 +46,9 @@ public:
   std::vector<int> particules; //!< Vecteur de particules auxquelles \a pos appartient 
 };
 
-//! D&eacute;finition de la classe Face
+class Particule;
+
+//Encore utile ???
 class Face
 {
 public:
@@ -70,6 +72,10 @@ public:
   std::vector<Vertex> vertex; //!< Les sommets de la face
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
+  //double rayon_plastique; //Taille du domaine élastique
+
+  double Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
+  //double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
 };
 
   
@@ -94,8 +100,9 @@ class Particule
   void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
   void Inertie(const double &rho);
   void Volume_libre();
-void solve_position(const double &dt, const bool &flag_2d);
-void solve_vitesse(const double &dt, const bool &flag_2d);
+  void solve_position(const double &dt, const bool &flag_2d);
+  void solve_vitesse(const double &dt, const bool &flag_2d);
+  void solve_vitesse_plas(const double &dt, const bool &flag_2d);
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);  
   //double min_x; //!< la plus petite coordonn&eacute;e  de la particule selon x
@@ -182,8 +189,10 @@ Bbox bbox;
   double rotref[3][3]; //!<Matrice de rotation \f$ Q_0 \f$ telle que la matrice d'inertie \f$ R \f$ s'&eacute;crit :\f$ R = Q_0 R_0 Q_0^{-1}\f$, avec \f$R_0=diag(I_1,I_2,I_3)\f$.
   Point_3 x0; //!<Position du centre de la particule &agrave; t=0
   Vector_3 Dx; //!<D&eacute;placement du centre de la particule en t
+  //Vector_3 Dx_plas; //Déplacements plastiques...
   Vector_3 Dxprev; //!<D&eacute;placement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
+  //Vector_3 Fi_plas; //Forces plastiques dans particule
     /*! 
      * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
@@ -202,6 +211,7 @@ Bbox bbox;
      */
 		Vector_3 Mfprev; //!< Moments fluides exerc&eacute;s sur le solide entre t-dt/2 et t
   Vector_3 u; //!< Vitesse de la particule au temps t
+  //Vector_3 u_plas; //Vitesse palstique
   Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
   Vector_3 omega; //!< Vecteur rotation au temps t
   Vector_3 omega_half;//!< Vecteur rotation au temps t-dt/2
@@ -210,6 +220,13 @@ Bbox bbox;
   Vector_3 eprev; //!<Vecteur de rotation de la particule au temps t-dt
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
+
+  //Variables pour plasticité et nouvelle formulation Mka !
+  double discrete_gradient; //Gradient reconstruit par particule
+  double contrainte; //Contrainte par particule
+  double def_plas_cumulee; //Déformation plastique cumulée du lien
+  double epsilon_p; //Déformation plastique rémanante
+  double seuil_elas;
 }; 
 
 //! D&eacute;finition de la classe Solide  
@@ -229,9 +246,10 @@ public:
   void Impression(const int &n, const bool &reconstruction);
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
   void Solve_position(const double &dt, const bool &flag_2d);
+  //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d);
-  void Forces(const int &N_dim, const double &nu, const double &E);
-  void Forces_internes(const int &N_dim, const double &nu, const double &E);
+  void Forces(const int &N_dim, const double &nu, const double &E, const double& dt);
+  void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
   void update_triangles();
   //void breaking_criterion();
   double Energie(const int &N_dim, const double &nu, const double &E);

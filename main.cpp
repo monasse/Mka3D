@@ -256,7 +256,7 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
-  S.Forces_internes(N_dim, nu, E);
+  S.Forces_internes(N_dim, nu, E, dt);
   int nb_part = S.size();
 
   //Iterations on the time-steps
@@ -280,11 +280,15 @@ int main(){
     ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
     cout<<"Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
-    dt = S.pas_temps(t,T,cfl, E, nu, rho);
+    dt = S.pas_temps(t,T,cfl, E, nu, rho); //Modifier qd platicité ?
     //First half-step of the Verlet+RATTLE Scheme
+    //Mettre test ici
+
+    double A = 90.; //Limite elastique en MPa
     S.Solve_position(dt,flag_2d);
+    //Ajouter Solve_position_plas quand nécessaire...
     //Computation of forces
-    S.Forces(N_dim, nu, E);
+    S.Forces(N_dim, nu, E, dt); //Fait plastiques et élastiques
     //Second half-step of the Verlet+RATTLE Scheme
     S.Solve_vitesse(dt,flag_2d);
     //Update of time
