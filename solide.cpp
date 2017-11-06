@@ -249,6 +249,7 @@ Particule::Particule()
   contrainte = 0.; //Contrainte par particule
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
+  epsilon_p = 0.;
   
   /*min_x = 0.; 
   min_y = 0.;
@@ -481,6 +482,7 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
   contrainte = 0.; //Contrainte par particule
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
+  epsilon_p = 0.;
   
   /*min_x = x_min; 
   min_y = y_min;
@@ -715,6 +717,7 @@ Particule::Particule(const Point_3& c, const double &x_min, const double& y_min,
   contrainte = 0.; //Contrainte par particule
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
+  epsilon_p = 0.;
   
   /*min_x = x_min; 
   min_y = y_min;
@@ -2469,6 +2472,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
 	//(*P).epsilon *= 1./(1.+N_dim*nu/(1.-2.*nu)*(*P).Vl); //Prise en compte des surfaces libres !
 	(*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).def_plas_cumulee); //Scalaire car cas 1D !
+	cout << "Contrainte : " << (*P).contrainte << endl;
 
 	//Mettre ces valeurs dans le param.dat !!!!!
 	double B = 292000000.; //En Pa. JC.
@@ -2478,7 +2482,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
         (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
 	if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
 	  (*P).def_plas_cumulee = pow((abs((*P).contrainte) - A) / B , 1./n); //Nouvelle déformation plastique.
-	  //cout << "Def plastique cumulee : " << (*F).def_plas_cumulee << endl;
+	  cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+	  double delta_epsilon_p = ( pow((abs((*P).contrainte) - A) / B , 1./n) - (*P).def_plas_cumulee) * signe( (*P).contrainte );
+	  (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
 	}
 	
       }

@@ -225,8 +225,8 @@ Bbox bbox;
   double discrete_gradient; //Gradient reconstruit par particule
   double contrainte; //Contrainte par particule
   double def_plas_cumulee; //Déformation plastique cumulée du lien
+  double epsilon_p; //Déformation plastique rémanante
   double seuil_elas;
-  //double epsilon_p;
 }; 
 
 //! D&eacute;finition de la classe Solide  
