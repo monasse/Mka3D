@@ -2472,7 +2472,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
       }
     }
-    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).def_plas_cumulee); //Scalaire car cas 1D !
+    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).epsilon_p); //Scalaire car cas 1D !
     cout << "Contrainte : " << (*P).contrainte << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
