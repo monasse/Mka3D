@@ -2322,7 +2322,6 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
     //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
-  //stock_def_plastique(dt); //Permet de faire croitre la deformation plastique cumulee. Pas bien codé semblerait...
   //breaking_criterion();
   update_triangles();
 	for(int i=0;i<size();i++){
