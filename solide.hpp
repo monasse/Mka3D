@@ -72,13 +72,10 @@ public:
   std::vector<Vertex> vertex; //!< Les sommets de la face
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
-  double def_plas_cumulee; //Déformation plastique cumulée du lien
-  double epsilon_p;
   //double rayon_plastique; //Taille du domaine élastique
-  bool plastifie; //Test si le materiau a plastifié sur le dernier pas de temps...
 
   double Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
-  double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
+  //double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
 };
 
   
@@ -223,6 +220,13 @@ Bbox bbox;
   Vector_3 eprev; //!<Vecteur de rotation de la particule au temps t-dt
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
+
+  //Variables pour plasticité et nouvelle formulation Mka !
+  double discret_gradient; //Gradient reconstruit par particule
+  double contrainte; //Contrainte par particule
+  double def_plas_cumulee; //Déformation plastique cumulée du lien
+  double seuil_elas;
+  double epsilon_p;
 }; 
 
 //! D&eacute;finition de la classe Solide  
