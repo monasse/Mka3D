@@ -222,11 +222,11 @@ Bbox bbox;
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
 
   //Variables pour plasticité et nouvelle formulation Mka !
-  double discret_gradient; //Gradient reconstruit par particule
+  double discrete_gradient; //Gradient reconstruit par particule
   double contrainte; //Contrainte par particule
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   double seuil_elas;
-  double epsilon_p;
+  //double epsilon_p;
 }; 
 
 //! D&eacute;finition de la classe Solide  
@@ -246,7 +246,7 @@ public:
   void Impression(const int &n, const bool &reconstruction);
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
   void Solve_position(const double &dt, const bool &flag_2d);
-  void stock_def_plastique(const double &dt);
+  //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d);
   void Forces(const int &N_dim, const double &nu, const double &E, const double& dt);
   void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
