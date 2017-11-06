@@ -244,7 +244,12 @@ void Face::Inertie(){
  */
 
 Particule::Particule()
-{   
+{
+  discrete_gradient = 0.; //Gradient reconstruit par particule
+  contrainte = 0.; //Contrainte par particule
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+  
   /*min_x = 0.; 
   min_y = 0.;
   min_z = 0.;
@@ -471,7 +476,12 @@ Particule::Particule()
 
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
 		     const double &x_max, const double &y_max, const double &z_max)
-{   
+{
+  discrete_gradient = 0.; //Gradient reconstruit par particule
+  contrainte = 0.; //Contrainte par particule
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+  
   /*min_x = x_min; 
   min_y = y_min;
   min_z = z_min;
@@ -700,7 +710,12 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
 Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
 		     const std::vector<Face> & F)
-{   
+{
+  discrete_gradient = 0.; //Gradient reconstruit par particule
+  contrainte = 0.; //Contrainte par particule
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+  
   /*min_x = x_min; 
   min_y = y_min;
   min_z = z_min;
@@ -2449,7 +2464,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double DIJ = sqrt((X1X2.squared_length()));
 	Vector_3 nIJ = X1X2/DIJ;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
-	double Dij_n = (solide[part].Dx + solide[part].u * dt - (*P).Dx - (*P).u * dt ) * nIJ; //Faire quadrature au point milieu ici pour calcul des forces ! Sortir les vitesses des particules !
+	double Dij_n = (solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ; //Faire quadrature au point milieu ici pour calcul des forces ! Sortir les vitesses des particules !
 
 	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
 	//(*P).epsilon *= 1./(1.+N_dim*nu/(1.-2.*nu)*(*P).Vl); //Prise en compte des surfaces libres !
@@ -2460,7 +2475,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double n = .31; //JC.
 	double A = 90000000.; //En Pa. Vient de JC
 	
-        (*P).seuil_elas = B * pow((*P).def_plas_cumulee, n);
+        (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
 	if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
 	  (*P).def_plas_cumulee = pow((abs((*P).contrainte) - A) / B , 1./n); //Nouvelle déformation plastique.
 	  //cout << "Def plastique cumulee : " << (*F).def_plas_cumulee << endl;
