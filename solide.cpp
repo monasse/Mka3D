@@ -2445,9 +2445,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   double mu = E / 2. / (1. + nu);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
-    //(*P).Fi_plas = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
   }
+  
   //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //(*P).Volume_libre();
@@ -2470,26 +2470,26 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double Dij_n = (solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ; //Faire quadrature au point milieu ici pour calcul des forces ! Sortir les vitesses des particules !
 
 	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
-	//(*P).epsilon *= 1./(1.+N_dim*nu/(1.-2.*nu)*(*P).Vl); //Prise en compte des surfaces libres !
-	(*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).def_plas_cumulee); //Scalaire car cas 1D !
-	cout << "Contrainte : " << (*P).contrainte << endl;
 
-	//Mettre ces valeurs dans le param.dat !!!!!
-	double B = 292000000.; //En Pa. JC.
-	double n = .31; //JC.
-	double A = 90000000.; //En Pa. Vient de JC
-	
-        (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
-	if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
-	  (*P).def_plas_cumulee = pow((abs((*P).contrainte) - A) / B , 1./n); //Nouvelle déformation plastique.
-	  cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-	  double delta_epsilon_p = ( pow((abs((*P).contrainte) - A) / B , 1./n) - (*P).def_plas_cumulee) * signe( (*P).contrainte );
-	  (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
-	}
-	
       }
     }
+    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).def_plas_cumulee); //Scalaire car cas 1D !
+    cout << "Contrainte : " << (*P).contrainte << endl;
+
+    //Mettre ces valeurs dans le param.dat !!!!!
+    double B = 292000000.; //En Pa. JC.
+    double n = .31; //JC.
+    double A = 90000000.; //En Pa. Vient de JC
+	
+    (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
+    if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
+      (*P).def_plas_cumulee = pow((abs((*P).contrainte) - A) / B , 1./n); //Nouvelle déformation plastique.
+      cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      double delta_epsilon_p = ( pow((abs((*P).contrainte) - A) / B , 1./n) - (*P).def_plas_cumulee) * signe( (*P).contrainte );
+      (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+    }
   }
+
   
   //Calcul des forces pour chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -2519,13 +2519,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
 	//Moment des forces appliquees
 	/*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
-	(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
-	//Moments de flexion/torsion
-	double kappa = 1.;
-	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
-	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
-	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
-	(*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
+	  (*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
+	  //Moments de flexion/torsion
+	  double kappa = 1.;
+	  double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
+	  double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
+	  double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
+	  (*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
 	// cout << alphan << " " << alphas << " " << alphat  << endl;
 	// cout << S/(*F).D0*alphan << endl;
 	// cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
