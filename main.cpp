@@ -282,13 +282,9 @@ int main(){
     //Time step
     dt = S.pas_temps(t,T,cfl, E, nu, rho); //Modifier qd platicité ?
     //First half-step of the Verlet+RATTLE Scheme
-    //Mettre test ici
-
-    double A = 90.; //Limite elastique en MPa
     S.Solve_position(dt,flag_2d);
-    //Ajouter Solve_position_plas quand nécessaire...
     //Computation of forces
-    S.Forces(N_dim, nu, E, dt); //Fait plastiques et élastiques
+    S.Forces(N_dim, nu, E, dt); //
     //Second half-step of the Verlet+RATTLE Scheme
     S.Solve_vitesse(dt,flag_2d);
     //Update of time

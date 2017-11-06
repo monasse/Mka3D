@@ -2323,7 +2323,6 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
     //Test plastique ?
     solide[i].solve_position(dt, flag_2d);
   }
-  //stock_def_plastique(dt); //Permet de faire croitre la deformation plastique cumulee. Pas bien codé semblerait...
   //breaking_criterion();
   update_triangles();
 	for(int i=0;i<size();i++){
@@ -2474,7 +2473,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
       }
     }
-    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).def_plas_cumulee); //Scalaire car cas 1D !
+    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).epsilon_p); //Scalaire car cas 1D !
     cout << "Contrainte : " << (*P).contrainte << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
