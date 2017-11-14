@@ -101,7 +101,7 @@ class Particule
   void Inertie(const double &rho);
   void Volume_libre();
   void solve_position(const double &dt, const bool &flag_2d);
-  void solve_vitesse(const double &dt, const bool &flag_2d);
+  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort);
   void solve_vitesse_plas(const double &dt, const bool &flag_2d);
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);  
@@ -247,7 +247,7 @@ public:
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
   void Solve_position(const double &dt, const bool &flag_2d);
   //void stock_def_plastique(const double &dt);
-  void Solve_vitesse(const double &dt, const bool &flag_2d);
+  void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort);
   void Forces(const int &N_dim, const double &nu, const double &E, const double& dt);
   void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
   void update_triangles();

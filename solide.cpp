@@ -1359,13 +1359,13 @@ void Particule::solve_position(const double& dt, const bool& flag_2d){
 <b>\a Particule.Ff et \a Particule.Mf param&egrave;tres sp&eacute;cifiques au  couplage! </b>
 * \return void
  */
-void Particule::solve_vitesse(const double& dt, const bool& flag_2d){
+void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort){
   if(fixe==1){
     u = Vector_3(0.,0.,0.);
     omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m);
+      u = u+(Fi+Ff)/2.*(dt/m)*Amort;
     }
     else if(fixe==2 || fixe==3){
       u = Vector_3(0.,0.,0.);
@@ -2375,9 +2375,9 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 *\warning <b> Proc&eacute;dure sp&eacute;cifique au solide! </b>
 *\return void
 */
-void Solide::Solve_vitesse(const double& dt, const bool& flag_2d){
+void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort){
   for(int i=0;i<size();i++){
-    solide[i].solve_vitesse(dt, flag_2d);
+    solide[i].solve_vitesse(dt, flag_2d, Amort);
   }
 }
 
