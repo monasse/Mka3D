@@ -30,7 +30,10 @@
 
 Vector_3 Forces_externes(const Point_3 &X, const Vector_3 &e)
 {
-  return Vector_3(0,0,0);
+  if(X.x() <= 1.)
+     return Vector_3(-2. * 90000000.,0,0);
+  else if(X.x() >= 19.)
+    return Vector_3(0,0,0);
 }
 
 Vector_3 Moments_externes(const Point_3 &X, const Vector_3 &e)
