@@ -83,7 +83,7 @@ int main()
 	maillage << endl;
 	maillage << "PARTICULE " << 6 << " ";
 	//Boundary conditions
-	int BC = 0;
+	int BC = 0; //Ajouter des possibilités de BC !!!!
 	if(i==0){
 	  BC = BCXl;
 	}
