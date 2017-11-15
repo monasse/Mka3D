@@ -2440,8 +2440,8 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
   //Initialisation
-  double lambda_mat = E * nu / (1. + nu) / (1. - 2.*nu);
-  double mu = E / 2. / (1. + nu);
+  //double lambda_mat = E * nu / (1. + nu) / (1. - 2.*nu);
+  //double mu = E / 2. / (1. + nu);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
@@ -2472,7 +2472,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
       }
     }
-    (*P).contrainte = (lambda_mat + 2. * mu) * ((*P).discrete_gradient - (*P).epsilon_p); //Scalaire car cas 1D !
+    (*P).contrainte = E * ((*P).discrete_gradient - (*P).epsilon_p);//(lambda_mat + 2. * mu)  //Scalaire car cas 1D !
     //cout << "Contrainte : " << (*P).contrainte << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
@@ -2486,6 +2486,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       double delta_epsilon_p = (abs((*P).contrainte) - A) / E  * signe( (*P).contrainte );
       (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+      (*P).contrainte = A * signe( (*P).contrainte );
     }
   }
 
