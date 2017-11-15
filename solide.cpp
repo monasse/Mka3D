@@ -3126,6 +3126,16 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
       }
     }
     vtk << "\n";
+    //Contrainte
+    vtk << "VECTORS contrainte double" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].contrainte << " " << solide[it].contrainte << " " << solide[it].contrainte << endl;
+      }
+    }
+    vtk << "\n";
     //Rotation en x
     vtk << "VECTORS e double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
@@ -3228,6 +3238,16 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
 	vtk << (*P).u << endl;
+      }
+    }
+    vtk << "\n";
+    //Contrainte
+    vtk << "VECTORS contrainte double" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].contrainte << " " << solide[it].contrainte << " " << solide[it].contrainte << endl;
       }
     }
     vtk << "\n";
