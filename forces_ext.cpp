@@ -28,10 +28,10 @@
 #ifndef FORCES_EXT_CPP
 #define FORCES_EXT_CPP
 
-Vector_3 Forces_externes(const Point_3 &X, const Vector_3 &e)
+Vector_3 Forces_externes(const Point_3 &X, const Vector_3 &e, const double& t, const double& T)
 {
   if(X.x() <= 1.)
-     return Vector_3(-2. * 90000000.,0,0);
+    return Vector_3(-2. * 90000000.,0,0); // * t / T; //Chargement lineaire jusqu'à valeure fixée
   else if(X.x() >= 19.)
     return Vector_3(0,0,0);
 }

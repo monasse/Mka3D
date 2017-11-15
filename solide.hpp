@@ -248,7 +248,7 @@ public:
   void Solve_position(const double &dt, const bool &flag_2d);
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort);
-  void Forces(const int &N_dim, const double &nu, const double &E, const double& dt);
+  void Forces(const int &N_dim, const double &nu, const double &E, const double& dt, const double& t, const double& T);
   void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
   void update_triangles();
   //void breaking_criterion();

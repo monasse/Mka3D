@@ -2393,10 +2393,10 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 *\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 *\return void
 */
-void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt){
+void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt, const double& t, const double& T){
   Forces_internes(N_dim,nu,E, dt);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e);
+    (*P).Fi = (*P).Fi + Forces_externes((*P).x0+(*P).Dx,(*P).e,t,T);
     //(*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     (*P).Mi = (*P).Mi + Moments_externes((*P).x0+(*P).Dx,(*P).e);
   }
