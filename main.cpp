@@ -285,9 +285,9 @@ int main(){
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d);
     //Computation of forces
-    S.Forces(N_dim, nu, E, dt, t, T);
+    S.Forces(N_dim, nu, E, dt, t , T);
     //Second half-step of the Verlet+RATTLE Scheme
-    S.Solve_vitesse(dt,flag_2d, Amortissement); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
+    S.Solve_vitesse(dt,flag_2d, Amortissement, t, T); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
     //Update of time
     t+= dt;
   }

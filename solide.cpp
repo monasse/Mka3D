@@ -26,6 +26,7 @@
 #include "solide.hpp"
 #include "geometry.hpp"
 #include "forces_ext.cpp"
+#include "vitesse.cpp"
 #include<iostream>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
@@ -1359,13 +1360,13 @@ void Particule::solve_position(const double& dt, const bool& flag_2d){
 <b>\a Particule.Ff et \a Particule.Mf param&egrave;tres sp&eacute;cifiques au  couplage! </b>
 * \return void
  */
-void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort){
+void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   if(fixe==1){
     u = Vector_3(0.,0.,0.);
     omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort;
+      u = u+(Fi+Ff)/2.*(dt/m)*Amort + velocity_BC(x0, t, T); //Conditions aux limites en vitesse ajoutées ici
     }
     else if(fixe==2 || fixe==3){
       u = Vector_3(0.,0.,0.);
@@ -2375,9 +2376,9 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d){
 *\warning <b> Proc&eacute;dure sp&eacute;cifique au solide! </b>
 *\return void
 */
-void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort){
+void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(int i=0;i<size();i++){
-    solide[i].solve_vitesse(dt, flag_2d, Amort);
+    solide[i].solve_vitesse(dt, flag_2d, Amort, t , T);
   }
 }
 
