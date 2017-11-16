@@ -2487,7 +2487,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       double delta_epsilon_p = (abs((*P).contrainte) - A) / E  * signe( (*P).contrainte );
       (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
-      (*P).contrainte = A * signe( (*P).contrainte );
+      //(*P).contrainte = A * signe( (*P).contrainte );
     }
   }
 
