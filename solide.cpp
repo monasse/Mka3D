@@ -3137,9 +3137,28 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
 	vtk << solide[it].contrainte << " " << solide[it].contrainte << " " << solide[it].contrainte << endl;
       }
     }
+    //Déformations
+    vtk << "VECTORS deformations double" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << endl;
+      }
+    }
+    vtk << "\n";
+    //Epsilon_p
+    vtk << "VECTORS epsilon_p double" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].epsilon_p << " " << solide[it].epsilon_p << " " << solide[it].epsilon_p << endl;
+      }
+    }
     vtk << "\n";
     //Rotation en x
-    vtk << "VECTORS e double" << endl;
+    /*vtk << "VECTORS e double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
@@ -3147,9 +3166,9 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
 	vtk << solide[it].e[0] << " " << solide[it].e[1] << " " << solide[it].e[2] << endl;
       }
     }
-    vtk << "\n";
+    vtk << "\n";*/
     //Vitesse de rotation
-    vtk << "VECTORS omega double" << endl;
+    /*vtk << "VECTORS omega double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
@@ -3157,7 +3176,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
 	vtk << solide[it].omega[0] << " " << solide[it].omega[1] << " " << solide[it].omega[2] << endl;
       }
     }
-    vtk << "\n";
+    vtk << "\n";*/
     vtk.close();
   }
   //Sortie sans reconstruction
@@ -3252,33 +3271,53 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
       }
     }
     vtk << "\n";
+    //Déformations
+    vtk << "VECTORS deformations double" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << endl;
+      }
+    }
+    vtk << "\n";
+    //Epsilon_p
+    vtk << "VECTORS epsilon_p double" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].epsilon_p << " " << solide[it].epsilon_p << " " << solide[it].epsilon_p << endl;
+      }
+    }
+    vtk << "\n";
     //Rotation en x
-    vtk << "VECTORS e double" << endl;
+    /*vtk << "VECTORS e double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
 	vtk << (*P).e << endl;
       }
     }
-    vtk << "\n";
+    vtk << "\n";*/
     //Rotation en x
-    vtk << "VECTORS eref double" << endl;
+    /*vtk << "VECTORS eref double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
 	vtk << (*P).eref << endl;
       }
     }
-    vtk << "\n";
+    vtk << "\n";*/
     //Vitesse de rotation
-    vtk << "VECTORS omega double" << endl;
+    /*vtk << "VECTORS omega double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
 	vtk << (*P).omega << endl;
       }
     }
-    vtk << "\n";
+    vtk << "\n";*/
     vtk.close();
   }
 }
