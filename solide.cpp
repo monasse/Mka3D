@@ -40,10 +40,10 @@ inline double signe(const double &x)
 }
 
 //Function absolute value
-double abs(const double &x)
+/*double abs(const double &x)
 {
   return max(x,-x);
-}
+  }*/
 
 
 //const double eps_relat = numeric_limits<double>::epsilon();
@@ -2471,12 +2471,12 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double DIJ = sqrt((X1X2.squared_length()));
 	Vector_3 nIJ = X1X2/DIJ;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
-	Matrix Dij_n = ((solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * tens(nIJ,  nIJ); //Quadrature au point milieu pour calcul des forces !
+	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
 	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
 
       }
     }
-    (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
+    (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
     //cout << "Contrainte : " << (*P).contrainte << endl;
 
     
@@ -2499,7 +2499,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
     //Version pour la torsion. Faire version plus générale pour la suite...
     if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
-      Matrix n_elas(contrainte / contrainte.norme()); //Normale au domaine élastique de Von Mises
+      Matrix n_elas((*P).contrainte / ((*P).contrainte).norme()); //Normale au domaine élastique de Von Mises
       (*P).def_plas_cumulee += ((*P).contrainte.VM() - A) / E; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (*P).epsilon_p += ((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte );
@@ -2520,7 +2520,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = lij / (*F).D0;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
 
-	double Fij_elas = S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ); //Force du lien IJ !
+        Vector_3 Fij_elas( S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
 	//cout << "Force : " << Fij_elas << endl;
 
 	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
@@ -2617,7 +2617,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   double n = .31; //JC.
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += 0.5 * ((*P).contrainte * ((*P).discrete_gradient - (*P).def_plas_cumulee)) * (*P).volume() + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.); 
+    Ep += 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p) * (*P).volume(); // + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.); 
   }
   return Ep;
 }
@@ -3148,7 +3148,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].contrainte << " " << solide[it].contrainte << " " << solide[it].contrainte << endl;
+	vtk << solide[it].contrainte.col1[0] << " " << solide[it].contrainte.col1[1] << " " << solide[it].contrainte.col1[2] << " " <<  solide[it].contrainte.col2[1] << " " << solide[it].contrainte.col2[2] << " " << solide[it].contrainte.col3[2] << endl;
       }
     }
     //Déformations
@@ -3157,7 +3157,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << endl;
+	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << " " <<  solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << " " << solide[it].discrete_gradient.col3[2] << endl;
       }
     }
     vtk << "\n";
@@ -3167,7 +3167,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].epsilon_p << " " << solide[it].epsilon_p << " " << solide[it].epsilon_p << endl;
+        vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << " " <<  solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << " " << solide[it].epsilon_p.col3[2] << endl;
       }
     }
     vtk << "\n";
@@ -3281,7 +3281,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     //vtk << "LOOKUP_TABLE default" << endl;
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).contrainte << " " << (*P).contrainte << " "  << (*P).contrainte <<  endl;
+	vtk << (*P).contrainte.col1[0] << " " << (*P).contrainte.col1[1] << " " << (*P).contrainte.col1[2] << " " <<  (*P).contrainte.col2[1] << " " << (*P).contrainte.col2[2] << " " << (*P).contrainte.col3[2] << endl;
       }
     }
     vtk << "\n";
@@ -3291,7 +3291,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << " " << solide[it].discrete_gradient << endl;
+	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << " " <<  solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << " " << solide[it].discrete_gradient.col3[2] << endl;
       }
     }
     vtk << "\n";
@@ -3301,7 +3301,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].epsilon_p << " " << solide[it].epsilon_p << " " << solide[it].epsilon_p << endl;
+        vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << " " <<  solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << " " << solide[it].epsilon_p.col3[2] << endl;
       }
     }
     vtk << "\n";
