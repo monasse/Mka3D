@@ -52,7 +52,7 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
   return Vector_3(0,0,0);*/
 
   if(p.x() <= 1.) { //Vitesse en BC...
-    alpha_pt = 3.1416 / 360. * 20. / T; //Rotation de 20° sur [0, T]
+    double alpha_pt = 3.1416 / 360. * 20. / T; //Rotation de 20° sur [0, T]
     double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.z()-0.5)*(p.z()-0.5));
     double theta = atan((p.z() - 0.5) / (p.y() - 0.5)) ;
     return Vector_3(0.,-r*sin(theta), r*cos(theta)) * t / T; //En m.s^-1

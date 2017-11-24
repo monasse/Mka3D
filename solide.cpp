@@ -2520,12 +2520,12 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = lij / (*F).D0;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
 
-	double Fij_elas = S / 2. * ((*P).contrainte + solide[part].contrainte); //Force du lien IJ !
+	//Changer tout ça ici !!!
+	double Fij_elas = S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ); //Force du lien IJ !
 	//double Fij_elas = S / 3. * E* (Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n)
 	//cout << "Force : " << Fij_elas << endl;
 
-
-	(*P).Fi = (*P).Fi + Fij_elas * nIJ; //Force sur particule
+	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
 	
 	  
 	
