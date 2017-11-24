@@ -103,6 +103,7 @@ ostream& operator<<(ostream &os, const Vector_3 &v);
 Point_3 operator+(const Point_3 &p, const Vector_3 &v);
 Point_3 operator-(const Point_3 &p, const Vector_3 &v);
 Vector_3 operator*(const double &s, const Vector_3 &v);
+double operator*(const Vector_3& vec1, const Vector_3& vec2); //Produit scalaire
 //Vector_3 empty(); //renvoie un vecteur avec des coeffs nuls
 
 class Matrix {
@@ -116,9 +117,9 @@ class Matrix {
   Vector_3 c3() const;
   Matrix T(); //Transposée
   void empty(); //Remet tous les coefficients de la matrice à 0.
-  Matrix dev() const; //Renvoie le deviateur du tenseur considéré
-  double VM() const; //Renvoie la norme de Von Mises associée à une matrice
-  Matrix operator/(double const& rel);
+  Matrix dev(); //Renvoie le deviateur du tenseur considéré
+  double VM(); //Renvoie la norme de Von Mises associée à une matrice
+  Matrix operator/(const double& rel);
   double norme() const; //Norme 2 au sens des matrices
   Matrix& operator+=(const Matrix &mat);
 
@@ -128,16 +129,16 @@ class Matrix {
   Vector_3 col3;
 };
 
-Matrix operator+(Matrix const& vec1, Matrix const& vec2);
-Matrix operator-(Matrix const& vec1, Matrix const& vec2);
-Matrix operator-(Matrix const& vec);
-Matrix operator*(double const& rel, Matrix const& vec); //Produit scalaire matrice
-Matrix operator*(Matrix const& vec, double const& rel); //Produit scalaire matrice
-Matrix operator*(Matrix const& vec1, Matrix const& vec2); //Produit simplement contracté
-Vector_3 operator*(Matrix const& vec1, Vector_3 const& vec2); //Produit matrice vecteur
-double contraction_double(Matrix const& vec1, Matrix const& vec2); //Produit doublement contracté
-Matrix operator*(Vector_3 const& vec1, Vector_3 const& vec2); //Produit tensoriel
-Matrix tens_sym(Vector_3 const& vec1, Vector_3 const& vec2); //Produit tensoriel symétrique
+Matrix operator+(const Matrix& vec1, const Matrix& vec2);
+Matrix operator-(const Matrix& vec1, Matrix const& vec2);
+Matrix operator-(const Matrix& vec);
+Matrix operator*(const double& rel, const Matrix& vec); //Produit scalaire matrice
+Matrix operator*(const Matrix& vec, const double& rel); //Produit scalaire matrice
+Matrix operator*(const Matrix& vec1, const Matrix& vec2); //Produit simplement contracté
+Vector_3 operator*(const Matrix& vec1, const Vector_3& vec2); //Produit matrice vecteur
+double contraction_double(const Matrix& vec1, const Matrix & vec2); //Produit doublement contracté
+Matrix tens(const Vector_3& vec1, const Vector_3& vec2); //Produit tensoriel
+Matrix tens_sym(const Vector_3& vec1, const Vector_3& vec2); //Produit tensoriel symétrique
 Matrix unit(); //Matrice unité
 
 class Aff_transformation_3

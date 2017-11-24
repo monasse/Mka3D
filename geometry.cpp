@@ -301,6 +301,10 @@ void Vector_3::empty() {
   vec[2] = 0.;
 }
 
+double operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit scalaire
+  return vec1.x() * vec2.x() + vec1.y() * vec2.y() + vec1.z() * vec2.z();
+}
+  
 /////////////////////////////////////////////////////////
 // MATRIX ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -341,7 +345,7 @@ Matrix Matrix::T() {
 
 }
 
-Matrix operator+(Matrix const& vec1, Matrix const& vec2) {
+Matrix operator+(const Matrix& vec1, const Matrix& vec2) {
   Matrix result;
   result.col1 = vec1.col1 + vec2.col1;
   result.col2 = vec1.col2 + vec2.col2;
@@ -349,15 +353,15 @@ Matrix operator+(Matrix const& vec1, Matrix const& vec2) {
   return result;
 }
 
-Matrix operator-(Matrix const& vec) {
+Matrix operator-(const Matrix& vec) {
   return Matrix(-vec.col1, -vec.col2, -vec.col3);
 }
 
-Matrix operator-(Matrix const& vec1, Matrix const& vec2) {
+Matrix operator-(const Matrix& vec1, const Matrix& vec2) {
   return vec1 + (-vec2);
 }
 
-Matrix Matrix::operator/(double const& rel) {
+Matrix Matrix::operator/(const double& rel) {
   return 1. / rel * (*this);
 }
 
@@ -371,15 +375,15 @@ Matrix& Matrix::operator+=(const Matrix &mat) {
 }
 
 
-Matrix operator*(double const& rel, Matrix const& vec) { //Produit scalaire matrice
+Matrix operator*(const double& rel, const Matrix& vec) { //Produit scalaire matrice
   return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);
 }
 
-Matrix operator*(Matrix const& vec, double const& rel) { //Produit scalaire matrice
+Matrix operator*(const Matrix& vec, const double& rel) { //Produit scalaire matrice
   return rel * vec;
 }
 
-Matrix operator*(Matrix const& vec1, Matrix const& vec2) { //Produit simplement contracté
+Matrix operator*(const Matrix& vec1, const Matrix& vec2) { //Produit simplement contracté
   double a11 = (vec1.T()).col1 * vec2.col1;
   double a21 = (vec1.T()).c2() * vec2.c1();
   double a31 = (vec1.T()).c3() * vec2.c1();
@@ -398,12 +402,12 @@ Matrix operator*(Matrix const& vec1, Matrix const& vec2) { //Produit simplement 
   return Matrix(col1, col2, col3);
 }
 
-double contraction_double(Matrix const& vec1, Matrix const& vec2) { //Produit doublement contracté
+double contraction_double(const Matrix& vec1, const Matrix& vec2) { //Produit doublement contracté
   return (vec1 * vec2).tr();
 }
 
-Vector_3 operator*(Matrix const& vec1, Vector_3 const& vec2){  //Produit matrice vecteur
-  return Vector_3((vec1.T()).c1() * vec2, (vec1.T()).c2() * vec2, (vec1.T()).c3() * vec2);
+Vector_3 operator*(const Matrix& vec1, const Vector_3& vec2){  //Produit matrice vecteur
+  return Vector_3((vec1.T()).col1 * vec2, (vec1.T()).col2 * vec2, (vec1.T()).col3 * vec2);
 }
 
 
@@ -411,7 +415,7 @@ double Matrix::tr() { //Trace d'une matrice
   return col1.x() + col2.y() + col3.z();
 }
 
-Matrix operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit tensoriel
+Matrix tens(const Vector_3& vec1, const Vector_3& vec2) { //Produit tensoriel
   double a11 = vec1.x() * vec2.x();
   double a21 = vec1.y() * vec2.x();
   double a31 = vec1.z() * vec2.x();
@@ -422,15 +426,15 @@ Matrix operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit tensori
   double a32 = vec1.z() * vec2.y();
   Vector_3 col2(a12, a22, a32);
 
-  double a13 = vec1.x() * vec2.Z();
-  double a23 = vec1.y() * vec2.Z();
-  double a33 = vec1.z() * vec2.Z();
+  double a13 = vec1.x() * vec2.z();
+  double a23 = vec1.y() * vec2.z();
+  double a33 = vec1.z() * vec2.z();
   Vector_3 col3(a13, a23, a33);
 
   return Matrix(col1, col2, col3);
 }
-Matrix tens_sym(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit tensoriel symétrique
-  return  (0.5 * vec1) * vec2 + (0.5 * vec2) * vec1;
+Matrix tens_sym(const Vector_3& vec1, const Vector_3& vec2) { //Produit tensoriel symétrique
+  return  tens(0.5 * vec1, vec2) + tens(0.5 * vec2, vec1);
 }
 
 Matrix unit() { //Matrice unité
@@ -440,11 +444,11 @@ Matrix unit() { //Matrice unité
   return Matrix();
 }
 
-Matrix Matrix::dev() const { //Renvoie le deviateur du tenseur considéré
+Matrix Matrix::dev() { //Renvoie le deviateur du tenseur considéré
   return *this - 1/3.* (*this).tr() * unit();
 }
 
-double VM() const { //Renvoie la norme de Von Mises associée à une matrice
+double Matrix::VM() { //Renvoie la norme de Von Mises associée à une matrice
   return sqrt(3. / 2. * contraction_double((*this).dev(), (*this).dev()) );
 }
 

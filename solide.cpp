@@ -2471,8 +2471,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double DIJ = sqrt((X1X2.squared_length()));
 	Vector_3 nIJ = X1X2/DIJ;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
-	Matrix Dij_n = ((solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ) * nIJ; //Quadrature au point milieu pour calcul des forces !
-	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume(); //Modifier et stocker dans une matrice !
+	Matrix Dij_n = ((solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * tens(nIJ,  nIJ); //Quadrature au point milieu pour calcul des forces !
+	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
 
       }
     }
@@ -2520,9 +2520,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = lij / (*F).D0;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
 
-	//Changer tout ça ici !!!
 	double Fij_elas = S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ); //Force du lien IJ !
-	//double Fij_elas = S / 3. * E* (Dij_n/(*F).D0 - (*F).def_plas_cumulee); //-signe(Dij_n)
 	//cout << "Force : " << Fij_elas << endl;
 
 	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
