@@ -91,7 +91,7 @@ public:
   Vector_3 operator-() const;
   Vector_3 operator/(const double &s) const;
   double squared_length() const;
-  //double operator*(const Vector_3 &v) const;
+  double operator*(const Vector_3 &v) const;
   Vector_3 operator*(const double &s) const;
   Vector_3 operator+(const Vector_3 &v2) const;
   Vector_3 operator-(const Vector_3 &v2) const;
@@ -103,7 +103,7 @@ ostream& operator<<(ostream &os, const Vector_3 &v);
 Point_3 operator+(const Point_3 &p, const Vector_3 &v);
 Point_3 operator-(const Point_3 &p, const Vector_3 &v);
 Vector_3 operator*(const double &s, const Vector_3 &v);
-double operator*(const Vector_3& vec1, const Vector_3& vec2); //Produit scalaire
+//double operator*(const Vector_3& vec1, const Vector_3& vec2); //Produit scalaire
 //Vector_3 empty(); //renvoie un vecteur avec des coeffs nuls
 
 class Matrix {

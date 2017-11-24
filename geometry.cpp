@@ -237,10 +237,10 @@ double Vector_3::squared_length() const
 }
 
 //Scalar product
-/*double Vector_3::operator*(const Vector_3 &v) const
+double Vector_3::operator*(const Vector_3 &v) const
 {
   return vec[0]*v[0]+vec[1]*v[1]+vec[2]*v[2];
-  }*/
+}
 
 //Right multiplication by a scalar
 Vector_3 Vector_3::operator*(const double &s) const
@@ -301,9 +301,9 @@ void Vector_3::empty() {
   vec[2] = 0.;
 }
 
-double operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit scalaire
+/*double operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit scalaire
   return vec1.x() * vec2.x() + vec1.y() * vec2.y() + vec1.z() * vec2.z();
-}
+  }*/
   
 /////////////////////////////////////////////////////////
 // MATRIX ///////////////////////////////////////////////

@@ -28,7 +28,6 @@
 #include "forces_ext.cpp"
 #include "vitesse.cpp"
 #include <iostream>
-#include <cmath>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
@@ -40,10 +39,10 @@ inline double signe(const double &x)
 }
 
 //Function absolute value
-/*double abs(const double &x)
+double abs(const double &x)
 {
   return max(x,-x);
-  }*/
+}
 
 
 //const double eps_relat = numeric_limits<double>::epsilon();
