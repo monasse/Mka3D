@@ -91,7 +91,7 @@ public:
   Vector_3 operator-() const;
   Vector_3 operator/(const double &s) const;
   double squared_length() const;
-  double operator*(const Vector_3 &v) const;
+  //double operator*(const Vector_3 &v) const;
   Vector_3 operator*(const double &s) const;
   Vector_3 operator+(const Vector_3 &v2) const;
   Vector_3 operator-(const Vector_3 &v2) const;
@@ -115,7 +115,7 @@ class Matrix {
   Vector_3 c1() const;
   Vector_3 c2() const;
   Vector_3 c3() const;
-  Matrix T(); //Transposée
+  Matrix T() const; //Transposée
   void empty(); //Remet tous les coefficients de la matrice à 0.
   Matrix dev(); //Renvoie le deviateur du tenseur considéré
   double VM(); //Renvoie la norme de Von Mises associée à une matrice

@@ -237,10 +237,10 @@ double Vector_3::squared_length() const
 }
 
 //Scalar product
-double Vector_3::operator*(const Vector_3 &v) const
+/*double Vector_3::operator*(const Vector_3 &v) const
 {
   return vec[0]*v[0]+vec[1]*v[1]+vec[2]*v[2];
-}
+  }*/
 
 //Right multiplication by a scalar
 Vector_3 Vector_3::operator*(const double &s) const
@@ -340,7 +340,7 @@ void Matrix::empty() { //Remet tous les coefficients de la matrice à 0.
   col3.empty();
 }
 
-Matrix Matrix::T() {
+Matrix Matrix::T() const {
   return Matrix(Vector_3(col1.x(), col2.x(), col3.x()), Vector_3(col1.y(), col2.y(), col3.y()), Vector_3(col1.z(), col2.z(), col3.z()) );
 
 }
@@ -407,7 +407,7 @@ double contraction_double(const Matrix& vec1, const Matrix& vec2) { //Produit do
 }
 
 Vector_3 operator*(const Matrix& vec1, const Vector_3& vec2){  //Produit matrice vecteur
-  return Vector_3((vec1.T()).col1 * vec2, (vec1.T()).col2 * vec2, (vec1.T()).col3 * vec2);
+  return Vector_3((vec1.T()).c1() * vec2, (vec1.T()).c2() * vec2, (vec1.T()).c3() * vec2);
 }
 
 
