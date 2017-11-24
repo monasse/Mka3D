@@ -24,6 +24,7 @@
  */
 
 #include <iostream>
+#include <stdexcept>
 #include "geometry.hpp"
 
 #ifndef GEOMETRY_CPP
@@ -284,27 +285,12 @@ Point_3 operator-(const Point_3 &p, const Vector_3 &v)
   return Point_3(p[0]-v[0],p[1]-v[1],p[2]-v[2]);
 }
 
-/*Vector_3 empty() {
-  return Vector_3(0., 0., 0.);
-  }*/
-
-Vector_3& Vector_3::operator=(const Vector_3 &aux) {
-  vec[0] = aux[0];
-  vec[1] = aux[3];
-  vec[2] = aux[2];
+//Vector difference of two points
+Vector_3 operator-(const Point_3 &p1, const Point_3 &p2)
+{
+  return Vector_3(p1,p2);
 }
 
-void Vector_3::empty() {
-  //vec = empty();
-  vec[0] = 0.;
-  vec[1] = 0.;
-  vec[2] = 0.;
-}
-
-/*double operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit scalaire
-  return vec1.x() * vec2.x() + vec1.y() * vec2.y() + vec1.z() * vec2.z();
-  }*/
-  
 /////////////////////////////////////////////////////////
 // MATRIX ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -334,11 +320,11 @@ Vector_3 Matrix::c3() const
   return col3;
 }
 
-void Matrix::empty() { //Remet tous les coefficients de la matrice à 0.
+/*void Matrix::empty() { //Remet tous les coefficients de la matrice à 0.
   col1.empty();
   col2.empty();
   col3.empty();
-}
+  }*/
 
 Matrix Matrix::T() const {
   return Matrix(Vector_3(col1.x(), col2.x(), col3.x()), Vector_3(col1.y(), col2.y(), col3.y()), Vector_3(col1.z(), col2.z(), col3.z()) );
@@ -451,7 +437,6 @@ Matrix Matrix::dev() { //Renvoie le deviateur du tenseur considéré
 double Matrix::VM() { //Renvoie la norme de Von Mises associée à une matrice
   return sqrt(3. / 2. * contraction_double((*this).dev(), (*this).dev()) );
 }
-
 
 //////////////////////////////////////////////////////////
 //  Affine transformations class                        //

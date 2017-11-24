@@ -2454,7 +2454,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //(*P).Volume_libre();
-    (*P).discrete_gradient.empty(); //Remet tous les coeffs de la matrice à 0.
+    (*P).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    (*P).discrete_gradient.col2 = Vector_3(0., 0., 0.);
+    (*P).discrete_gradient.col3 = Vector_3(0., 0., 0.);
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;

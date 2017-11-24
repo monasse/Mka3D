@@ -95,16 +95,13 @@ public:
   Vector_3 operator*(const double &s) const;
   Vector_3 operator+(const Vector_3 &v2) const;
   Vector_3 operator-(const Vector_3 &v2) const;
-  void empty(); //Met tous les coeffs du vecteur à 0
-  Vector_3& operator=(const Vector_3 &aux);
 };
 
 ostream& operator<<(ostream &os, const Vector_3 &v);
 Point_3 operator+(const Point_3 &p, const Vector_3 &v);
 Point_3 operator-(const Point_3 &p, const Vector_3 &v);
+Vector_3 operator-(const Point_3 &p1, const Point_3 &p2);
 Vector_3 operator*(const double &s, const Vector_3 &v);
-//double operator*(const Vector_3& vec1, const Vector_3& vec2); //Produit scalaire
-//Vector_3 empty(); //renvoie un vecteur avec des coeffs nuls
 
 class Matrix {
  public:
@@ -116,7 +113,7 @@ class Matrix {
   Vector_3 c2() const;
   Vector_3 c3() const;
   Matrix T() const; //Transposée
-  void empty(); //Remet tous les coefficients de la matrice à 0.
+  //void empty(); //Remet tous les coefficients de la matrice à 0.
   Matrix dev(); //Renvoie le deviateur du tenseur considéré
   double VM(); //Renvoie la norme de Von Mises associée à une matrice
   Matrix operator/(const double& rel);
