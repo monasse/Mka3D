@@ -222,10 +222,10 @@ Bbox bbox;
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
 
   //Variables pour plasticité et nouvelle formulation Mka !
-  double discrete_gradient; //Gradient reconstruit par particule
-  double contrainte; //Contrainte par particule
+  Matrix discrete_gradient; //Gradient reconstruit par particule
+  Matrix contrainte; //Contrainte par particule
   double def_plas_cumulee; //Déformation plastique cumulée du lien
-  double epsilon_p; //Déformation plastique rémanante
+  Matrix epsilon_p; //Déformation plastique rémanante
   double seuil_elas;
 }; 
 
@@ -236,6 +236,7 @@ class Solide
 public:
   
   Solide();//:solide(std::vector<Particule>(1)){}
+  Solide(const double& E, const double& nu);
   Solide(const std::vector<Particule> & Part);
   ~Solide();
 	Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
@@ -258,6 +259,9 @@ public:
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   // private :
   std::vector<Particule> solide; //!< Maillage solide
+
+  double lambda; //Premier coeff de lamé
+  double mu; //Second coefficient de lamé
 };
 
 

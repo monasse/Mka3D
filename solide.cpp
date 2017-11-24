@@ -245,13 +245,13 @@ void Face::Inertie(){
  * \brief Constructeur par d&eacute;faut. 
  */
 
-Particule::Particule()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 {
-  discrete_gradient = 0.; //Gradient reconstruit par particule
-  contrainte = 0.; //Contrainte par particule
+  //discrete_gradient = 0.; //Gradient reconstruit par particule
+  //contrainte = 0.; //Contrainte par particule
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
-  epsilon_p = 0.;
+  //epsilon_p = 0.;
   
   /*min_x = 0.; 
   min_y = 0.;
@@ -478,13 +478,13 @@ Particule::Particule()
 */
 
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
-		     const double &x_max, const double &y_max, const double &z_max)
+		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p()
 {
-  discrete_gradient = 0.; //Gradient reconstruit par particule
-  contrainte = 0.; //Contrainte par particule
+  //discrete_gradient = 0.; //Gradient reconstruit par particule
+  //contrainte = 0.; //Contrainte par particule
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
-  epsilon_p = 0.;
+  //epsilon_p = 0.;
   
   /*min_x = x_min; 
   min_y = y_min;
@@ -713,13 +713,13 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
  */
 Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
-		     const std::vector<Face> & F)
+		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p()
 {
-  discrete_gradient = 0.; //Gradient reconstruit par particule
-  contrainte = 0.; //Contrainte par particule
+  //discrete_gradient = 0.; //Gradient reconstruit par particule
+  //contrainte = 0.; //Contrainte par particule
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
-  epsilon_p = 0.;
+  //epsilon_p = 0.;
   
   /*min_x = x_min; 
   min_y = y_min;
@@ -2028,16 +2028,19 @@ void Particule::Volume_libre(){
 *\fn Solide::Solide()
 *\brief Constructeur par d&eacute;faut. 
 */
-Solide::Solide(){
-	
+Solide::Solide(const double& E, const double& nu){
+  lambda = E * nu / (1+nu) / (1 - 2.*nu);
+  mu = E / 2. / (1+nu);
 }
-/*!
-*\fn Solide::Solide(std::vector<Particule> & Part)
-*\brief Surcharge du constructeur.
-*\param Part vecteur de particules. 
-*/
+
+Solide::Solide(){
+  lambda = 0.;
+  mu = 0.;
+}
 
 Solide::Solide(const std::vector<Particule> & Part){
+  lambda = 0.;
+  mu = 0.;
   for(int i=0; i<Part.size(); i++){
     solide.push_back(Part[i]);
   }
@@ -2452,7 +2455,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //(*P).Volume_libre();
-    (*P).discrete_gradient = 0.;
+    (*P).discrete_gradient.empty(); //Remet tous les coeffs de la matrice à 0.
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
@@ -2468,15 +2471,17 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	double DIJ = sqrt((X1X2.squared_length()));
 	Vector_3 nIJ = X1X2/DIJ;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
-	double Dij_n = (solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ; //Faire quadrature au point milieu ici pour calcul des forces ! Sortir les vitesses des particules !
+	Matrix Dij_n = ((solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ) * nIJ; //Quadrature au point milieu pour calcul des forces !
 	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume(); //Modifier et stocker dans une matrice !
 
       }
     }
-    //(*P).contrainte = E * ((*P).discrete_gradient - (*P).epsilon_p);//(lambda_mat + 2. * mu)  //Scalaire car cas 1D !
-    double r = sqrt(((*P).y()-0.5)*((*P).y()-0.5) + ((*P).z()-0.5)*((*P).z()-0.5));
-    (*P).contrainte = E / 2. / (1. + nu) * ((*P).discrete_gradient - (*P).epsilon_p) * r/(*P).x(); //Cas de la torsion
+    (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
     //cout << "Contrainte : " << (*P).contrainte << endl;
+
+    
+    //Cas de la torsion
+    //double r = sqrt(((*P).y()-0.5)*((*P).y()-0.5) + ((*P).z()-0.5)*((*P).z()-0.5));
 
     //Mettre ces valeurs dans le param.dat !!!!!
     /*double B = 292000000.; //En Pa. JC.
@@ -2493,11 +2498,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       }*/
 
     //Version pour la torsion. Faire version plus générale pour la suite...
-    if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
-      (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
+    if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+      Matrix n_elas(contrainte / contrainte.norme()); //Normale au domaine élastique de Von Mises
+      (*P).def_plas_cumulee += ((*P).contrainte.VM() - A) / E; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      double delta_epsilon_p = (abs((*P).contrainte) - A) / E  * signe( (*P).contrainte );
-      (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+      (*P).epsilon_p += ((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte );
       //(*P).contrainte = A * signe( (*P).contrainte );
     }
   }

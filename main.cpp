@@ -233,7 +233,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S;
+  Solide S(E, nu);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   S.Init("maillage.dat",rep, numrep, rho); 
   	

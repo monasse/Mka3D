@@ -284,6 +284,19 @@ Point_3 operator-(const Point_3 &p, const Vector_3 &v)
   return Point_3(p[0]-v[0],p[1]-v[1],p[2]-v[2]);
 }
 
+vector_3 empty() const {
+  return Vector_3(0., 0., 0.);
+}
+
+Vector_3 operator=(const Vector_3 &aux) {
+  vec[0] = aux[0];
+  vec[1] = aux[3];
+  vec[2] = aux[2];
+}
+
+void Vector_3::empty() {
+  vec = empty();
+}
 
 /////////////////////////////////////////////////////////
 // MATRIX ///////////////////////////////////////////////
@@ -329,6 +342,12 @@ Vector_3 Matrix::col3() const
   return col3;
 }
 
+void Matrix::empty() { //Remet tous les coefficients de la matrice à 0.
+  col1.empty();
+  col2.empty();
+  col3.empty();
+}
+
 Matrix Matrix::T() const {
   Matrix trans();
   trans.col1.x = col1.x;
@@ -362,6 +381,19 @@ Matrix operator-(Matrix const& vec) {
 Matrix operator+(Matrix const& vec1, Matrix const& vec2) {
   return vec1 + (-vec2);
 }
+
+Matrix Matrix::operator/(double const& rel) {
+  return 1. / rel * (*this);
+}
+
+double Matrix::norme() const { //Norme 2 au sens des matrices
+  return sqrt((*this) * (*this));
+}
+
+Matrix& Matrix::operator+=(const Matrix &mat) {
+  return *this + mat;
+}
+
 
 Matrix operator*(double const& rel, Matrix const& vec) { //Produit scalaire matrice
   return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);
@@ -420,6 +452,20 @@ Matrix tens_sym(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit tensorie
   return  (0.5 * vec1) * vec2 + (0.5 * vec2) * vec1;
 }
 
+Matrix unit() const { //Matrice unité
+  Vector_3 colonne1(1., 0., 0.);
+  Vector_3 colonne2(0., 1., 0.);
+  Vector_3 colonne3(0., 0., 1.);
+  return Matrix();
+}
+
+Matrix Matrix::dev() const { //Renvoie le deviateur du tenseur considéré
+  return *this - 1/3.* (*this).tr() * unit();
+}
+
+double VM() const { //Renvoie la norme de Von Mises associée à une matrice
+  return sqrt(3. / 2. * (*this).dev() * (*this).dev() );
+}
 
 
 //////////////////////////////////////////////////////////
