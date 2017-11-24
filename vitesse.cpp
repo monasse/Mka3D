@@ -18,6 +18,7 @@
 */
 
 #include "geometry.hpp"
+#include <cmath>
 
 //Initial velocity of the solid particles
 Vector_3 velocity(const Point_3 &p)
@@ -43,8 +44,21 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
 {
   //return Vector_3(0,0,0);
   //return Vector_3(0.01*(p.x()-1.),0,0);
-  if(p.x() <= 1.)
+
+  //Chargement linéaire en traction
+  /*if(p.x() <= 1.)
     return Vector_3(-4.,0,0) * t / T; //En m.s^-1
+  else if(p.x() >= 19.)
+  return Vector_3(0,0,0);*/
+
+  if(p.x() <= 1.) { //Vitesse en BC...
+    alpha_pt = 3.1416 / 360. * 20. / T; //Rotation de 20° sur [0, T]
+    double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.z()-0.5)*(p.z()-0.5));
+    double theta = atan((p.z() - 0.5) / (p.y() - 0.5)) ;
+    return Vector_3(0.,-r*sin(theta), r*cos(theta)) * t / T; //En m.s^-1
+  }
   else if(p.x() >= 19.)
     return Vector_3(0,0,0);
 }
+
+//Modifier pour faire ajouter torsion !!!
