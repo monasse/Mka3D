@@ -27,7 +27,8 @@
 #include "geometry.hpp"
 #include "forces_ext.cpp"
 #include "vitesse.cpp"
-#include<iostream>
+#include <iostream>
+#include <cmath>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
@@ -2468,12 +2469,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = X1X2/DIJ;
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
 	double Dij_n = (solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2. ) * nIJ; //Faire quadrature au point milieu ici pour calcul des forces ! Sortir les vitesses des particules !
-
-	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
+	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume(); //Modifier et stocker dans une matrice !
 
       }
     }
-    (*P).contrainte = E * ((*P).discrete_gradient - (*P).epsilon_p);//(lambda_mat + 2. * mu)  //Scalaire car cas 1D !
+    //(*P).contrainte = E * ((*P).discrete_gradient - (*P).epsilon_p);//(lambda_mat + 2. * mu)  //Scalaire car cas 1D !
+    double r = sqrt(((*P).y()-0.5)*((*P).y()-0.5) + ((*P).z()-0.5)*((*P).z()-0.5));
+    (*P).contrainte = E / 2. / (1. + nu) * ((*P).discrete_gradient - (*P).epsilon_p) * r/(*P).x(); //Cas de la torsion
     //cout << "Contrainte : " << (*P).contrainte << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
@@ -2482,6 +2484,15 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     double A = 90000000.; //En Pa. Vient de JC
 	
     (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
+    /*if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
+      (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
+      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      double delta_epsilon_p = (abs((*P).contrainte) - A) / E  * signe( (*P).contrainte );
+      (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+      //(*P).contrainte = A * signe( (*P).contrainte );
+      }*/
+
+    //Version pour la torsion. Faire version plus générale pour la suite...
     if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
       (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;

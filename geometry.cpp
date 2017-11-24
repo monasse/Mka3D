@@ -285,6 +285,143 @@ Point_3 operator-(const Point_3 &p, const Vector_3 &v)
 }
 
 
+/////////////////////////////////////////////////////////
+// MATRIX ///////////////////////////////////////////////
+////////////////////////////////////////////////////////
+/*double Matrix::norme() const {
+  //Changer...
+  return max(col1.n_euc(), col2.n_euc());
+  }*/
+
+Matrix::Matrix() : col1(), col2(), col3() {
+}
+
+Matrix::Matrix(Vector_3 colonne_1, Vector_3 colonne_2, Vector_3 colonne_3) : col1(colonne_1), col2(colonne_2), col3(colonne_3) {
+}
+
+double Vector_3::x() const
+{
+  return x;
+}
+
+double Vector_3::y() const 
+{
+  return y;
+}
+
+double Vector_3::z() const
+{
+  return z;
+}
+
+Vector_3 Matrix::col1() const
+{
+  return col1;
+}
+
+Vector_3 Matrix::col2() const
+{
+  return col2;
+}
+
+Vector_3 Matrix::col3() const
+{
+  return col3;
+}
+
+Matrix Matrix::T() const {
+  Matrix trans();
+  trans.col1.x = col1.x;
+  trans.col1.y = col2.x;
+  trans.col1.z = col3.x;
+
+  trans.col2.x = col1.y;
+  trans.col2.y = col2.y;
+  trans.col2.z = col3.y;
+
+  trans.col3.x = col1.z;
+  trans.col3.y = col2.z;
+  trans.col3.z = col3.z;
+
+  return trans;
+
+}
+
+Matrix operator+(Matrix const& vec1, Matrix const& vec2) {
+  Matrix result;
+  result.col1 = vec1.col1 + vec2.col1;
+  result.col2 = vec1.col2 + vec2.col2;
+  result.col3 = vec1.col3 + vec2.col3;
+  return result;
+}
+
+Matrix operator-(Matrix const& vec) {
+  return Matrix(-vec.col1, -vec.col2, -vec.col3);
+}
+
+Matrix operator+(Matrix const& vec1, Matrix const& vec2) {
+  return vec1 + (-vec2);
+}
+
+Matrix operator*(double const& rel, Matrix const& vec) { //Produit scalaire matrice
+  return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);
+}
+
+Matrix operator*(Matrix const& vec, double const& rel) { //Produit scalaire matrice
+  return rel * vec;
+}
+
+Matrix operator*(Matrix const& vec1, Matrix const& vec2) { //Produit simplement contracté
+  double a11 = vec1.T().col1() * vec2.col1();
+  double a21 = vec1.T().col2() * vec2.col1();
+  double a31 = vec1.T().col3() * vec2.col1();
+  Vector_3 col1(a11, a21, a31);
+
+  double a12 = vec1.T().col1() * vec2.col2();
+  double a22 = vec1.T().col2() * vec2.col2();
+  double a32 = vec1.T().col3() * vec2.col2();
+  Vector_3 col2(a12, a22, a32);
+
+  double a13 = vec1.T().col1() * vec2.col3();
+  double a23 = vec1.T().col2() * vec2.col3();
+  double a33 = vec1.T().col3() * vec2.col3();
+  Vector_3 col3(a13, a23, a33);
+
+  return Matrix(col1, col2, col3);
+}
+
+double operator*(Matrix const& vec1, Matrix const& vec2) { //Produit doublement contracté
+  return (vec1 * vec2).tr();
+}
+
+double Matrix::tr() { //Trace d'une matrice
+  return col1.x() + col2.y() + col3.z();
+}
+
+Matrix operator*(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit tensoriel
+  double a11 = vec1.x() * vec2.x();
+  double a21 = vec1.y() * vec2.x();
+  double a31 = vec1.z() * vec2.x();
+  Vector_3 col1(a11, a21, a31);
+
+  double a12 = vec1.x() * vec2.y();
+  double a22 = vec1.y() * vec2.y();
+  double a32 = vec1.z() * vec2.y();
+  Vector_3 col2(a12, a22, a32);
+
+  double a13 = vec1.x() * vec2.Z();
+  double a23 = vec1.y() * vec2.Z();
+  double a33 = vec1.z() * vec2.Z();
+  Vector_3 col3(a13, a23, a33);
+
+  return Matrix(col1, col2, col3);
+}
+Matrix tens_sym(Vector_3 const& vec1, Vector_3 const& vec2) { //Produit tensoriel symétrique
+  return  (0.5 * vec1) * vec2 + (0.5 * vec2) * vec1;
+}
+
+
+
 //////////////////////////////////////////////////////////
 //  Affine transformations class                        //
 //////////////////////////////////////////////////////////

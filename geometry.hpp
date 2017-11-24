@@ -102,6 +102,33 @@ Point_3 operator+(const Point_3 &p, const Vector_3 &v);
 Point_3 operator-(const Point_3 &p, const Vector_3 &v);
 Vector_3 operator*(const double &s, const Vector_3 &v);
 
+class Matrix {
+ public:
+  Matrix();
+  Matrix(Vector_3 colonne_1, Vector_3 colonne_2, Vector_3 colonne_3);
+  //double norme() const;
+  double tr(); //Trace d'une matrice
+  Vector_3 Matrix::col1() const;
+  Vector_3 Matrix::col3() const;
+  Vector_3 Matrix::col3() const;
+  Matrix Matrix::T() const; //Transposée
+
+ public:
+  Vector_3 col1;
+  Vector_3 col2;
+  Vector_3 col3;
+};
+
+Matrix operator+(Matrix const& vec1, Matrix const& vec2);
+Matrix operator-(Matrix const& vec1, Matrix const& vec2);
+Matrix operator-(Matrix const& vec);
+Matrix operator*(double const& rel, Matrix const& vec); //Produit scalaire matrice
+Matrix operator*(Matrix const& vec, double const& rel); //Produit scalaire matrice
+Matrix operator*(Matrix const& vec1, Matrix const& vec2); //Produit simplement contracté
+double operator*(Matrix const& vec1, Matrix const& vec2); //Produit doublement contracté
+Matrix operator*(Vector_3 const& vec1, Vector_3 const& vec2); //Produit tensoriel
+Matrix tens_sym(Vector_3 const& vec1, Vector_3 const& vec2); //Produit tensoriel symétrique
+
 class Aff_transformation_3
 {
 private :
