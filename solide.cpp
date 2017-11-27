@@ -3144,31 +3144,48 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     }
     vtk << "\n";
     //Contrainte
-    vtk << "VECTORS contrainte double" << endl;
+    vtk << "TENSORS contrainte double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].contrainte.col1[0] << " " << solide[it].contrainte.col1[1] << " " << solide[it].contrainte.col1[2] << " " <<  solide[it].contrainte.col2[1] << " " << solide[it].contrainte.col2[2] << " " << solide[it].contrainte.col3[2] << endl;
+	vtk << solide[it].contrainte.col1[0] << " " << solide[it].contrainte.col1[1] << " " << solide[it].contrainte.col1[2] << endl;
+	vtk << solide[it].contrainte.col2[0] << " " << solide[it].contrainte.col2[1] << " " << solide[it].contrainte.col2[2] << endl;
+	vtk << solide[it].contrainte.col3[0] << " " << solide[it].contrainte.col3[1] << " " << solide[it].contrainte.col3[2] << endl;
       }
     }
+    vtk << "\n";
     //Déformations
-    vtk << "VECTORS deformations double" << endl;
+    vtk << "TENSORS deformations double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << " " <<  solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << " " << solide[it].discrete_gradient.col3[2] << endl;
+	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << endl;
+	vtk << solide[it].discrete_gradient.col2[0] << " " << solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << endl;
+	vtk << solide[it].discrete_gradient.col3[0] << " " << solide[it].discrete_gradient.col3[1] << " " << solide[it].discrete_gradient.col3[2] << endl;
       }
     }
     vtk << "\n";
     //Epsilon_p
-    vtk << "VECTORS epsilon_p double" << endl;
+    vtk << "TENSORS epsilon_p double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-        vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << " " <<  solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << " " << solide[it].epsilon_p.col3[2] << endl;
+	vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << endl;
+	vtk << solide[it].epsilon_p.col2[0] << " " << solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << endl;
+	vtk << solide[it].epsilon_p.col3[0] << " " << solide[it].epsilon_p.col3[1] << " " << solide[it].epsilon_p.col3[2] << endl;
+      }
+    }
+    vtk << "\n";
+    //Deformation plastique cumulée
+    vtk << "SCALARS p double 1" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].def_plas_cumulee << endl;
       }
     }
     vtk << "\n";
@@ -3278,31 +3295,48 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     }
     vtk << "\n";
     //Contrainte
-    vtk << "VECTORS contrainte double" << endl;
+    vtk << "TENSORS contrainte double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).contrainte.col1[0] << " " << (*P).contrainte.col1[1] << " " << (*P).contrainte.col1[2] << " " <<  (*P).contrainte.col2[1] << " " << (*P).contrainte.col2[2] << " " << (*P).contrainte.col3[2] << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].contrainte.col1[0] << " " << solide[it].contrainte.col1[1] << " " << solide[it].contrainte.col1[2] << endl;
+	vtk << solide[it].contrainte.col2[0] << " " << solide[it].contrainte.col2[1] << " " << solide[it].contrainte.col2[2] << endl;
+	vtk << solide[it].contrainte.col3[0] << " " << solide[it].contrainte.col3[1] << " " << solide[it].contrainte.col3[2] << endl;
       }
     }
     vtk << "\n";
     //Déformations
-    vtk << "VECTORS deformations double" << endl;
+    vtk << "TENSORS deformations double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << " " <<  solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << " " << solide[it].discrete_gradient.col3[2] << endl;
+	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << endl;
+	vtk << solide[it].discrete_gradient.col2[0] << " " << solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << endl;
+	vtk << solide[it].discrete_gradient.col3[0] << " " << solide[it].discrete_gradient.col3[1] << " " << solide[it].discrete_gradient.col3[2] << endl;
       }
     }
     vtk << "\n";
     //Epsilon_p
-    vtk << "VECTORS epsilon_p double" << endl;
+    vtk << "TENSORS epsilon_p double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
     for(int it=0; it<nb_part; it++){
       for(int l= 0; l<solide[it].triangles.size(); l++)
       {
-        vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << " " <<  solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << " " << solide[it].epsilon_p.col3[2] << endl;
+	vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << endl;
+	vtk << solide[it].epsilon_p.col2[0] << " " << solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << endl;
+	vtk << solide[it].epsilon_p.col3[0] << " " << solide[it].epsilon_p.col3[1] << " " << solide[it].epsilon_p.col3[2] << endl;
+      }
+    }
+    vtk << "\n";
+    //Deformation plastique cumulée
+    vtk << "SCALARS p double 1" << endl;
+    //vtk << "LOOKUP_TABLE default" << endl;
+    for(int it=0; it<nb_part; it++){
+      for(int l= 0; l<solide[it].triangles.size(); l++)
+      {
+	vtk << solide[it].def_plas_cumulee << endl;
       }
     }
     vtk << "\n";
