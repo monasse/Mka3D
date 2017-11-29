@@ -55,10 +55,12 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
     double alpha_pt = 3.1416 / 18. / T; //Rotation de 20° sur [0, T]
     double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
     double theta = 0.;
-    if(p.y() >= 0.5)
+    if(p.x() >= 0.5)
       theta = atan((p.y() - 0.5) / (p.x() - 0.5));
-    else
+    else //if(p.x() >= 0.5 && p.y() >= 0.5)
       theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));
+	//else if(p.x() >= 0.5 && p.y() <= 0.5)
+      
     return r * Vector_3(-sin(theta), cos(theta), 0.) * alpha_pt * t; //En m.s^-1
   }
   else if(p.x() >= 4.)
