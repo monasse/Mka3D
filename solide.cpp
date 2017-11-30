@@ -2480,16 +2480,12 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
     //cout << "Contrainte : " << (*P).contrainte << endl;
 
-    
-    //Cas de la torsion
-    //double r = sqrt(((*P).y()-0.5)*((*P).y()-0.5) + ((*P).z()-0.5)*((*P).z()-0.5));
-
     //Mettre ces valeurs dans le param.dat !!!!!
-    /*double B = 292000000.; //En Pa. JC.
-      double n = .31; //JC. */
+    double B = 292000000.; //En Pa. JC.
+    double n = .31; //JC.
     double A = 90000000.; //En Pa. Vient de JC
 	
-    (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
+    (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
     /*if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
       (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
@@ -2501,9 +2497,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     //Version pour la torsion. Faire version plus générale pour la suite...
     if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas((*P).contrainte / ((*P).contrainte).norme()); //Normale au domaine élastique de Von Mises
-      (*P).def_plas_cumulee += ((*P).contrainte.VM() - A) / E; //Nouvelle déformation plastique.
+      double p_pt = ( pow(((*P).contrainte.VM() - A) / B, 1/n) - (*P).def_plas_cumulee ) / dt;
+      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1/n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      (*P).epsilon_p += ((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte );
+      (*P).epsilon_p += p_pt * n_elas;
+	//((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte );
       //(*P).contrainte = A * signe( (*P).contrainte );
     }
   }
