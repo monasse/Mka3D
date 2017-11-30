@@ -294,11 +294,6 @@ Vector_3 operator-(const Point_3 &p1, const Point_3 &p2)
 /////////////////////////////////////////////////////////
 // MATRIX ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////
-/*double Matrix::norme() const {
-  //Changer...
-  return max(col1.n_euc(), col2.n_euc());
-  }*/
-
 Matrix::Matrix() : col1(), col2(), col3() {
 }
 
