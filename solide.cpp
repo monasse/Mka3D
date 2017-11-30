@@ -2479,6 +2479,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
       }
     }
+    cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
+    cout << "Trace partie sphérique : " << (unit()).tr() << endl;
+    cout << "Unit : " << unit().c1()[0] << endl;
     (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
     cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
     //Pb !!! Trace pas nulle !!! WTF ???
@@ -2506,7 +2509,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       double delta_p = ( pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee );
       //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
-      cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       //(*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       

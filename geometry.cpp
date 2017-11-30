@@ -423,11 +423,11 @@ Matrix unit() { //Matrice unité
   Vector_3 colonne1(1., 0., 0.);
   Vector_3 colonne2(0., 1., 0.);
   Vector_3 colonne3(0., 0., 1.);
-  return Matrix();
+  return Matrix(colonne1, colonne2, colonne3);
 }
 
 Matrix Matrix::dev() { //Renvoie le deviateur du tenseur considéré
-  return *this - 1/3.* (*this).tr() * unit();
+  return *this - 1./3.* (*this).tr() * unit();
 }
 
 double Matrix::VM() { //Renvoie la norme de Von Mises associée à une matrice
