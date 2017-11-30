@@ -2504,6 +2504,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (*P).epsilon_p += delta_p * n_elas;
+      cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       
       //((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
       //(*P).contrainte = A * signe( (*P).contrainte );
