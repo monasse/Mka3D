@@ -100,7 +100,7 @@ class Particule
   void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
   void Inertie(const double &rho);
   void Volume_libre();
-  void solve_position(const double &dt, const bool &flag_2d);
+  void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
 
   Vector_3 vitesse_parois(const Point_3& X_f);  
@@ -246,7 +246,7 @@ public:
   }
   void Impression(const int &n, const bool &reconstruction);
   void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
-  void Solve_position(const double &dt, const bool &flag_2d);
+  void Solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void Forces(const int &N_dim, const double &nu, const double &E, const double& dt, const double& t, const double& T);

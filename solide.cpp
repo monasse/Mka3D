@@ -1012,7 +1012,7 @@ void Particule::Affiche(){
   <b>\a Particule.Ff et \a Particule.Mf param&egrave;tres sp&eacute;cifiques au  couplage! </b>
 * \return void
  */
-void Particule::solve_position(const double& dt, const bool& flag_2d){
+void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double rot[3][3];
   if(fixe==1){
@@ -1040,6 +1040,8 @@ void Particule::solve_position(const double& dt, const bool& flag_2d){
       u = Vector_3(0.,0.,0.);
       u_half = u;
     }
+
+    Dx = Dx + displacement_BC(x0, t, T);
       
     //Tests pour verifier qu'on a toujours une matrice de rotation
     for(int i=0;i<3;i++){
@@ -2321,10 +2323,9 @@ void Solide::Init(const char* s, const bool& rep, const int& numrep, const doubl
 *\warning <b> Proc&eacute;dure sp&eacute;cifique au solide! </b>
 *\return void
 */
-void Solide::Solve_position(const double& dt, const bool& flag_2d){
+void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(int i=0;i<size();i++){
-    //Test plastique ?
-    solide[i].solve_position(dt, flag_2d);
+    solide[i].solve_position(dt, flag_2d, t, T);
   }
   //breaking_criterion();
   update_triangles();
@@ -2525,7 +2526,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
         Vector_3 Fij_elas( (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
 	//cout << "Force : " << Fij_elas << endl;
 
-	(*P).Fi = (*P).Fi - Fij_elas; // * nIJ; //Force sur particule
+	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
 	
 	  
 	

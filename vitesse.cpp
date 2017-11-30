@@ -61,4 +61,12 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
   return Vector_3(0,0,0);*/
 }
 
-//Modifier pour faire ajouter torsion !!!
+//Boundary velocities of the solid particles
+Vector_3 displacement_BC(const Point_3 &p, const double& t, const double& T)
+{
+  //Chargement linéaire en traction
+  if(p.x() <= 1.)
+    return Vector_3(-0.1,0,0) * t / T; //En m.
+  else //if(p.x() >= 4.)
+    return Vector_3(0,0,0);
+}
