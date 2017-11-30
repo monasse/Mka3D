@@ -2443,13 +2443,10 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 // }
 
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
-  //Initialisation
-  //double lambda_mat = E * nu / (1. + nu) / (1. - 2.*nu);
-  //double mu = E / 2. / (1. + nu);
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
-  }
+    }*/
   
   //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -2514,10 +2511,10 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   
   //Calcul des forces pour chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    (*P).Fi = Vector_3(0.,0.,0.);
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	double S = (*F).S;
 	Point_3 xi((*P).x0); //Position particule i en config initiale
         Point_3 xj(solide[part].x0); //Position particule j en config initiale
 	Vector_3 lij(xi, xj);
@@ -2525,10 +2522,10 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
 
 	//Il faut passer les contraintes dans le repère local de chaque face (nIJ, sIJ, tIJ) ????
-        Vector_3 Fij_elas( S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
+        Vector_3 Fij_elas( (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
 	//cout << "Force : " << Fij_elas << endl;
 
-	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
+	(*P).Fi = (*P).Fi - Fij_elas; // * nIJ; //Force sur particule
 	
 	  
 	

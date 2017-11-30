@@ -174,7 +174,7 @@ double squared_distance(const Point_3 &p, const Point_3 &q)
 //Default constructor
 Vector_3::Vector_3()
 {
-  vec[0] = vec[1] = vec[2] = 0;
+  vec[0] = vec[1] = vec[2] = 0.;
 }
 
 //Constructor from coordinates
