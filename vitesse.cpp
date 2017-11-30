@@ -62,11 +62,11 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
 }
 
 //Boundary velocities of the solid particles
-Vector_3 displacement_BC(const Point_3 &p, const double& t, const double& T)
+Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
 {
   //Chargement linéaire en traction
   if(p.x() <= 1.)
-    return Vector_3(-0.1,0,0) * t / T; //En m.
+    return Vector_3(-0.5,0,0) * t / T; //En m.
   else //if(p.x() >= 4.)
-    return Vector_3(0,0,0);
+    return Dx;
 }

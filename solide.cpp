@@ -1041,7 +1041,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
       u_half = u;
     }
 
-    Dx = Dx + displacement_BC(x0, t, T);
+    Dx = displacement_BC(x0, Dx, t, T);
       
     //Tests pour verifier qu'on a toujours une matrice de rotation
     for(int i=0;i<3;i++){
