@@ -47,7 +47,7 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
 
   //Chargement linéaire en traction
   if(p.x() <= 1.)
-    return Vector_3(-4.,0,0); // * t / T; //En m.s^-1
+    return Vector_3(-1.,0,0); // * t / T; //En m.s^-1
   else if(p.x() >= 4.)
   return Vector_3(0,0,0);
 

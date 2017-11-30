@@ -2616,7 +2616,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   double n = .31; //JC.
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p) * (*P).volume(); // + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.); 
+    Ep += 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p) * (*P).volume() + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.); 
   }
   return Ep;
 }
