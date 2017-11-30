@@ -356,15 +356,16 @@ Matrix& Matrix::operator+=(const Matrix &mat) {
 }
 
 
-Matrix operator*(const double& rel, const Matrix& vec) { //Produit scalaire matrice
+Matrix operator*(const double& rel, const Matrix& vec) {
   return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);
 }
 
-Matrix operator*(const Matrix& vec, const double& rel) { //Produit scalaire matrice
+Matrix operator*(const Matrix& vec, const double& rel) {
   return rel * vec;
 }
 
 Matrix operator*(const Matrix& vec1, const Matrix& vec2) { //Produit simplement contracté
+  //Erreur ici ???
   double a11 = (vec1.T()).col1 * vec2.col1;
   double a21 = (vec1.T()).c2() * vec2.c1();
   double a31 = (vec1.T()).c3() * vec2.c1();
