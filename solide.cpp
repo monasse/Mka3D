@@ -2479,13 +2479,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
       }
     }
-    cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
+    /*cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
     cout << "Trace partie sphérique : " << (unit()).tr() << endl;
-    cout << "Unit : " << unit().c1()[0] << endl;
+    cout << "Unit : " << unit().c1()[0] << endl;*/
     (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
-    cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
-    //Pb !!! Trace pas nulle !!! WTF ???
-    //Problème de passage des coodonnées globales aux locales ???
+    //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
     double B = 292000000.; //En Pa. JC.
@@ -2505,13 +2503,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
       //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      cout << "Trace n_elas : " << n_elas.tr() << endl; //Pb ! Non-nulle !!!!
+      //cout << "Trace n_elas : " << n_elas.tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       double delta_p = ( pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee );
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      //(*P).epsilon_p += delta_p * n_elas;
-      //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
+      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      (*P).epsilon_p += delta_p * n_elas;
+      cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       
       //((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
       //(*P).contrainte = A * signe( (*P).contrainte );
