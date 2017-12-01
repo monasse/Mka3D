@@ -291,6 +291,10 @@ Vector_3 operator-(const Point_3 &p1, const Point_3 &p2)
   return Vector_3(p1,p2);
 }
 
+bool operator==(const Vector_3 &vec1, const Vector_3 &vec2) {
+  return vec1[0] == vec2[0] && vec1[1] == vec2[1] && vec1[2] == vec2[2];
+}
+
 /////////////////////////////////////////////////////////
 // MATRIX ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -324,6 +328,10 @@ Vector_3 Matrix::c3() const
 Matrix Matrix::T() const {
   return Matrix(Vector_3(col1.x(), col2.x(), col3.x()), Vector_3(col1.y(), col2.y(), col3.y()), Vector_3(col1.z(), col2.z(), col3.z()) );
 
+}
+
+bool operator==(const Matrix& vec1, const Matrix& vec2) {
+  return vec1.c1() == vec2.c1() && vec1.c2() == vec2.c2() && vec1.c3() == vec2.c3();
 }
 
 Matrix operator+(const Matrix& vec1, const Matrix& vec2) {

@@ -244,7 +244,7 @@ void Face::Inertie(){
  * \brief Constructeur par d&eacute;faut. 
  */
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -477,7 +477,7 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 */
 
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
-		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p()
+		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -712,7 +712,7 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
  */
 Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
-		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p()
+		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -2463,21 +2463,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 lij(xi, xj);
 	Vector_3 nIJ = lij / (*F).D0;*/
 	Vector_3 nIJ = (*F).normale;
-	/*Point_3 c1 = (*P).mvt_t((*F).centre);
-	Point_3 c2 = solide[part].mvt_t((*F).centre);
-	//Vector_3 Delta_u(c1,c2);
-	Vector_3 X1X2((*P).mvt_t((*P).x0),solide[part].mvt_t(solide[part].x0));
-	double DIJ = sqrt((X1X2.squared_length()));
-	Vector_3 nIJ = X1X2/DIJ;*/
 	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
 	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
 	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
 
       }
     }
-    /*cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
-    cout << "Trace partie sphérique : " << (unit()).tr() << endl;
-    cout << "Unit : " << unit().c1()[0] << endl;*/
+    //cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
     (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
     //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
 
@@ -2495,17 +2487,20 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //(*P).contrainte = A * signe( (*P).contrainte );
       }*/
 
-    //Version pour la torsion. Faire version plus générale pour la suite...
     if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
       //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      //cout << "Trace n_elas : " << n_elas.tr() << endl; //Pb ! Non-nulle !!!!
+      if((*P).n_elas_prev == -n_elas)
+	cout << "Chargement dans sens oppose !" << endl;
+      (*P).n_elas_prev = n_elas;
+      //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       double delta_p = ( pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee );
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      //(*P).epsilon_p += delta_p * n_elas;
+      (*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
+      //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
       
       //((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
       //(*P).contrainte = A * signe( (*P).contrainte );
