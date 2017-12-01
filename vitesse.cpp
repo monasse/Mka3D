@@ -42,13 +42,13 @@ Vector_3 omega(const Point_3 &p)
 //Boundary velocities of the solid particles
 Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
 {
-  //return Vector_3(0,0,0);
+  return Vector_3(0,0,0);
 
   //Chargement linéaire en traction
-  if(p.x() <= 1.)
+  /*if(p.x() <= 1.)
     return Vector_3(-5.,0,0); // * t / T; //En m.s^-1
   else if(p.x() >= 4.)
-    return Vector_3(0,0,0);
+  return Vector_3(0,0,0);*/
 
   /*if(p.x() <= 1.) { //Vitesse en BC...
     double alpha_pt = 3.1416 / 18. / T; //Rotation de 20° sur [0, T]
@@ -66,8 +66,16 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   //Chargement linéaire en traction
   /*if(p.x() <= 1.)
     return Vector_3(-0.1,0,0) * t / T; //En m.
-  else //if(p.x() >= 4.)
+  else
   return Dx; */
 
-  return Dx;
+  //Chargement torsion
+  if(p.z() >= 2.8) { //Vitesse en BC...
+    double alpha_pt = 3.1416 / 360. * 45 * t / T; //Rotation de 20° sur [0, T]
+    //double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.z()-0.5)*(p.z()-0.5));
+    double theta = atan((p.y() - 0.5) / (p.x() - 0.5)) ;
+    return Vector_3(0.,-sin(theta), cos(theta)) * alpha_pt * t; //En m.s^-1
+  }
+  else
+    return Dx;
 }
