@@ -2458,15 +2458,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	//Vector_3 Sn = Vector_3(0.,0.,0.);
-	//Vector_3 Sn = 1./2.*cross_product(Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[1].pos),Vector_3(solide[i].faces[j].vertex[0].pos,solide[i].faces[j].vertex[2].pos));
-	/*for(int k=1;k<(*F).size()-1;k++){
-	  Sn = Sn + 1./2.*cross_product(Vector_3((*F).vertex[0].pos,(*F).vertex[k].pos),Vector_3((*F).vertex[0].pos,(*F).vertex[k+1].pos)); //Vaut la surface de cette face calculée par la somme des surfaces des triangles qui la compose !!!
-	}*/
-	Point_3 xi((*P).x0); //Position particule i en config initiale
+	/*Point_3 xi((*P).x0); //Position particule i en config initiale
         Point_3 xj(solide[part].x0); //Position particule j en config initiale
 	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;
+	Vector_3 nIJ = lij / (*F).D0;*/
+	Vector_3 nIJ = (*F).normale;
 	/*Point_3 c1 = (*P).mvt_t((*F).centre);
 	Point_3 c2 = solide[part].mvt_t((*F).centre);
 	//Vector_3 Delta_u(c1,c2);
@@ -2523,17 +2519,17 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	Point_3 xi((*P).x0); //Position particule i en config initiale
+	/*Point_3 xi((*P).x0); //Position particule i en config initiale
         Point_3 xj(solide[part].x0); //Position particule j en config initiale
 	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;
-	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ;
+	Vector_3 nIJ = lij / (*F).D0;*/
+	Vector_3 nIJ = (*F).normale;
 
 	//Il faut passer les contraintes dans le repère local de chaque face (nIJ, sIJ, tIJ) ????
         Vector_3 Fij_elas( (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
 	//cout << "Force : " << Fij_elas << endl;
 
-	(*P).Fi = (*P).Fi - Fij_elas; // * nIJ; //Force sur particule
+	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
 	
 	  
 	
