@@ -74,7 +74,7 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
     double alpha_pt = 3.1416 / 360. * 45 * t / T; //Rotation de 20° sur [0, T]
     //double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.z()-0.5)*(p.z()-0.5));
     double theta = atan((p.y() - 0.5) / (p.x() - 0.5)) ;
-    return Vector_3(0.,-sin(theta), cos(theta)) * alpha_pt * t; //En m.s^-1
+    return Vector_3(-sin(theta), cos(theta), 0.) * alpha_pt * t; //En m.s^-1
   }
   else
     return Dx;
