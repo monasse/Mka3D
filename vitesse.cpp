@@ -42,6 +42,7 @@ Vector_3 omega(const Point_3 &p)
 //Boundary velocities of the solid particles
 Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx)
 {
+  double T_p = 0.0001;
   double pos_x = p.x() + Dx.x();
   double pos_y = p.y() + Dx.y();
   double pos_z = p.z() + Dx.z();
@@ -54,8 +55,8 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
   return Vector_3(0,0,0);*/
 
   if(pos_z <= 0.1) { //Vitesse en BC...
-    double alpha_pt = 3.1416 / 360. * 20. / T; //Rotation de 20° sur [0, T]
-    double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
+    double alpha_pt = 3.1416 / 180. * 20. / T_p; //Rotation de 20° sur [0, T]
+    double r = sqrt((pos_y-0.5)*(pos_y-0.5) + (pos_x-0.5)*(pos_x-0.5));
     double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
     /*if (abs(p.x() - 0.5) < 0.0001)
       theta = atan(abs(p.y() - 0.5) / abs(p.x() - 0.5)) ;*/

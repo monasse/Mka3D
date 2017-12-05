@@ -1034,11 +1034,15 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
       u_half = u;
       Dx = Dx+u*dt;
     }
-    else if(fixe==2 || fixe==3){//fixe=2: fixee en deplacement ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
-      Dx = Vector_3(0.,0.,0.);
-      Dxprev = Vector_3(0.,0.,0.);
-      u = Vector_3(0.,0.,0.);
+    else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
+      //Dx = Vector_3(0.,0.,0.);
+      //Dxprev = Vector_3(0.,0.,0.);
+      //u = Vector_3(0.,0.,0.);
+      //u_half = u;
+      Dxprev = Dx;
+      //u = u+(Fi+Ff)/2.*(dt/m);
       u_half = u;
+      Dx = Dx+u*dt;
     }
 
     Dx = displacement_BC(x0, Dx, t, T);
@@ -1368,10 +1372,10 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
     omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+      u = u+(Fi+Ff)/2.*(dt/m)*Amort;// + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
     else if(fixe==2 || fixe==3){
-      u = Vector_3(0.,0.,0.);
+      u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
     }
     
     //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
@@ -2496,9 +2500,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       double delta_p = ( pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee );
-      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      (*P).epsilon_p += delta_p * n_elas;
+      //(*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
       
