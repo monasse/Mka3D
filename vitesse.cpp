@@ -42,7 +42,7 @@ Vector_3 omega(const Point_3 &p)
 //Boundary velocities of the solid particles
 Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
 {
-  return Vector_3(0,0,0);
+  //return Vector_3(0,0,0);
 
   //Chargement linéaire en traction
   /*if(p.x() <= 1.)
@@ -50,14 +50,18 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T)
   else if(p.x() >= 4.)
   return Vector_3(0,0,0);*/
 
-  /*if(p.x() <= 1.) { //Vitesse en BC...
-    double alpha_pt = 3.1416 / 18. / T; //Rotation de 20° sur [0, T]
-    //double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.z()-0.5)*(p.z()-0.5));
-    double theta = atan((p.z() - 0.5) / (p.y() - 0.5)) ;
-    return Vector_3(0.,-sin(theta), cos(theta)) * alpha_pt * t; //En m.s^-1
+  if(p.z() <= 0.1) { //Vitesse en BC...
+    double alpha_pt = 3.1416 / 360. * 45. / T; //Rotation de 45° sur [0, T]
+    double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
+    double theta = 0.;
+    if(p.x() >= 0.5)
+      theta = atan((p.y() - 0.5) / (p.x() - 0.5)) ;
+    else
+      theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));
+    return r * Vector_3(-sin(theta), cos(theta), 0.) * alpha_pt; //En m.s^-1
   }
-  else if(p.x() >= 4.)
-  return Vector_3(0,0,0);*/
+  else if(p.z() >= 3.9)
+  return Vector_3(0,0,0);
 }
 
 //Boundary velocities of the solid particles
@@ -70,17 +74,17 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   return Dx; */
 
   //Chargement torsion
-  if(p.z() <= 0.1) { //Déplacement en BC...
-    double alpha_pt = 3.1416 / 360. * 45 * t / T; //Rotation de 20° sur [0, T]
+  /*if(p.z() <= 0.1) { //Déplacement en BC...
+    double alpha_pt = 3.1416 / 360. * 45 / T; // * t / T; //Rotation de 45° sur [0, T]
     double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
-    //double theta = 0.;
+    double theta = 0.;
 
-    /*if(p.x() >= 0.5)
+    if(p.x() >= 0.5)
       theta = atan((p.y() - 0.5) / (p.x() - 0.5));
     else //if(p.x() >= 0.5 && p.y() >= 0.5)
-    theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));*/
-    return /*Vector_3(p.x(), p.y(), p.z()) +*/ r * Vector_3(-sin(alpha_pt), cos(alpha_pt), 0.); //En m
+      theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));
+    return r * Vector_3(-sin(alpha_pt), cos(alpha_pt), 0.); //En m
   }
-  else
+ else */
     return Dx;
 }
