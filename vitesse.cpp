@@ -70,16 +70,16 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   return Dx; */
 
   //Chargement torsion
-  if(p.z() >= 2.8) { //Vitesse en BC...
+  if(p.z() <= 0.1) { //Déplacement en BC...
     double alpha_pt = 3.1416 / 360. * 45 * t / T; //Rotation de 20° sur [0, T]
     double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
+    //double theta = 0.;
 
-    if(p.x() >= 0.5)
+    /*if(p.x() >= 0.5)
       theta = atan((p.y() - 0.5) / (p.x() - 0.5));
     else //if(p.x() >= 0.5 && p.y() >= 0.5)
-      theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));
-	//else if(p.x() >= 0.5 && p.y() <= 0.5)
-    return r * Vector_3(cos(theta), sin(theta), 0.) * alpha_pt * t; //En m.s^-1
+    theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));*/
+    return /*Vector_3(p.x(), p.y(), p.z()) +*/ r * Vector_3(-sin(alpha_pt), cos(alpha_pt), 0.); //En m
   }
   else
     return Dx;
