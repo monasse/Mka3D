@@ -49,17 +49,15 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
   //return Vector_3(0,0,0);
 
   //Chargement linéaire en traction
-  /*if(p.x() <= 1.)
-    return Vector_3(-5.,0,0); // * t / T; //En m.s^-1
-  else if(p.x() >= 4.)
-  return Vector_3(0,0,0);*/
+  if(p.z() <= 0.2)
+    return Vector_3(-1.,0,0); // * t / T; //En m.s^-1
+  else if(p.z() >= 2.8)
+  return Vector_3(0,0,0);
 
-  if(pos_z <= 0.1) { //Vitesse en BC...
+  /*if(pos_z <= 0.1) { //Vitesse en BC...
     double alpha_pt = 3.1416 / 180. * 20. / T_p; //Rotation de 20° sur [0, T]
     double r = sqrt((pos_y-0.5)*(pos_y-0.5) + (pos_x-0.5)*(pos_x-0.5));
     double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
-    /*if (abs(p.x() - 0.5) < 0.0001)
-      theta = atan(abs(p.y() - 0.5) / abs(p.x() - 0.5)) ;*/
 
     //Il faut écrire le vecteur e_theta avec la position actuelle (et pas initiale) de la particule !!!!
     if(pos_x <= 0.5 && pos_y < 0.5) {
@@ -83,17 +81,19 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
       
   }
   else if(pos_z >= 2.9)
-  return Vector_3(0,0,0);
+  return Vector_3(0,0,0);*/
 }
 
 //Boundary velocities of the solid particles
 Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
 {
+  double T_p = 0.001;
+  
   //Chargement linéaire en traction
-  /*if(p.x() <= 1.)
-    return Vector_3(-0.1,0,0) * t / T; //En m.
+  /*if(p.z() <= 0.2)
+    return Vector_3(-0.1,0,0) * t / T_p; //En m.
   else
-  return Dx; */
+  return Dx;*/
 
   //Chargement torsion
   /*if(p.z() <= 0.1) { //Déplacement en BC...
