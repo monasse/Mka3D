@@ -2500,7 +2500,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
-      double delta_p = (pow(((*P).contrainte.VM() - A) / B, 1./n) + (*P).def_plas_cumulee) / 2.; //Test quadrature au point milieu du multiplicateur plastique
+      double delta_p = (pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee); //Test quadrature au point milieu du multiplicateur plastique
       (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (*P).epsilon_p += delta_p * n_elas;
