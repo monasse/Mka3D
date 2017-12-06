@@ -2499,10 +2499,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       (*P).n_elas_prev = n_elas;
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      double delta_p = ( pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee );
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
+      double delta_p = (pow(((*P).contrainte.VM() - A) / B, 1./n) + (*P).def_plas_cumulee) / 2.; //Test quadrature au point milieu du multiplicateur plastique
+      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      //(*P).epsilon_p += delta_p * n_elas;
+      (*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
       
@@ -2615,7 +2616,7 @@ double Solide::Energie_cinetique(){
 * \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
 * \return void
 */
-double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){ //Faire des modifs ici pour avoir énergie plastique !!!!
+double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
   double Ep = 0.;
 
   double B = 292000000.; //En Pa. JC.
@@ -2623,7 +2624,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   double A = 90000000.; //En Pa. Vient de JC
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p) * (*P).volume(); // + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee; 
+    Ep += 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p) * (*P).volume() + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee; 
   }
   return Ep;
 }
