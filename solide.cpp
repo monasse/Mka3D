@@ -2452,6 +2452,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     (*P).Fi = Vector_3(0.,0.,0.);
     (*P).Mi = Vector_3(0.,0.,0.);
     }*/
+
+  bool plastifie = false;
   
   //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -2492,6 +2494,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       }*/
 
     if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+      plastifie = true;
       //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
       if((*P).n_elas_prev == -n_elas)
@@ -2511,6 +2514,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //(*P).contrainte = A * signe( (*P).contrainte );
     }
   }
+
+  if(plastifie)
+    cout << "Plastification dans ce pas de temps !" << endl;
 
   
   //Calcul des forces pour chaque particule
