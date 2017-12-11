@@ -237,7 +237,7 @@ class Solide
 public:
   
   Solide();//:solide(std::vector<Particule>(1)){}
-  Solide(const double& E, const double& nu);
+  Solide(const double& E, const double& nu, const double& KIc);
   Solide(const std::vector<Particule> & Part);
   ~Solide();
 	Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
@@ -263,6 +263,7 @@ public:
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé
+  double Gc; //Energie surfacique de fissuration de Griffith
 };
 
 

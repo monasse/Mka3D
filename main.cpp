@@ -149,9 +149,9 @@ int main(){
   }
   string s;
   int numrep1, N_dim1, nimp1, Nmax1;
-  double rho1,nu1,E1,T1,cfl1,Amort;
+  double rho1,nu1,E1,T1,cfl1,Amort, KIc;
   bool rep1, flag2d1, rec1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1 >> s >> Amort;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> KIc >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1 >> s >> Amort;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -233,7 +233,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S(E, nu);
+  Solide S(E, nu, KIc);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   S.Init("maillage.dat",rep, numrep, rho); 
   	

@@ -2033,19 +2033,22 @@ void Particule::Volume_libre(){
 *\fn Solide::Solide()
 *\brief Constructeur par d&eacute;faut. 
 */
-Solide::Solide(const double& E, const double& nu){
+Solide::Solide(const double& E, const double& nu, const double& KIc){
   lambda = E * nu / (1+nu) / (1 - 2.*nu);
   mu = E / 2. / (1+nu);
+  Gc = KIc * KIc / E;
 }
 
 Solide::Solide(){
   lambda = 0.;
   mu = 0.;
+  Gc = 0.;
 }
 
 Solide::Solide(const std::vector<Particule> & Part){
   lambda = 0.;
   mu = 0.;
+  Gc = 0.;
   for(int i=0; i<Part.size(); i++){
     solide.push_back(Part[i]);
   }
