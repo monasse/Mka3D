@@ -2497,16 +2497,16 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       plastifie = true;
       //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      if((*P).n_elas_prev == -n_elas)
+      /*if((*P).n_elas_prev == -n_elas)
 	cout << "Chargement dans sens oppose !" << endl;
-      (*P).n_elas_prev = n_elas;
+      (*P).n_elas_prev = n_elas;*/
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
       double delta_p = (pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee); //Test quadrature au point milieu du multiplicateur plastique
-      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      (*P).epsilon_p += delta_p * n_elas;
+      //(*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
       
@@ -2616,12 +2616,6 @@ double Solide::Energie_cinetique(){
   return E;
 }
 
-/*!
-* \fn double Solide::Energie_potentielle(int N_dim, double nu, double E)
-* \brief Calcul d'&eacute;nergie potentielle. 
-* \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-* \return void
-*/
 double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
   double Ep = 0.;
 
@@ -2630,7 +2624,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   double A = 90000000.; //En Pa. Vient de JC
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p) * (*P).volume() + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee; 
+    Ep += ( 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p)  + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee ) * (*P).volume();
   }
   return Ep;
 }
