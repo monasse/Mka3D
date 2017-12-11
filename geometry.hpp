@@ -102,6 +102,43 @@ Point_3 operator+(const Point_3 &p, const Vector_3 &v);
 Point_3 operator-(const Point_3 &p, const Vector_3 &v);
 Vector_3 operator-(const Point_3 &p1, const Point_3 &p2);
 Vector_3 operator*(const double &s, const Vector_3 &v);
+bool operator==(const Vector_3 &vec1, const Vector_3 &vec2);
+
+class Matrix {
+ public:
+  Matrix();
+  Matrix(const Vector_3& colonne_1, const Vector_3& colonne_2, const Vector_3& colonne_3);
+  //double norme() const;
+  double tr(); //Trace d'une matrice
+  Vector_3 c1() const;
+  Vector_3 c2() const;
+  Vector_3 c3() const;
+  Matrix T() const; //Transposée
+  //void empty(); //Remet tous les coefficients de la matrice à 0.
+  Matrix dev(); //Renvoie le deviateur du tenseur considéré
+  double VM(); //Renvoie la norme de Von Mises associée à une matrice
+  Matrix operator/(const double& rel);
+  double norme() const; //Norme 2 au sens des matrices
+  Matrix& operator+=(const Matrix &mat);
+
+ public:
+  Vector_3 col1;
+  Vector_3 col2;
+  Vector_3 col3;
+};
+
+bool operator==(const Matrix& vec1, const Matrix& vec2);
+Matrix operator+(const Matrix& vec1, const Matrix& vec2);
+Matrix operator-(const Matrix& vec1, Matrix const& vec2);
+Matrix operator-(const Matrix& vec);
+Matrix operator*(const double& rel, const Matrix& vec); //Produit scalaire matrice
+Matrix operator*(const Matrix& vec, const double& rel); //Produit scalaire matrice
+Matrix operator*(const Matrix& vec1, const Matrix& vec2); //Produit simplement contracté
+Vector_3 operator*(const Matrix& vec1, const Vector_3& vec2); //Produit matrice vecteur
+double contraction_double(const Matrix& vec1, const Matrix & vec2); //Produit doublement contracté
+Matrix tens(const Vector_3& vec1, const Vector_3& vec2); //Produit tensoriel
+Matrix tens_sym(const Vector_3& vec1, const Vector_3& vec2); //Produit tensoriel symétrique
+Matrix unit(); //Matrice unité
 
 class Aff_transformation_3
 {

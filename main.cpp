@@ -149,9 +149,9 @@ int main(){
   }
   string s;
   int numrep1, N_dim1, nimp1, Nmax1;
-  double rho1,nu1,E1,T1,cfl1;
+  double rho1,nu1,E1,T1,cfl1,Amort;
   bool rep1, flag2d1, rec1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1 >> s >> Amort;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -165,6 +165,7 @@ int main(){
   const double dtimp = T/nimp;        //Time-step between two consecutive outputs
   const int Nmax = Nmax1;           //Maximal number of time-steps
   const bool rec = rec1;   //Flag pour décider si la sortie se fait avec reconstruction de l'interface ou particule par particule
+  const double Amortissement = Amort; //Ajoute une force de frottement entre 0 et 1 pour amortir la solution
   
   char temps_it[]="resultats/temps.dat";
   char temps_reprise[]="resultats/temps_reprise.dat";
@@ -232,7 +233,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S;
+  Solide S(E, nu);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   S.Init("maillage.dat",rep, numrep, rho); 
   	
@@ -256,7 +257,7 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
-  S.Forces_internes(N_dim, nu, E);
+  S.Forces_internes(N_dim, nu, E, dt);
   int nb_part = S.size();
 
   //Iterations on the time-steps
@@ -280,13 +281,13 @@ int main(){
     ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
     cout<<"Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
-    dt = S.pas_temps(t,T,cfl, E, nu, rho);
+    dt = 2. * pow(10., -6.);//S.pas_temps(t,T,cfl, E, nu, rho);
     //First half-step of the Verlet+RATTLE Scheme
-    S.Solve_position(dt,flag_2d);
+    S.Solve_position(dt,flag_2d, t, T);
     //Computation of forces
-    S.Forces(N_dim, nu, E);
+    S.Forces(N_dim, nu, E, dt, t , T);
     //Second half-step of the Verlet+RATTLE Scheme
-    S.Solve_vitesse(dt,flag_2d);
+    S.Solve_vitesse(dt,flag_2d, Amortissement, t, T); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
     //Update of time
     t+= dt;
   }

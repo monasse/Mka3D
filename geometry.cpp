@@ -174,7 +174,7 @@ double squared_distance(const Point_3 &p, const Point_3 &q)
 //Default constructor
 Vector_3::Vector_3()
 {
-  vec[0] = vec[1] = vec[2] = 0;
+  vec[0] = vec[1] = vec[2] = 0.;
 }
 
 //Constructor from coordinates
@@ -289,6 +289,157 @@ Point_3 operator-(const Point_3 &p, const Vector_3 &v)
 Vector_3 operator-(const Point_3 &p1, const Point_3 &p2)
 {
   return Vector_3(p1,p2);
+}
+
+bool operator==(const Vector_3 &vec1, const Vector_3 &vec2) {
+  return vec1[0] == vec2[0] && vec1[1] == vec2[1] && vec1[2] == vec2[2];
+}
+
+/////////////////////////////////////////////////////////
+// MATRIX ///////////////////////////////////////////////
+////////////////////////////////////////////////////////
+Matrix::Matrix() : col1(), col2(), col3() {
+}
+
+Matrix::Matrix(const Vector_3& colonne_1, const Vector_3& colonne_2, const Vector_3& colonne_3) : col1(colonne_1), col2(colonne_2), col3(colonne_3) {
+}
+
+Vector_3 Matrix::c1() const
+{
+  return col1;
+}
+
+Vector_3 Matrix::c2() const
+{
+  return col2;
+}
+
+Vector_3 Matrix::c3() const
+{
+  return col3;
+}
+
+/*void Matrix::empty() { //Remet tous les coefficients de la matrice à 0.
+  col1.empty();
+  col2.empty();
+  col3.empty();
+  }*/
+
+Matrix Matrix::T() const {
+  return Matrix(Vector_3(col1.x(), col2.x(), col3.x()), Vector_3(col1.y(), col2.y(), col3.y()), Vector_3(col1.z(), col2.z(), col3.z()) );
+
+}
+
+bool operator==(const Matrix& vec1, const Matrix& vec2) {
+  return vec1.c1() == vec2.c1() && vec1.c2() == vec2.c2() && vec1.c3() == vec2.c3();
+}
+
+Matrix operator+(const Matrix& vec1, const Matrix& vec2) {
+  Matrix result;
+  result.col1 = vec1.col1 + vec2.col1;
+  result.col2 = vec1.col2 + vec2.col2;
+  result.col3 = vec1.col3 + vec2.col3;
+  return result;
+}
+
+Matrix operator-(const Matrix& vec) {
+  return Matrix(-vec.col1, -vec.col2, -vec.col3);
+}
+
+Matrix operator-(const Matrix& vec1, const Matrix& vec2) {
+  return vec1 + (-vec2);
+}
+
+Matrix Matrix::operator/(const double& rel) {
+  return 1. / rel * (*this);
+}
+
+double Matrix::norme() const { //Norme 2 au sens des matrices
+  return sqrt(contraction_double(*this, *this));
+}
+
+Matrix& Matrix::operator+=(const Matrix &mat) {
+  *this = *this + mat;
+  return *this;
+}
+
+
+Matrix operator*(const double& rel, const Matrix& vec) {
+  return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);
+}
+
+Matrix operator*(const Matrix& vec, const double& rel) {
+  return rel * vec;
+}
+
+Matrix operator*(const Matrix& vec1, const Matrix& vec2) { //Produit simplement contracté
+  //Erreur ici ???
+  double a11 = (vec1.T()).col1 * vec2.col1;
+  double a21 = (vec1.T()).c2() * vec2.c1();
+  double a31 = (vec1.T()).c3() * vec2.c1();
+  Vector_3 col1(a11, a21, a31);
+
+  double a12 = (vec1.T()).c1() * vec2.c2();
+  double a22 = (vec1.T()).c2() * vec2.c2();
+  double a32 = (vec1.T()).c3() * vec2.c2();
+  Vector_3 col2(a12, a22, a32);
+
+  double a13 = (vec1.T()).c1() * vec2.c3();
+  double a23 = (vec1.T()).c2() * vec2.c3();
+  double a33 = (vec1.T()).c3() * vec2.c3();
+  Vector_3 col3(a13, a23, a33);
+
+  return Matrix(col1, col2, col3);
+}
+
+double contraction_double(const Matrix& vec1, const Matrix& vec2) { //Produit doublement contracté
+  return (vec1 * vec2).tr();
+}
+
+Vector_3 operator*(const Matrix& vec1, const Vector_3& vec2){  //Produit matrice vecteur
+  return Vector_3((vec1.T()).c1() * vec2, (vec1.T()).c2() * vec2, (vec1.T()).c3() * vec2);
+}
+
+
+double Matrix::tr() { //Trace d'une matrice
+  return col1.x() + col2.y() + col3.z();
+}
+
+Matrix tens(const Vector_3& vec1, const Vector_3& vec2) { //Produit tensoriel
+  double a11 = vec1.x() * vec2.x();
+  double a21 = vec1.y() * vec2.x();
+  double a31 = vec1.z() * vec2.x();
+  Vector_3 col1(a11, a21, a31);
+
+  double a12 = vec1.x() * vec2.y();
+  double a22 = vec1.y() * vec2.y();
+  double a32 = vec1.z() * vec2.y();
+  Vector_3 col2(a12, a22, a32);
+
+  double a13 = vec1.x() * vec2.z();
+  double a23 = vec1.y() * vec2.z();
+  double a33 = vec1.z() * vec2.z();
+  Vector_3 col3(a13, a23, a33);
+
+  return Matrix(col1, col2, col3);
+}
+Matrix tens_sym(const Vector_3& vec1, const Vector_3& vec2) { //Produit tensoriel symétrique
+  return  tens(0.5 * vec1, vec2) + tens(0.5 * vec2, vec1);
+}
+
+Matrix unit() { //Matrice unité
+  Vector_3 colonne1(1., 0., 0.);
+  Vector_3 colonne2(0., 1., 0.);
+  Vector_3 colonne3(0., 0., 1.);
+  return Matrix(colonne1, colonne2, colonne3);
+}
+
+Matrix Matrix::dev() { //Renvoie le deviateur du tenseur considéré
+  return *this - 1./3.* (*this).tr() * unit();
+}
+
+double Matrix::VM() { //Renvoie la norme de Von Mises associée à une matrice
+  return sqrt(3. / 2. * contraction_double((*this).dev(), (*this).dev()) );
 }
 
 //////////////////////////////////////////////////////////
