@@ -74,7 +74,7 @@ public:
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
   //double rayon_plastique; //Taille du domaine élastique
 
-  double Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E); //Forces élastiques
+  Vector_3 Force_elas; //Forces élastiques
   //double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
 };
 
@@ -227,7 +227,7 @@ Bbox bbox;
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   Matrix epsilon_p; //Déformation plastique rémanante
   double seuil_elas;
-  Matrix n_elas_prev; //Normale au critère de VM
+  //Matrix n_elas_prev; //Normale au critère de VM
 }; 
 
 //! D&eacute;finition de la classe Solide  

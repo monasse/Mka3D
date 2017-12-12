@@ -96,6 +96,7 @@ Face::Face()
   normale = Vector_3(1.,0.,0.);
   voisin = -1;
   D0 = 1.;
+  Force_elas = Vector_3(0.,0.,0.);
 }
 
 /*!
@@ -117,14 +118,9 @@ Face::Face(const std::vector<Vertex> & v, const int& part)
   normale = normale*1./norm;
   voisin = part;
   D0 = 1.;
+  Force_elas = Vector_3(0.,0.,0.);
 }
-/*!
-* \fn Face::Face(std::vector<Vertex> & v, int part, double dist)
-* \brief Surcharge du constructeur.
-* \param v vecteur de sommets
-* \param part num&eacute;ro de la particule voisine. -1 si le voisin est le fluide 
-* \param dist distance &agrave; l'&eacute;quilibre avec la particule voisine
- */
+
 Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
 {
   std::vector<Point_3> points;
@@ -138,13 +134,9 @@ Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
   normale = normale*1./norm;
   voisin = part;
   D0 = dist;
+  Force_elas = Vector_3(0.,0.,0.);
 }
-/*!
-* \fn Face & Face:: operator=(const Face &F)
-* \brief op&eacute;rateur =
-* \param F Face
-* \return Face
- */
+
 Face & Face:: operator=(const Face &F){
 	
 	assert(this != &F);
@@ -244,7 +236,7 @@ void Face::Inertie(){
  * \brief Constructeur par d&eacute;faut. 
  */
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -477,7 +469,7 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), n_elas_pr
 */
 
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
-		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
+		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -712,7 +704,7 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
  */
 Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
-		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
+		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -2528,39 +2520,10 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	/*Point_3 xi((*P).x0); //Position particule i en config initiale
-        Point_3 xj(solide[part].x0); //Position particule j en config initiale
-	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;*/
 	Vector_3 nIJ = (*F).normale;
-
-	//Il faut passer les contraintes dans le repère local de chaque face (nIJ, sIJ, tIJ) ????
-        Vector_3 Fij_elas( (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
-	//cout << "Force : " << Fij_elas << endl;
-
-	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
-	
-	  
-	
-	//Force de rappel elastique
-	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
-	//Force de deformation volumique
-	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
-	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
-	//Moment des forces appliquees
-	/*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
-	  (*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
-	  //Moments de flexion/torsion
-	  double kappa = 1.;
-	  double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
-	  double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
-	  double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
-	  (*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
-	// cout << alphan << " " << alphas << " " << alphat  << endl;
-	// cout << S/(*F).D0*alphan << endl;
-	// cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
-	// cout << "DT=" << sqrt(min(min((*P).I[0],(*P).I[1]),(*P).I[2])*(*F).D0/S/alphan) << endl;
-	// getchar();
+        (*F).Force_elas = (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ); //Force du lien IJ !
+	//cout << "Force : " << Force_elas << endl;
+	(*P).Fi = (*P).Fi + (*F).Force_elas; //Force sur particule
       }
     }
   }
