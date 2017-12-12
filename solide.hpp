@@ -48,7 +48,8 @@ public:
 
 class Particule;
 
-//Encore utile ???
+class Solide;
+
 class Face
 {
 public:
@@ -76,6 +77,9 @@ public:
 
   Vector_3 Force_elas; //Forces élastiques
   //double Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B);
+
+  //Variables pour fissuration
+  bool fissure; //Vaut true quand le lien entre les 2 particules s'est cassé
 };
 
   
@@ -104,15 +108,11 @@ class Particule
   void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
 
   Vector_3 vitesse_parois(const Point_3& X_f);  
-  Vector_3 vitesse_parois_prev(const Point_3& X_f);  
-  //double min_x; //!< la plus petite coordonn&eacute;e  de la particule selon x
-  //double min_y; //!< la plus petite coordonn&eacute;e  de la particule selon y
-  //double min_z; //!< la plus petite coordonn&eacute;e  de la particule selon z
-  //double max_x; //!< la plus grande coordonn&eacute;e  de la particule selon x
-  //double max_y; //!< la plus petite coordonn&eacute;e  de la particule selon y
-  //double max_z; //!< la plus petite coordonn&eacute;e  de la particule selon z
-bool cube; //!< = true si la particule est un cube, false sinon
-Bbox bbox;
+  Vector_3 vitesse_parois_prev(const Point_3& X_f);
+  void sym_grad(const double& dt, const Solide& S); //Calcule le gradient symétrique d'une particule
+  
+  bool cube; //!< = true si la particule est un cube, false sinon
+  Bbox bbox;
 
   std::vector<Face> faces; //!< liste de faces de la particule
 
@@ -139,46 +139,46 @@ Bbox bbox;
   std::vector<Vector_3> normales_prev; //!< normales ext&eacute;rieures aux \a Particule.triangles_prev
     
     /*! 
-		* \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-		*/
-		std::vector<bool> vide; //!< =true si \a Particule.triangles en contact avec le fluide
+     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+     */
+  std::vector<bool> vide; //!< =true si \a Particule.triangles en contact avec le fluide
     /*! 
      * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
-		std::vector<bool> fluide; //!< =true si \a Particule.triangles en contact avec le fluide
+  std::vector<bool> fluide; //!< =true si \a Particule.triangles en contact avec le fluide
     
     /*! 
      * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
-		std::vector<bool> fluide_prev; //!< =true si \a Particule.triangles_prev en contact avec le fluide
+  std::vector<bool> fluide_prev; //!< =true si \a Particule.triangles_prev en contact avec le fluide
     /*! 
      * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
-		std::vector< std::vector<Point_3> > Points_interface; //!< Liste de points d'intersections de \a Particule.triangles avec la grille fluide au temps t 
+  std::vector< std::vector<Point_3> > Points_interface; //!< Liste de points d'intersections de \a Particule.triangles avec la grille fluide au temps t 
     
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		std::vector< std::vector<Point_3> > Points_interface_prev; //!< Liste de points d'intersections de \a Particule.triangles_prev avec la grille fluide au temps t-dt 
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		std::vector< std::vector<Triangle_3> > Triangles_interface; //!< Triangulation des \a Particule.triangles au temps t
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  std::vector< std::vector<Point_3> > Points_interface_prev; //!< Liste de points d'intersections de \a Particule.triangles_prev avec la grille fluide au temps t-dt 
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  std::vector< std::vector<Triangle_3> > Triangles_interface; //!< Triangulation des \a Particule.triangles au temps t
     
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		std::vector< std::vector< std::vector<int> > > Position_Triangles_interface; //!< index de la cellule o&ugrave; se trouve \a Triangles_interface au temps t
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  std::vector< std::vector< std::vector<int> > > Position_Triangles_interface; //!< index de la cellule o&ugrave; se trouve \a Triangles_interface au temps t
     
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		std::vector< std::vector<Triangle_3> > Triangles_interface_prev; //!< Triangulation des \a Particule.triangles_prev au temps t  
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  std::vector< std::vector<Triangle_3> > Triangles_interface_prev; //!< Triangulation des \a Particule.triangles_prev au temps t  
     
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		std::vector< std::vector<std::vector<int> > > Position_Triangles_interface_prev; //!< index de la cellule o&ugrave; se trouve \a Triangles_interface au temps t-dt
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  std::vector< std::vector<std::vector<int> > > Position_Triangles_interface_prev; //!< index de la cellule o&ugrave; se trouve \a Triangles_interface au temps t-dt
 
   int fixe; //!< =true si la particule est fix&eacute;e, false sinon
   double m; //!< Masse de la particule
@@ -193,23 +193,23 @@ Bbox bbox;
   Vector_3 Dxprev; //!<D&eacute;placement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
   //Vector_3 Fi_plas; //Forces plastiques dans particule
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
   Vector_3 Ff; //!<Forces fluides exerc&eacute;es sur le solide entre t et t+dt/2
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		Vector_3 Ffprev; //!< Forces fluides exerc&eacute;es sur le solide entre t-dt/2 et t
-    Vector_3 Mi; //!< Moments int&eacute;rieurs du solide
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		Vector_3 Mf; //!< Moments fluides exerc&eacute;s sur le solide entre t et t+dt/2
-    /*! 
-     * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
-     */
-		Vector_3 Mfprev; //!< Moments fluides exerc&eacute;s sur le solide entre t-dt/2 et t
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  Vector_3 Ffprev; //!< Forces fluides exerc&eacute;es sur le solide entre t-dt/2 et t
+  Vector_3 Mi; //!< Moments int&eacute;rieurs du solide
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  Vector_3 Mf; //!< Moments fluides exerc&eacute;s sur le solide entre t et t+dt/2
+  /*! 
+   * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
+   */
+  Vector_3 Mfprev; //!< Moments fluides exerc&eacute;s sur le solide entre t-dt/2 et t
   Vector_3 u; //!< Vitesse de la particule au temps t
   //Vector_3 u_plas; //Vitesse palstique
   Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
