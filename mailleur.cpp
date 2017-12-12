@@ -40,9 +40,9 @@ int main()
   }
   string s;
   int numrep1, N_dim1, nimp1, Nmax1,Nx1,Ny1,Nz1,BCXl1,BCXr1,BCYl1,BCYr1,BCZl1,BCZr1;
-  double rho1,nu1,E1,T1,cfl1, Lx1,Ly1,Lz1, Amort;
+  double rho1,nu1,E1,T1,cfl1, Lx1,Ly1,Lz1, Amort, KIc;
   bool rep1, flag2d1, rec1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1 >> s >> Amort >> s >> Lx1 >> s >> Ly1 >> s >> Lz1 >> s >>Nx1 >> s >> Ny1 >> s >> Nz1 >> s >> BCXl1 >> BCXr1 >> s >> BCYl1 >> BCYr1 >>s >> BCZl1 >> BCZr1;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> KIc >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1 >> s >> Amort >> s >> Lx1 >> s >> Ly1 >> s >> Lz1 >> s >>Nx1 >> s >> Ny1 >> s >> Nz1 >> s >> BCXl1 >> BCXr1 >> s >> BCYl1 >> BCYr1 >>s >> BCZl1 >> BCZr1;
   const double Lx = Lx1;
   const double Ly = Ly1;
   const double Lz = Lz1;

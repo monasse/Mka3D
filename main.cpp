@@ -236,7 +236,6 @@ int main(){
   Solide S(E, nu, KIc);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   S.Init("maillage.dat",rep, numrep, rho);
-  cout << "Toughness : " << S.Gc << endl;
   	
   //Initialization of time measurements
   int iter=0;	
