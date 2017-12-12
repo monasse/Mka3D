@@ -2465,7 +2465,14 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	Vector_3 nIJ = (*F).normale;
         (*F).Force_elas = (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ); //Force du lien IJ !
 	//cout << "Force : " << Force_elas << endl;
-	(*P).Fi = (*P).Fi + (*F).Force_elas; //Force sur particule
+
+	//Test pour voir si lien casse
+	if((*F).Force_elas * (solide[part].Dx - (*P).Dx) >= 2. * Gc * (*F).S && (*P).Dx * nIJ < 0 && solide[part].Dx * nIJ > 0) { //On casse en traction quand certaine énergie est atteinte
+	  (*F).fissure = true;
+	  (*P).sym_grad(dt, *this); //On recalcule le gradient symétrique du coup...
+	}
+	else
+	  (*P).Fi = (*P).Fi + (*F).Force_elas; //Force sur particule
       }
       else if((*F).voisin>=0) {
 	int part = (*F).voisin;
@@ -2541,6 +2548,10 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     Ep += ( 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p)  + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee ) * (*P).volume();
+    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+      if((*F).voisin>=0 && not((*F).fissure))
+      Ep += 2. * Gc * (*F).S;
+    }
   }
   return Ep;
 }

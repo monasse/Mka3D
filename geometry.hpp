@@ -88,6 +88,7 @@ public:
   double x() const;
   double y() const;
   double z() const;
+  double norme() const;
   Vector_3 operator-() const;
   Vector_3 operator/(const double &s) const;
   double squared_length() const;

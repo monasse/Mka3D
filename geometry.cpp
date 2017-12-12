@@ -214,6 +214,10 @@ double Vector_3::z() const
   return vec[2];
 }
 
+double Vector_3::norme() const {
+  return sqrt((*this).squared_length());
+}
+
 //Opposite vector
 Vector_3 Vector_3::operator-() const
 {
