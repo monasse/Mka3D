@@ -2029,6 +2029,7 @@ Solide::Solide(const double& E, const double& nu, const double& KIc){
   lambda = E * nu / (1+nu) / (1 - 2.*nu);
   mu = E / 2. / (1+nu);
   Gc = KIc * KIc / E;
+  //cout << "Gc : " << Gc << endl;
 }
 
 Solide::Solide(){
@@ -2467,9 +2468,10 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//cout << "Force : " << Force_elas << endl;
 
 	//Test pour voir si lien casse
-	if((*F).Force_elas * (solide[part].Dx - (*P).Dx) >= 2. * Gc * (*F).S && (*P).Dx * nIJ < 0 && solide[part].Dx * nIJ > 0) { //On casse en traction quand certaine énergie est atteinte
+	if(abs((*F).Force_elas * (solide[part].Dx - (*P).Dx)) >= 2. * Gc * (*F).S /*&& (*P).Dx * nIJ < 0 && solide[part].Dx * nIJ > 0*/) { //On casse en traction quand 1 certaine énergie est atteinte
 	  (*F).fissure = true;
 	  (*P).sym_grad(dt, *this); //On recalcule le gradient symétrique du coup...
+	  cout << "LIEN CASSE !!!!!!!!!" << endl;
 	}
 	else
 	  (*P).Fi = (*P).Fi + (*F).Force_elas; //Force sur particule
