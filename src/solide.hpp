@@ -86,7 +86,7 @@ class Particule
  public:
    
   Particule();//:faces(std::vector<Face>(1)){}
-  
+  //Particule(const Point_3 &c, const int& id); // Permet de créer une particule à partir de son numéro et de la donnée de ses vertex
   Particule(const double &x_min, const double &y_min, const double &z_min, 
 			const double &x_max, const double &y_max,const double &z_max);
   
@@ -246,7 +246,7 @@ public:
 	return solide.size();
   }
   void Impression(const int &n, const bool &reconstruction);
-  void Init(const char* s, const bool &rep, const int &numrep, const double &rho);
+  void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho);
   void Solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
