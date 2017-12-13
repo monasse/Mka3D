@@ -5,11 +5,10 @@ ENABLE_LANGUAGE(CXX)
 
 set(SRC ${CMAKE_SOURCE_DIR}/src)
 set(SOURCES
-  ${SRC}/Particule.cpp
-  ${SRC}/lien.cpp
-  ${SRC}/system.cpp
-  ${SRC}/Arbre.cpp
+  ${SRC}/vitesse.cpp
+  ${SRC}/geometry.cpp
+  ${SRC}/solide.cpp
   ${SRC}/main.cpp
   )
 
-add_executable(asynchrone ${SOURCES})
+add_executable(Mka3d ${SOURCES})

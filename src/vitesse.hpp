@@ -17,30 +17,20 @@
   along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-/*!
-\authors Laurent Monasse
- *  \file forces_ext.cpp
- *  \brief Definition of the functions giving the external forces.
- */
-
 #include "geometry.hpp"
-#ifndef FORCES_EXT_CPP
-#define FORCES_EXT_CPP
+#ifndef VITESSE_HPP
+#define VITESSE_HPP
 
-Vector_3 Forces_externes(const Point_3 &X, const Vector_3 &e, const double& t, const double& T)
-{
-  return Vector_3(0,0,0);
-  /*if(X.x() <= 1.)
-    return Vector_3(-90000000.,0,0); // * t / T; //Chargement lineaire jusqu'à valeure fixée
-  else if(X.x() >= 19.)
-  return Vector_3(0,0,0);*/
-}
+//Initial velocity of the solid particles
+Vector_3 velocity(const Point_3 &p);
 
-Vector_3 Moments_externes(const Point_3 &X, const Vector_3 &e)
-{
-  return Vector_3(0,0,0);
-}
+
+//Initial angular velocity of the solid particles
+Vector_3 omega(const Point_3 &p);
+
+Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx);
+
+Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T);
 
 
 #endif
