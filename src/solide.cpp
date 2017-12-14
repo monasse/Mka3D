@@ -254,20 +254,25 @@ void Face::Inertie(){
  * \brief Constructeur par d&eacute;faut. 
  */
 
+Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p() {
+  id = Id;
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+}
+
 Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 {
-  //discrete_gradient = 0.; //Gradient reconstruit par particule
-  //contrainte = 0.; //Contrainte par particule
+  id = 0;
+  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
+  seuil_elas = 0.;
+}
+/*Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
+{
+  id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
   //epsilon_p = 0.;
   
-  /*min_x = 0.; 
-  min_y = 0.;
-  min_z = 0.;
-  max_x = 1. ;
-  max_y = 1.;
-  max_z = 1.;*/
   bbox = Bbox(0.,0.,0.,1.,1.,1.);
   
   x0 = Point_3(0.5,0.5,0.5);
@@ -477,30 +482,18 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 	Position_Triangles_interface_prev.resize(triangles.size(), std::vector<std::vector<int> >(0));
 	Ff = Vector_3(0.,0.,0.); Ffprev = Vector_3(0.,0.,0.); 
 	Mf = Vector_3(0.,0.,0.); Mfprev = Vector_3(0.,0.,0.);
-}
+	}*/
 
-/**
-*\fn Particule::Particule(const double x_min, const double y_min, const double z_min,  const double x_max, const double y_max,const double z_max)
-*\brief Surcharge du constructeur.
-* \param (x_min, y_min, z_min) : coordonn&eacute;es du sommet le plus &agrave; gauche de la particule
-* \param (x_max, y_max, z_max) : coordonn&eacute;es du sommet le plus &agrave; droite de la particule
-*/
 
-Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
+/*Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
 		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p()
 {
-  //discrete_gradient = 0.; //Gradient reconstruit par particule
-  //contrainte = 0.; //Contrainte par particule
+  id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
   //epsilon_p = 0.;
   
-  /*min_x = x_min; 
-  min_y = y_min;
-  min_z = z_min;
-  max_x = x_max ;
-  max_y = y_max;
-  max_z = z_max;*/
+
   bbox = Bbox(x_min,y_min,z_min,x_max,y_max,z_max);
   
   x0 = Point_3((x_min+x_max)/2.,(y_min+y_max)/2.,(z_min+z_max)/2.);
@@ -710,17 +703,10 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
 	Position_Triangles_interface_prev.resize(triangles.size(), std::vector< std::vector<int> >(0));
 	Ff = Vector_3(0.,0.,0.); Ffprev = Vector_3(0.,0.,0.); 
 	Mf = Vector_3(0.,0.,0.); Mfprev = Vector_3(0.,0.,0.);
-}
+	}*/
 
-/*!
-* \fn Particule::Particule(Point_3 c, const double x_min, const double y_min, const double z_min, const double x_max, const double y_max,const double z_max, std::vector<Face> & F)
-* \brief Surcharge du constructeur.
-* \param (x_min, y_min, z_min) : coordonn&eacute;es du sommet le plus &agrave; gauche de la particule
-* \param (x_max, y_max, z_max) : coordonn&eacute;es du sommet le plus &agrave; droite de la particule
-* \param c Point
-* \param F : Face de la Particule
- */
-Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
+
+/*Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
 		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p()
 {
@@ -730,12 +716,6 @@ Particule::Particule(const Point_3& c, const double &x_min, const double& y_min,
   seuil_elas = 0.;
   //epsilon_p = 0.;
   
-  /*min_x = x_min; 
-  min_y = y_min;
-  min_z = z_min;
-  max_x = x_max ;
-  max_y = y_max;
-  max_z = z_max;*/
   bbox = Bbox(x_min,y_min,z_min,x_max,y_max,z_max);
   
   x0 = c;
@@ -782,40 +762,6 @@ Particule::Particule(const Point_3& c, const double &x_min, const double& y_min,
 				vide.push_back(false);
 			}
 		}
-		
-// 	else if(flag_2d){
-// 				Point_3 s,r,v,t;
-// 				
-// 
-// 					s = faces[i].vertex[0].pos;
-// 					r = faces[i].vertex[1].pos;
-// 					v = faces[i].vertex[2].pos;
-// 					t = faces[i].vertex[3].pos;
-// 					
-// 					Triangle_3 Tri1(s,r,v);
-// 					triangles.push_back(Tri1);
-// 					Triangle_3 Tri2(v,t,s);
-// 					triangles.push_back(Tri2);
-// 					
-// 					normales.push_back(faces[i].normale);
-// 					normales.push_back(faces[i].normale);
-// 					
-// 					if(faces[i].voisin < 0){
-// 			           fluide.push_back(true);
-// 								 fluide.push_back(true);
-// 					} else {
-// 			           fluide.push_back(false);
-// 								 fluide.push_back(false);
-// 					}
-// 					if(faces[i].voisin == -2){
-// 						vide.push_back(true);
-// 						vide.push_back(true);
-// 					} else {
-// 						vide.push_back(false);
-// 						vide.push_back(false);
-// 					}
-// 
-// 		}
 		else{
 			Point_3 s,r,v;
 			s = faces[i].centre;
@@ -853,20 +799,11 @@ Particule::Particule(const Point_3& c, const double &x_min, const double& y_min,
 	Position_Triangles_interface_prev.resize(triangles.size(), std::vector< std::vector<int> >(0));
 	Ff = Vector_3(0.,0.,0.); Ffprev = Vector_3(0.,0.,0.); 
 	Mf = Vector_3(0.,0.,0.); Mfprev = Vector_3(0.,0.,0.);
-}
-/*!
-* \fn Particule::~Particule()
-* \brief Destructeur.
- */
+	}*/
+
 Particule::~Particule(){
 }
 
-/*!
-* \fn Particule & Particule:: operator=(const Particule &P)
-* \brief op&eacute;rateur =
-* \param P Particule
-* \return Particule
- */
 Particule & Particule:: operator=(const Particule &P){
 	
 	assert(this != &P);
@@ -2083,10 +2020,11 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   while(getline(maillage_1, ligne)) {
     //string line(ligne);
     int id;
-    Particule part();
+    //Particule part();
     int Nvertex;
     //line >> id >> Nvertex;
     maillage_1 >> id >> Nvertex;
+    Particule part(id);
     double x,y,z;
     //line >> s; //On enlèva la première parenthèse
     maillage_1 >> s;
