@@ -26,7 +26,9 @@
 #ifndef SOLIDE_HPP
 #define SOLIDE_HPP
 
+#include <map>
 #include "geometry.hpp"
+
 
 
 
@@ -53,6 +55,7 @@ class Face
 {
 public:
   Face();//:vertex(std::vector<Vertex>(1)){}
+  Face(const double& surface);
   Face(const std::vector<Vertex> & v, const int &part);
   Face(const std::vector<Vertex> & v, const int &part, const double &dist);
   Face & operator=(const  Face &F); // op&eacute;rateur = surcharge pour l'affectation
@@ -259,7 +262,9 @@ public:
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   // private :
-  std::vector<Particule> solide; //!< Maillage solide
+  //std::vector<Particule> solide; //!< Maillage solide
+  //Remplacer vector par une map non ???
+  std::map<int, Particule> solide;
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé

@@ -99,6 +99,15 @@ Face::Face()
   D0 = 1.;
 }
 
+Face::Face(const double& surface)
+{
+  centre = Point_3(0.,0.,0.);
+  normale = Vector_3(1.,0.,0.);
+  voisin = -1;
+  D0 = 1.;
+  S = surface;
+}
+
 /*!
  *\fn Face::Face(std::vector<Vertex> & v, int part)
  *\brief Surcharge du constructeur
@@ -2098,13 +2107,13 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     cout <<"ouverture du maillage ratee" << endl;
 
   //Importation des particules et des vertex
-  map<int, Particule> P; //map qui indices les particules du maillage par le numéro qu'on va sortir du permier fichier
+  //map<int, Particule> P; //map qui indices les particules du maillage par le numéro qu'on va sortir du permier fichier
+  string s;
   string ligne;
   while(getline(maillage_1, ligne)) {
     //string line(ligne);
     int id;
     Particule part();
-    string s;
     int Nvertex;
     //line >> id >> Nvertex;
     maillage_1 >> id >> Nvertex;
@@ -2118,12 +2127,45 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       Point_3 point(x,y,z);
       part.vertices.push_back(point); //ajout du vertex dans la particule
     }
-    P[id] = part; //Ajout de la particule indexée par id
+    solide[id] = part; //Ajout de la particule indexée par id
   }
   //Semble être la bonne idée. Continuer avec ça !!!
 
+  //Importation des volumes et des centres de Voronoi
+  while(getline(maillage_3, ligne)) {
+    int id;
+    double volume = 0.;
+    double x,y,z;
+    maillage_3 >> id >> volume >> x >> y >> z;
+    (solide[id]).V = volume;
+    (solide[id]).x0 = Point_3(x, y, z);
+  }
+
+  //Importation de toutes les infos sur les faces (le bordel...)
+  while(getline(maillage_2, ligne)) {
+    int id;
+    int nbr_faces;
+    vector<Faces> f;
+    double x,y,z;
+    double S;
+    maillage_2 >> id >> nbr_faces;
+    for(int i=1 ; i <= nbr_faces ; i++) {
+      maillage_2 >> S;
+      Face face(S);
+      f.push_back(face);
+    }
+    //Voir si besoin de connaitre les vertex par face...
+
+    //Vecteur normal par face
+    for(int i=0 ; i < nbr_faces ; i++) {
+      maillage_2 >> s >> x >> s >> y >> s >> z >> s;
+      f[i].normale = Vector_3(x, y, z);
+    }
+  }
+}
+
   //Recuperation du maillage solide
-  int Npoint;
+  /*int Npoint;
   string sp;
   maillage >> sp >> Npoint;
   const int nb_points = Npoint;
@@ -2334,7 +2376,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     update_triangles();
     }
   
-}
+}*/
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(int i=0;i<size();i++){
