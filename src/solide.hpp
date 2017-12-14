@@ -230,7 +230,6 @@ Bbox bbox;
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   Matrix epsilon_p; //Déformation plastique rémanante
   double seuil_elas;
-  Matrix n_elas_prev; //Normale au critère de VM
 }; 
 
 //! D&eacute;finition de la classe Solide  

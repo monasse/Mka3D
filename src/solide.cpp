@@ -1087,31 +1087,6 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
     Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);//*/
     double e0 = sqrt(abs(1.-(e.squared_length())));
-    /*Recuperation de la matrice de rotation
-    rot[0][0] = 1.-2.*(e[1]*e[1]+e[2]*e[2]);
-    rot[0][1] = 2.*(-e0*e[2]+e[0]*e[1]);
-    rot[0][2] = 2.*(e0*e[1]+e[0]*e[2]);
-    rot[1][0] = 2.*(e0*e[2]+e[1]*e[0]);
-    rot[1][1] = 1.-2.*(e[0]*e[0]+e[2]*e[2]);
-    rot[1][2] = 2.*(-e0*e[0]+e[1]*e[2]);
-    rot[2][0] = 2.*(-e0*e[1]+e[2]*e[0]);
-    rot[2][1] = 2.*(e0*e[0]+e[2]*e[1]);
-    rot[2][2] = 1.-2.*(e[0]*e[0]+e[1]*e[1]);
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	Q[i][j] = rot[i][0]*rotref[0][j];
-	Q[i][j] += rot[i][1]*rotref[1][j];
-	Q[i][j] += rot[i][2]*rotref[2][j];
-      }
-    }//*/
-    /*Impression de la matrice rotref
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	cout << rotref[i][j] << " " ;
-      }
-      cout << endl;
-    }
-    getchar();*/
     
     eprev = e;
     //Recuperation du e global a partir de omega
@@ -2462,11 +2437,11 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 */
 void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt, const double& t, const double& T){
   Forces_internes(N_dim,nu,E, dt);
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = (*P).Fi;
     //(*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
     (*P).Mi = (*P).Mi;
-  }
+    }*/
 }
 
 
@@ -2514,27 +2489,22 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   bool plastifie = false;
   
   //Calcul de la contrainte dans chaque particule
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //(*P).Volume_libre();
-    (*P).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
-    (*P).discrete_gradient.col2 = Vector_3(0., 0., 0.);
-    (*P).discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+    (P->second).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
+    (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
+    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	/*Point_3 xi((*P).x0); //Position particule i en config initiale
-        Point_3 xj(solide[part].x0); //Position particule j en config initiale
-	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;*/
 	Vector_3 nIJ = (*F).normale;
-	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
 	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
-	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
+	(P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V;
 
       }
     }
     //cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
-    (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
+    (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
     //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
@@ -2542,7 +2512,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     double n = .31; //JC.
     double A = 90000000.; //En Pa. Vient de JC
 	
-    (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
+    (P->second).seuil_elas = A + B * pow((P->second).def_plas_cumulee, n);
     /*if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
       (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
@@ -2551,24 +2521,19 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //(*P).contrainte = A * signe( (*P).contrainte );
       }*/
 
-    if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+    if((P->second).contrainte.VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
       plastifie = true;
-      //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
-      Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      /*if((*P).n_elas_prev == -n_elas)
-	cout << "Chargement dans sens oppose !" << endl;
-      (*P).n_elas_prev = n_elas;*/
+      //Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
-      double delta_p = (pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee); //Test quadrature au point milieu du multiplicateur plastique
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
+      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      //(*P).epsilon_p += delta_p * n_elas;
+      (*P).epsilon_p += (delta_p / (((*P).contrainte).dev()).norme() * (*P).contrainte).dev();
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
       
-      //((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
+      //((*P).contrainte.VM() - A) / (2*mu) * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
       //(*P).contrainte = A * signe( (*P).contrainte );
     }
   }
@@ -2578,44 +2543,17 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
   
   //Calcul des forces pour chaque particule
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
-    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
-	/*Point_3 xi((*P).x0); //Position particule i en config initiale
-        Point_3 xj(solide[part].x0); //Position particule j en config initiale
-	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;*/
 	Vector_3 nIJ = (*F).normale;
-
-	//Il faut passer les contraintes dans le repère local de chaque face (nIJ, sIJ, tIJ) ????
-        Vector_3 Fij_elas( (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
+        Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
 	//cout << "Force : " << Fij_elas << endl;
 
-	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
+	(P->second).Fi = (P->second).Fi + Fij_elas; // * nIJ; //Force sur particule
 	
-	  
-	
-	//Force de rappel elastique
-	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
-	//Force de deformation volumique
-	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
-	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
-	//Moment des forces appliquees
-	/*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
-	  (*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
-	  //Moments de flexion/torsion
-	  double kappa = 1.;
-	  double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
-	  double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
-	  double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
-	  (*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
-	// cout << alphan << " " << alphas << " " << alphat  << endl;
-	// cout << S/(*F).D0*alphan << endl;
-	// cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
-	// cout << "DT=" << sqrt(min(min((*P).I[0],(*P).I[1]),(*P).I[2])*(*F).D0/S/alphan) << endl;
-	// getchar();
       }
     }
   }
@@ -2630,46 +2568,12 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 double Solide::Energie(const int& N_dim, const double& nu, const double& E){
   return Energie_cinetique()+Energie_potentielle(N_dim, nu, E);
 }
-/*!
-*\fn double Solide::Energie_cinetique()
-*\brief Calcul d'&eacute;nergie cin&eacute;tique. 
-*\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-*\return void
-*/
+
 double Solide::Energie_cinetique(){
   double E = 0.;
-  for(int i=0;i<size();i++){
-    double u2 = (solide[i].u.squared_length());
-    E += 1./2.*solide[i].m*u2;
-    //Calcul de -1/2*tr(D j(Q^T omega)) = 1/2*(I1*Omega1^2+I2*Omega2^2+I3*Omega3^2)
-    double Q[3][3];
-    double rot[3][3];
-    double e0 = sqrt(abs(1.-(solide[i].e.squared_length())));
-    //Recuperation de la matrice de rotation
-    rot[0][0] = 1.-2.*(solide[i].e[1]*solide[i].e[1]+solide[i].e[2]*solide[i].e[2]);
-    rot[0][1] = 2.*(-e0*solide[i].e[2]+solide[i].e[0]*solide[i].e[1]);
-    rot[0][2] = 2.*(e0*solide[i].e[1]+solide[i].e[0]*solide[i].e[2]);
-    rot[1][0] = 2.*(e0*solide[i].e[2]+solide[i].e[1]*solide[i].e[0]);
-    rot[1][1] = 1.-2.*(solide[i].e[0]*solide[i].e[0]+solide[i].e[2]*solide[i].e[2]);
-    rot[1][2] = 2.*(-e0*solide[i].e[0]+solide[i].e[1]*solide[i].e[2]);
-    rot[2][0] = 2.*(-e0*solide[i].e[1]+solide[i].e[2]*solide[i].e[0]);
-    rot[2][1] = 2.*(e0*solide[i].e[0]+solide[i].e[2]*solide[i].e[1]);
-    rot[2][2] = 1.-2.*(solide[i].e[0]*solide[i].e[0]+solide[i].e[1]*solide[i].e[1]);
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Q[j][k] = rot[j][0]*solide[i].rotref[0][k];
-	Q[j][k] += rot[j][1]*solide[i].rotref[1][k];
-	Q[j][k] += rot[j][2]*solide[i].rotref[2][k];
-      }
-    }  
-    double Omega[3];
-    Omega[0] = Omega[1] = Omega[2] = 0.;
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Omega[j] += (solide[i].omega[k]*Q[k][j]);
-      }
-    }
-    E += 1./2.*(solide[i].I[0]*Omega[0]*Omega[0]+solide[i].I[1]*Omega[1]*Omega[1]+solide[i].I[2]*Omega[2]*Omega[2]);
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    double u2 = ((P->second).u.squared_length());
+    E += 1./2. * (P->second).m * u2;
   }
   return E;
 }
@@ -2681,8 +2585,8 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   double n = .31; //JC.
   double A = 90000000.; //En Pa. Vient de JC
 
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += ( 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p)  + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee ) * (*P).volume();
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    Ep += ( 0.5 * contraction_double(((P->second)).contrainte, ((P->second)).discrete_gradient - ((P->second)).epsilon_p)  + B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
   }
   return Ep;
 }
@@ -2690,11 +2594,6 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
 double Solide::pas_temps(const double& t, const double& T, const double& cfls, const double& E, const double& nu, const double& rhos){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double dt = std::numeric_limits<double>::infinity();
-  //Restriction CFL sur la vitesse de rotation
-  for(int i=0;i<size();i++){
-    double dt1 = cfls*0.26/(abs((solide[i].omega[0]))+abs((solide[i].omega[1]))+abs((solide[i].omega[2]))+eps);
-    dt = min(dt,dt1); 
-  }
   //Restriction CFL liee aux forces internes
   double cs = sqrt(E*(1.-nu)/rhos/(1.+nu)/(1.-2.*nu));
   //Calcul du rayon de la sphï¿½re inscrite
@@ -2704,18 +2603,18 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
       sigma = min(sigma,solide[i].faces[j].D0);
     }
   }
-  for(int i=0;i<size();i++){
-    for(int j=0;j<solide[i].faces.size();j++){
-      if(solide[i].faces[j].voisin>=0){
-	dt = min(dt,cfls*solide[i].faces[j].D0/cs);
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(int j=0;j<(P->second).faces.size();j++){
+      if((P->second).faces[j].voisin>=0){
+	dt = min(dt,cfls*(P->second).faces[j].D0/cs);
 	//dt = min(dt,cfls*0.26*sqrt(pow(sigma,5)/solide[i].faces[j].S/solide[i].faces[j].D0)/cs);
-	double Imin = min(min(solide[i].I[0],solide[i].I[1]),solide[i].I[2]);
-	double S = solide[i].faces[j].S;
-	double D0 = solide[i].faces[j].D0;
+	double Imin = min(min((P->second).I[0],(P->second).I[1]),(P->second).I[2]);
+	double S = (P->second).faces[j].S;
+	double D0 = (P->second).faces[j].D0;
 	double kappa = 1.;
-	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*(solide[i].faces[j].Is+solide[i].faces[j].It);
-	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*solide[i].faces[j].Is-(2.+2.*nu-kappa)*solide[i].faces[j].It);
-	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*solide[i].faces[j].It-(2.+2.*nu-kappa)*solide[i].faces[j].Is);
+	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((P->second).faces[j].Is+(P->second).faces[j].It);
+	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(P->second).faces[j].Is-(2.+2.*nu-kappa)*(P->second).faces[j].It);
+	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(P->second).faces[j].It-(2.+2.*nu-kappa)*(P->second).faces[j].Is);
 	dt = min(dt,cfls*sqrt(Imin*D0/S/alphan));
 	dt = min(dt,cfls*sqrt(Imin*D0/S/alphas));
 	dt = min(dt,cfls*sqrt(Imin*D0/S/alphat));
@@ -2726,407 +2625,114 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
   return dt;
 }
 
-/*!
-*\fn void Solide::update_triangles()
-*\brief Mise &agrave; jour de l'interface fluide - solide.
-*\details Mise &agrave; jour des \a Particule.triangles_prev, \a Particule.triangles, \a Particule.normales_prev, \a Particule.normales, \a Particule.fluide_prev, \a Particule.fluide, \a Particule.Points_interface_prev, \a Particule.Points_interface, \a Particule.Triangles_interface_prev, \a Particule.Triangles_interface, \a Particule.Position_Triangles_interface_prev et \a Particule.Position_Triangles_interface.
-*\warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-*\return void
-*/
 void Solide::update_triangles(){
-	for(int i=0;i<solide.size();i++){
-		solide[i].triangles_prev = solide[i].triangles;
-		solide[i].normales_prev = solide[i].normales;
-		solide[i].fluide_prev = solide[i].fluide;
-		for(int it=0;it<solide[i].triangles.size();it++){
-			solide[i].Points_interface_prev[it] = solide[i].Points_interface[it];
-			solide[i].Triangles_interface_prev[it] = solide[i].Triangles_interface[it];
-			solide[i].Position_Triangles_interface_prev[it] = solide[i].Position_Triangles_interface[it];
-			solide[i].Points_interface[it].erase(solide[i].Points_interface[it].begin(),solide[i].Points_interface[it].end());
-			solide[i].Triangles_interface[it].erase(solide[i].Triangles_interface[it].begin(),solide[i].Triangles_interface[it].end());	solide[i].Position_Triangles_interface[it].erase(solide[i].Position_Triangles_interface[it].begin(),
-                                                       solide[i].Position_Triangles_interface[it].end());
-		}
-		solide[i].triangles.erase(solide[i].triangles.begin(),solide[i].triangles.end());
-		solide[i].normales.erase(solide[i].normales.begin(),solide[i].normales.end());
-		solide[i].fluide.erase(solide[i].fluide.begin(),solide[i].fluide.end());
-		solide[i].vide.erase(solide[i].vide.begin(),solide[i].vide.end());
+  for(int i=0;i<solide.size();i++){
+    (P->second).triangles_prev = (P->second).triangles;
+    (P->second).normales_prev = (P->second).normales;
+    (P->second).fluide_prev = (P->second).fluide;
+    for(int it=0;it<(P->second).triangles.size();it++){
+      (P->second).Points_interface_prev[it] = (P->second).Points_interface[it];
+      (P->second).Triangles_interface_prev[it] = (P->second).Triangles_interface[it];
+      (P->second).Position_Triangles_interface_prev[it] = (P->second).Position_Triangles_interface[it];
+      (P->second).Points_interface[it].erase((P->second).Points_interface[it].begin(),(P->second).Points_interface[it].end());
+      (P->second).Triangles_interface[it].erase((P->second).Triangles_interface[it].begin(),(P->second).Triangles_interface[it].end());	(P->second).Position_Triangles_interface[it].erase((P->second).Position_Triangles_interface[it].begin(), (P->second).Position_Triangles_interface[it].end());
+    }
+    (P->second).triangles.erase((P->second).triangles.begin(),(P->second).triangles.end());
+    (P->second).normales.erase((P->second).normales.begin(),(P->second).normales.end());
+    (P->second).fluide.erase((P->second).fluide.begin(),(P->second).fluide.end());
+    (P->second).vide.erase((P->second).vide.begin(),(P->second).vide.end());
 		
-		//Calcul de la nouvelle position des triangles
-		for(int f=0;f<solide[i].faces.size();f++){
-			Point_3 s,r,v,t;
+    //Calcul de la nouvelle position des triangles
+    for(int f=0;f<(P->second).faces.size();f++){
+      Point_3 s,r,v,t;
 			
-			if(solide[i].faces[f].size() == 3){
-				vector<Point_3> ri,vi,si ;
-				for(int part=0; part<solide[i].faces[f].vertex[0].size();part++){
-					int p = solide[i].faces[f].vertex[0].particules[part];
-					ri.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[0].pos));
-				}
-				r = centroid(ri.begin(),ri.end());
-				
-				
-				for(int part=0;part<solide[i].faces[f].vertex[1].size();part++){
-					int p = solide[i].faces[f].vertex[1].particules[part];
-					vi.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[1].pos));
-				}
-				v = centroid(vi.begin(),vi.end());
-
-				for(int part=0;part<solide[i].faces[f].vertex[2].size();part++){
-					int p = solide[i].faces[f].vertex[2].particules[part];
-					si.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[2].pos));
-				}
-				s = centroid(si.begin(),si.end());
-				
-				Vector_3 vect0(r,v);
-				Vector_3 vect1(r,s);
-				Triangle_3 Tri(r,v,s);
-				solide[i].triangles.push_back(Tri);
-				Vector_3 normale = cross_product(vect0,vect1);
-				normale = normale*(1./sqrt((normale.squared_length())));
-				solide[i].normales.push_back(normale);
-				if(solide[i].faces[f].voisin < 0){
-					solide[i].fluide.push_back(true);
-				} else {
-					solide[i].fluide.push_back(false);
-				}
-				if( solide[i].faces[f].voisin == -2){
-					solide[i].vide.push_back(true);
-				} else {
-					solide[i].vide.push_back(false);
-				}
-			}
-// 	 else if(flag_2d){
-//  cout<<"update tag 0"<<endl;
-// 			 vector<Point_3> si,ri,vi,ti;
-// 			 for(int part=0;part<solide[i].faces[f].vertex[0].size();part++){
-// 				 int p = solide[i].faces[f].vertex[0].particules[part];
-// 				 si.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[0].pos));
-// 			 }
-// 			 s = centroid(ri.begin(),ri.end());
-// 			 for(int part=0;part<solide[i].faces[f].vertex[1].size();part++){
-// 				 int p = solide[i].faces[f].vertex[1].particules[part];
-// 				 ri.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[1].pos));
-// 			 }
-// 			 r = centroid(ri.begin(),ri.end());
-// 			 for(int part=0;part<solide[i].faces[f].vertex[2].size();part++){
-// 				 int p = solide[i].faces[f].vertex[2].particules[part];
-// 				 vi.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[2].pos));
-// 			 }
-// 			 v = centroid(vi.begin(),vi.end());
-// 			 
-// 			 for(int part=0;part<solide[i].faces[f].vertex[3].size();part++){
-// 				 int p = solide[i].faces[f].vertex[3].particules[part];
-// 				 ti.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[3].pos));
-// 			 }
-// 			 t = centroid(vi.begin(),vi.end());
-// 			 
-// 			 
-// 			 Vector_3 vect0(r,s);
-// 			 Vector_3 vect1(r,v);
-// 			 Triangle_3 Tri1(s,r,v);
-// 			 solide[i].triangles.push_back(Tri1);
-// 			 Vector_3 normale = CGAL::cross_product(vect0,vect1);
-// 			 normale = normale*(1./sqrt((normale.squared_length())));
-// 			 solide[i].normales.push_back(normale);
-// 			 
-// 			 Vector_3 vect2(v,s);
-// 			 Vector_3 vect3(v,t);
-// 			 Triangle_3 Tri2(v,t,s);
-// 			 solide[i].triangles.push_back(Tri2);
-// 			 Vector_3 normale2 = CGAL::cross_product(vect2,vect3);
-// 			 normale2 = normale2*(1./sqrt((normale2.squared_length())));
-// 			 solide[i].normales2.push_back(normale2);
-// 			 
-// 			 
-// 			 
-// 			 
-// 			 if(solide[i].faces[f].voisin < 0){
-// 				 solide[i].fluide.push_back(true);
-// 				 solide[i].fluide.push_back(true);
-// 			 } 
-// 			 else {
-// 				 solide[i].fluide.push_back(false);
-// 				 solide[i].fluide.push_back(false);
-// 			 }
-// 			 if( solide[i].faces[f].voisin == -2){
-// 				 solide[i].vide.push_back(true);
-// 				 solide[i].vide.push_back(true);
-// 			 } else {
-// 				 solide[i].vide.push_back(false);
-// 				 solide[i].vide.push_back(false);
-// 			 }
-// 			 cout<<"update tag 1"<<endl;
-// 	 }
-		else{
-			
-			vector<Point_3> si;
-			si.push_back(solide[i].mvt_t(solide[i].faces[f].centre));
-			int j = solide[i].faces[f].voisin;
-			if(j>=0){
-				si.push_back(solide[j].mvt_t(solide[i].faces[f].centre));
-			}
-			s = centroid(si.begin(),si.end());
-			
-			for(int k=0;k<solide[i].faces[f].size();k++){
-			  int kp = (k+1)%(solide[i].faces[f].size());
-			  vector<Point_3> ri,vi;
-			  for(int part=0;part<solide[i].faces[f].vertex[k].size();part++){
-			    int p = solide[i].faces[f].vertex[k].particules[part];
-			    ri.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[k].pos));
-			  }
-			  r = centroid(ri.begin(),ri.end());
-			  for(int part=0;part<solide[i].faces[f].vertex[kp].size();part++){
-			    int p = solide[i].faces[f].vertex[kp].particules[part];
-			    vi.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[kp].pos));
-			  }
-			  v = centroid(vi.begin(),vi.end());
-			  Vector_3 vect0(s,r);
-			  Vector_3 vect1(s,v);
-			  Triangle_3 Tri(s,r,v);
-			  solide[i].triangles.push_back(Tri);
-			  Vector_3 normale = cross_product(vect0,vect1);
-			  normale = normale*(1./sqrt((normale.squared_length())));			  
-			  solide[i].normales.push_back(normale);
-			  if(solide[i].faces[f].voisin < 0){
-			    solide[i].fluide.push_back(true);
-			  } 
-			  else {
-			    solide[i].fluide.push_back(false);
-			  }
-			  if( solide[i].faces[f].voisin == -2){
-			    solide[i].vide.push_back(true);
-			  } else {
-			    solide[i].vide.push_back(false);
-			  }
-			}
-		}
-			
-		}//Calcul de la nouvelle position des triangles
-		
+      if((P->second).faces[f].size() == 3){
+	vector<Point_3> ri,vi,si ;
+	for(int part=0; part<(P->second).faces[f].vertex[0].size();part++){
+	  int p = (P->second).faces[f].vertex[0].particules[part];
+	  ri.push_back(solide[p].mvt_t((P->second).faces[f].vertex[0].pos));
 	}
+	r = centroid(ri.begin(),ri.end());
+				
+				
+	for(int part=0;part<(P->second).faces[f].vertex[1].size();part++){
+	  int p = (P->second).faces[f].vertex[1].particules[part];
+	  vi.push_back(solide[p].mvt_t((P->second).faces[f].vertex[1].pos));
+	}
+	v = centroid(vi.begin(),vi.end());
+
+	for(int part=0;part<(P->second).faces[f].vertex[2].size();part++){
+	  int p = (P->second).faces[f].vertex[2].particules[part];
+	  si.push_back(solide[p].mvt_t((P->second).faces[f].vertex[2].pos));
+	}
+	s = centroid(si.begin(),si.end());
+				
+	Vector_3 vect0(r,v);
+	Vector_3 vect1(r,s);
+	Triangle_3 Tri(r,v,s);
+	(P->second).triangles.push_back(Tri);
+	Vector_3 normale = cross_product(vect0,vect1);
+	normale = normale*(1./sqrt((normale.squared_length())));
+	(P->second).normales.push_back(normale);
+	if((P->second).faces[f].voisin < 0){
+	  (P->second).fluide.push_back(true);
+	} else {
+	  (P->second).fluide.push_back(false);
+	}
+	if( (P->second).faces[f].voisin == -2){
+	  (P->second).vide.push_back(true);
+	} else {
+	  (P->second).vide.push_back(false);
+	}
+      }
+      else{
+			
+	vector<Point_3> si;
+	si.push_back(solide[i].mvt_t(solide[i].faces[f].centre));
+	int j = solide[i].faces[f].voisin;
+	if(j>=0){
+	  si.push_back(solide[j].mvt_t(solide[i].faces[f].centre));
+	}
+	s = centroid(si.begin(),si.end());
+			
+	for(int k=0;k<solide[i].faces[f].size();k++){
+	  int kp = (k+1)%(solide[i].faces[f].size());
+	  vector<Point_3> ri,vi;
+	  for(int part=0;part<solide[i].faces[f].vertex[k].size();part++){
+	    int p = solide[i].faces[f].vertex[k].particules[part];
+	    ri.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[k].pos));
+	  }
+	  r = centroid(ri.begin(),ri.end());
+	  for(int part=0;part<solide[i].faces[f].vertex[kp].size();part++){
+	    int p = solide[i].faces[f].vertex[kp].particules[part];
+	    vi.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[kp].pos));
+	  }
+	  v = centroid(vi.begin(),vi.end());
+	  Vector_3 vect0(s,r);
+	  Vector_3 vect1(s,v);
+	  Triangle_3 Tri(s,r,v);
+	  solide[i].triangles.push_back(Tri);
+	  Vector_3 normale = cross_product(vect0,vect1);
+	  normale = normale*(1./sqrt((normale.squared_length())));			  
+	  solide[i].normales.push_back(normale);
+	  if(solide[i].faces[f].voisin < 0){
+	    solide[i].fluide.push_back(true);
+	  } 
+	  else {
+	    solide[i].fluide.push_back(false);
+	  }
+	  if( solide[i].faces[f].voisin == -2){
+	    solide[i].vide.push_back(true);
+	  } else {
+	    solide[i].vide.push_back(false);
+	  }
+	}
+      }
+			
+    }//Calcul de la nouvelle position des triangles
+  }
 }
 
-
-// /*!
-// *\fn double Error(Solide& S1, Solide& S2)
-// *\brief Calcul d'erreur.
-// *\details Fonction appell&eacute;e dans le cas d'un sch&eacute;ma semi-implicite.  Crit&egrave;re d'arr&ecirc;t:  \n
-// \f{eqnarray*}{ error = max( \, \Vert S1.solide[i].Dx -  S2.solide[i].Dx \, \Vert_{\infty} + h_{max} \Vert \, S1.solide[i].e -  S2.solide[i].e \, \Vert_{\infty})_i  \f}\n
-// \f{eqnarray*}{
-// 	h_{max}=& max(abs(S1.max\_x - S1.min\_x),abs(S1.max\_y - S1.min\_y), \\ 
-// 	& abs(S1.max\_z - S1.min\_z), abs(S2.max\_x - S2.min\_x),\\ 
-// 	& abs(S2.max\_y - S2.min\_y),abs(S2.max\_z - S2.min\_z)).
-// 				 \f}
-				 
-// *\param S1 \a Solide au temps t+k
-// *\param S2 \a Solide au temps t+k-1
-// *\warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-// *\return double
-// */
-
-// double Error(Solide& S1, Solide& S2){
-	
-// 	double erreur = -1.;
-	
-// 	for(int it=0; it<S1.size(); it++){
-		
-// 	  double h_max1 = std::max(std::max((S1.solide[it].bbox.xmax() - S1.solide[it].bbox.xmin()),(S1.solide[it].bbox.ymax() - S1.solide[it].bbox.ymin())),              (S1.solide[it].bbox.zmax() - S1.solide[it].bbox.zmin())); 
-// 	  double h_max2 = std::max(std::max((S2.solide[it].bbox.xmax() - S2.solide[it].bbox.xmin()),(S2.solide[it].bbox.ymax() - S2.solide[it].bbox.ymin())),              (S2.solide[it].bbox.zmax() - S2.solide[it].bbox.zmin())); 
-// 	  double h_max = max(h_max1, h_max2);
-// 	  double err1 = std::max(std::max(abs((S1.solide[it].Dx[0] - S2.solide[it].Dx[0])), abs((S1.solide[it].Dx[1] - S2.solide[it].Dx[1]) )), abs((S1.solide[it].Dx[2] - S2.solide[it].Dx[2]))); 
-// 	  double err2 = std::max(std::max(abs((S1.solide[it].e[0] - S2.solide[it].e[0])), abs((S1.solide[it].e[1] - S2.solide[it].e[1]))), abs((S1.solide[it].e[2] - S2.solide[it].e[2]))); ;
-// 	  double erreur_temp = err1 + h_max * err2;
-// 	  erreur = std::max(erreur_temp, erreur);
-// 	}
-	
-// 	return erreur;
-// }	
-
-// /*!
-// * \fn void Copy_f_m(Solide& S1, Solide& S2)
-// *  \brief On copie les valeurs \a Ff et \a Mf du S2 dans S1.
-// *  \details Fonction appell&eacute;e dans le cas d'un sch&eacute;ma semi-implicite. 
-// *	\param S1 \a Solide au temps t
-// *	\param S2 \a Solide au temps t+k
-// *	\warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-// *	\return void
-// 	*/
-// void Copy_f_m(Solide& S1, Solide& S2){
-	
-// 	for(int it=0; it<S1.size(); it++){
-// 		S1.solide[it].Ff =  S2.solide[it].Ff ;
-// 		S1.solide[it].Mf =  S2.solide[it].Mf ;
-// 	}
-	
-// }	
-// /*!
-// * \fn bool inside_box(const Bbox& cell, const Point_3& P)
-// *\brief Fonction qui renvoie true si P est dans Box et false sinon.
-// *\param cell \a Box 
-// *\param P \a un point
-// *\warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-// *\return bool
-// */
-// bool inside_box(const Bbox& cell, const Point_3& P){
-	
-//   /*bool in = false;
-	
-// 	if((cell.xmin() - P.x())<= eps_relat && (cell.ymin() - P.y())<= eps_relat &&
-// 		(cell.zmin() - P.z())<= eps_relat && (cell.xmax() - P.x())>=-eps_relat &&
-// 		(cell.ymax() - P.y())>=-eps_relat && (cell.zmax() - P.z())>=-eps_relat )
-// 	{ in = true; }
-	
-// 	return in;*/
-//   return ((cell.xmin() - P.x())<= eps_relat && (cell.ymin() - P.y())<= eps_relat && (cell.zmin() - P.z())<= eps_relat && (cell.xmax() - P.x())>=-eps_relat && (cell.ymax() - P.y())>=-eps_relat && (cell.zmax() - P.z())>=-eps_relat );
-  
-// }	
-
-// /*!
-// * \fn bool inside_convex_polygon(const Particule& S, const Point_3& P)
-// *\brief Fonction qui renvoie true si P(point) est dans S(polygon convex) et false sinon.
-// *\param S \a Particule
-// *\param P \a un point
-// *\warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-// *\return bool
-// */
-// bool inside_convex_polygon(const Particule& S, const Point_3& P){
-	
-// 	bool in = false;
-	
-// 	//if((S.min_x - P.x())<= eps_relat && (S.min_y - P.y())<= eps_relat && (S.min_z - P.z())<= eps_relat && (S.max_x - P.x())>=-eps_relat && (S.max_y - P.y())>=-eps_relat && (S.max_z - P.z())>=-eps_relat )
-// 	if(CGAL::do_overlap(S.bbox,P.bbox()))
-// 	{
-// 		if(S.cube) {in = true;}
-// 		else{
-// 			in = true;
-// 			for(int l= 0; l<S.triangles.size() && in; l++){
-// 			  const Point_3& vertex = S.triangles[l][0];
-// 			  Vector_3 vect(P,vertex);
-// 			  if(((vect*S.normales[l])) < 0.){in = false;}
-// 			}
-// 		}
-// 	}
-	
-// 	return in;
-// }	
-
-
-
-// /*!
-// *\fn bool box_inside_convex_polygon(const Particule& S, const Bbox& cell)
-// *\brief Fonction qui renvoie true si cell(Box) est dans S(polygon convex) et false sinon.
-// *\param S \a Particule
-// *\param cell \a un Box
-// *\warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-// *\return bool
-// */
-// bool box_inside_convex_polygon(const Particule& S, const Bbox& cell){
-	
-// 	bool in = false;
-	
-// 	//if ((S.min_x - cell.xmin()) <= eps_relat && (S.min_y - cell.ymin() <= eps_relat) && (S.min_z - cell.zmin()) <= eps_relat && (S.max_x - cell.xmax() >=-eps_relat) && (S.max_y - cell.ymax()) >=-eps_relat && (S.max_z - cell.zmax()>=-eps_relat) ) 
-// 	if(CGAL::do_overlap(S.bbox,cell))
-// 	{
-// 		if(S.cube) { return S.cube;}
-		
-// 		else{
-			
-// 			in = true;
-			
-// 			Point_3 p1(cell.xmin(),cell.ymin(),cell.zmin());
-// 			in = inside_convex_polygon(S,p1);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p2(cell.xmax(),cell.ymax(),cell.zmax());
-// 			in = inside_convex_polygon(S,p2);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p3(cell.xmax(),cell.ymin(),cell.zmin());
-// 			in = inside_convex_polygon(S,p3);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p4(cell.xmax(),cell.ymin(),cell.zmax());
-// 			in = inside_convex_polygon(S,p4);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p5(cell.xmax(),cell.ymax(),cell.zmin());
-// 			in = inside_convex_polygon(S,p5);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p6(cell.xmin(),cell.ymax(),cell.zmin());
-// 			in = inside_convex_polygon(S,p6);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p7(cell.xmin(),cell.ymax(),cell.zmax());
-// 			in = inside_convex_polygon(S,p7);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p8(cell.xmin(),cell.ymin(),cell.zmax());
-// 			in = inside_convex_polygon(S,p8);
-// 			if(!in) {return in;}
-			
-// 		}
-// 	}
-	
-// 	return in;
-// }
-
-
-// bool box_inside_tetra(const Tetrahedron &tetra, const Bbox& cell){
-	
-// 	bool in = false;
-	
-// 	//Bbox box_tetra= tetra.bbox();
-	
-// 	//if ((box_tetra.xmin() - cell.xmin()) <= eps_relat && (box_tetra.ymin() - cell.ymin() <= eps_relat) && (box_tetra.zmin() - cell.zmin()) <= eps_relat && (box_tetra.xmax() - cell.xmax() >=-eps_relat) && (box_tetra.ymax() - cell.ymax()) >=-eps_relat && (box_tetra.zmax() - cell.zmax()>=-eps_relat) )
-// 	if(CGAL::do_overlap(tetra.bbox(),cell))
-// 	{
-// 			in = true;
-			
-// 			Point_3 p1(cell.xmin(),cell.ymin(),cell.zmin());
-// 			in = inside_tetra(tetra,p1);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p2(cell.xmax(),cell.ymax(),cell.zmax());
-// 			in = inside_tetra(tetra,p2);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p3(cell.xmax(),cell.ymin(),cell.zmin());
-// 			in = inside_tetra(tetra,p3);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p4(cell.xmax(),cell.ymin(),cell.zmax());
-// 			in = inside_tetra(tetra,p4);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p5(cell.xmax(),cell.ymax(),cell.zmin());
-// 			in = inside_tetra(tetra,p5);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p6(cell.xmin(),cell.ymax(),cell.zmin());
-// 			in = inside_tetra(tetra,p6);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p7(cell.xmin(),cell.ymax(),cell.zmax());
-// 			in = inside_tetra(tetra,p7);
-// 			if(!in) {return in;}
-			
-// 			Point_3 p8(cell.xmin(),cell.ymin(),cell.zmax());
-// 			in = inside_tetra(tetra,p8);
-// 			if(!in) {return in;}
-
-// 	}
-	
-// 	return in;
-// }
-
-
-
-/*!
-*\fn void Solide::Impression(int n)
-*\brief Impression des r&eacute;sultats. 
-*\param n num&eacute;ro de l'iteration en temps
-*\return void
-*/
 void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au format vtk
   int nb_part = solide.size();
 //Version avec reconstruction
@@ -3253,26 +2859,6 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
       }
     }
     vtk << "\n";
-    //Rotation en x
-    /*vtk << "VECTORS e double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].e[0] << " " << solide[it].e[1] << " " << solide[it].e[2] << endl;
-      }
-    }
-    vtk << "\n";*/
-    //Vitesse de rotation
-    /*vtk << "VECTORS omega double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].omega[0] << " " << solide[it].omega[1] << " " << solide[it].omega[2] << endl;
-      }
-    }
-    vtk << "\n";*/
     vtk.close();
   }
   //Sortie sans reconstruction
@@ -3400,187 +2986,8 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
       }
     }
     vtk << "\n";
-    //Rotation en x
-    /*vtk << "VECTORS e double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).e << endl;
-      }
-    }
-    vtk << "\n";*/
-    //Rotation en x
-    /*vtk << "VECTORS eref double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).eref << endl;
-      }
-    }
-    vtk << "\n";*/
-    //Vitesse de rotation
-    /*vtk << "VECTORS omega double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).omega << endl;
-      }
-    }
-    vtk << "\n";*/
     vtk.close();
   }
 }
-
-// void Solide::breaking_criterion(){
-// 	for(int it=0; it<solide.size(); it++){
-// 		//cout<<"particule it "<<it<<endl; 
-// 		for(int i=0; i<solide[it].faces.size(); i++){
-// 			if(solide[it].faces[i].voisin >= 0){
-// 				for(int iter=0; iter<solide.size(); iter++){
-// 						if(it!=iter){
-// 								if(solide[it].faces[i].voisin == iter){
-// 									double distance = sqrt((CGAL::squared_distance(Point_3(solide[it].Dx.x() + solide[it].x0.x(), solide[it].Dx.y() + solide[it].x0.y(), solide[it].Dx.z() + solide[it].x0.z())  ,Point_3(solide[iter].Dx.x() + solide[iter].x0.x(),solide[iter].Dx.y() + solide[iter].x0.y(), solide[iter].Dx.z() + solide[iter].x0.z()) )));
-// 	                  if( (distance - solide[it].faces[i].D0)/solide[it].faces[i].D0 >= k_max){
-// 										cout<<"BREAK!!!!"<<endl; //cout<<"particule iter "<<iter<<endl;
-// 										solide[it].faces[i].voisin = -2;
-// 										int j;
-// 										for(int f=0; f<solide[iter].faces.size(); f++){ //
-// 											if(solide[iter].faces[f].voisin == it){
-// 										    solide[iter].faces[f].voisin = -2;
-// 												j=f;
-// 											}
-// 										}
-// 										for(int count=0; count<solide[it].faces.size() ; count++){
-// 											for(int ii=0; ii<solide[it].faces[count].vertex.size(); ii++)
-// 											{ 
-// 												std::vector<int> particules;
-// 												for(int part=0; part<solide[it].faces[count].vertex[ii].particules.size(); part++){
-// 													if(solide[it].faces[count].vertex[ii].particules[part] != iter){
-// 														particules.push_back(solide[it].faces[count].vertex[ii].particules[part]);
-// 													}
-// 												}
-// 													solide[it].faces[count].vertex[ii].particules.erase(solide[it].faces[count].vertex[ii].particules.begin(),
-// 																																					solide[it].faces[count].vertex[ii].particules.end());
-// 												  solide[it].faces[count].vertex[ii].particules = particules;
-																																					
-// 											}
-// 									 }
-// 									 for(int count=0; count<solide[iter].faces.size() ; count++){
-// 										 for(int ii=0; ii<solide[iter].faces[count].vertex.size(); ii++)
-// 											{ 
-// 												std::vector<int> particules;
-// 												for(int part=0; part<solide[iter].faces[count].vertex[ii].particules.size(); part++){
-// 													if(solide[iter].faces[count].vertex[ii].particules[part] != it){
-// 														particules.push_back(solide[iter].faces[count].vertex[ii].particules[part]);
-// 													}
-// 												}
-// 												solide[iter].faces[count].vertex[ii].particules.erase(solide[iter].faces[count].vertex[ii].particules.begin(),
-// 																																							solide[iter].faces[count].vertex[ii].particules.end());
-// 												solide[iter].faces[count].vertex[ii].particules = particules;
-// 											}
-// 									  }
-// 									  for(int count=0; count<solide.size() ; count++){
-// 											if(count != it && count != iter){
-// 												bool voisin_it = false;
-// 												for(int jj=0; jj<solide[count].faces.size() ; jj++){
-// 													if(solide[count].faces[jj].voisin==it){
-// 														voisin_it=true;
-// 													}
-// 												}
-// 												if(!voisin_it){
-// 													//cout<<"voisin it"<<endl;
-// 													for(int kk=0; kk<solide[it].faces[i].size() ; kk++){
-// 															for(int jj=0; jj<solide[count].faces.size() ; jj++){
-// 																for(int ii=0; ii<solide[count].faces[jj].vertex.size(); ii++)
-// 																{   
-// 																	if(solide[it].faces[i].vertex[kk].num == solide[count].faces[jj].vertex[ii].num){
-// 																			std::vector<int> particules;
-// 																			for(int part=0; part<solide[count].faces[jj].vertex[ii].particules.size(); part++){
-// 																				if(solide[count].faces[jj].vertex[ii].particules[part] != it){
-// 																					particules.push_back(solide[count].faces[jj].vertex[ii].particules[part]);
-// 																				}
-// 																			}
-// 																			solide[count].faces[jj].vertex[ii].particules.erase(solide[count].faces[jj].vertex[ii].particules.begin(), solide[count].faces[jj].vertex[ii].particules.end());
-// 																			solide[count].faces[jj].vertex[ii].particules = particules;
-// 																  }
-// 																}
-// 															}
-// 													}
-// 													for(int kk=0; kk<solide[it].faces[i].size() ; kk++){
-// 														for(int jj=0; jj<solide[it].faces.size() ; jj++){
-// 															for(int ii=0; ii<solide[it].faces[jj].vertex.size(); ii++)
-// 															{   
-// 																if(solide[it].faces[i].vertex[kk].num == solide[it].faces[jj].vertex[ii].num){
-// 																	std::vector<int> particules;
-// 																	for(int part=0; part<solide[it].faces[jj].vertex[ii].particules.size(); part++){
-// 																		if(solide[it].faces[jj].vertex[ii].particules[part] != count){
-// 																			particules.push_back(solide[it].faces[jj].vertex[ii].particules[part]);
-// 																		}
-// 																	}
-// 																	solide[it].faces[jj].vertex[ii].particules.erase(solide[it].faces[jj].vertex[ii].particules.begin(), solide[it].faces[jj].vertex[ii].particules.end());
-// 																	solide[it].faces[jj].vertex[ii].particules = particules;
-// 																}
-// 															}
-// 														}
-// 													}
-// 												}
-// 												bool voisin_iter = false;
-// 												for(int jj=0; jj<solide[count].faces.size() ; jj++){
-// 													if(solide[count].faces[jj].voisin == iter){
-// 														voisin_iter=true;
-// 													}
-// 												}
-// 												if(!voisin_iter){
-// 													//cout<<"voisin iter"<<endl;
-// 													for(int kk=0; kk<solide[iter].faces[j].size() ; kk++){
-// 														for(int jj=0; jj<solide[count].faces.size() ; jj++){
-// 															for(int ii=0; ii<solide[count].faces[jj].vertex.size(); ii++)
-// 															{   
-// 																if(solide[iter].faces[j].vertex[kk].num == solide[count].faces[jj].vertex[ii].num){
-// 																	std::vector<int> particules;
-// 																	for(int part=0; part<solide[count].faces[jj].vertex[ii].particules.size(); part++){
-// 																		if(solide[count].faces[jj].vertex[ii].particules[part] != iter){
-// 																			particules.push_back(solide[count].faces[jj].vertex[ii].particules[part]);
-// 																		}
-// 																	}
-// 																	solide[count].faces[jj].vertex[ii].particules.erase(solide[count].faces[jj].vertex[ii].particules.begin(), solide[count].faces[jj].vertex[ii].particules.end());
-// 																	solide[count].faces[jj].vertex[ii].particules = particules;
-// 																}
-// 															}
-// 														}
-// 													}
-// 													for(int kk=0; kk<solide[iter].faces[j].size() ; kk++){
-// 														for(int jj=0; jj<solide[iter].faces.size() ; jj++){
-// 															for(int ii=0; ii<solide[iter].faces[jj].vertex.size(); ii++)
-// 															{   
-// 																if(solide[iter].faces[j].vertex[kk].num == solide[iter].faces[jj].vertex[ii].num){
-// 																	std::vector<int> particules;
-// 																	for(int part=0; part<solide[iter].faces[jj].vertex[ii].particules.size(); part++){
-// 																		if(solide[iter].faces[jj].vertex[ii].particules[part] != count){
-// 																			particules.push_back(solide[iter].faces[jj].vertex[ii].particules[part]);
-// 																		}
-// 																	}
-// 																	solide[iter].faces[jj].vertex[ii].particules.erase(solide[iter].faces[jj].vertex[ii].particules.begin(), solide[iter].faces[jj].vertex[ii].particules.end());
-// 																	solide[iter].faces[jj].vertex[ii].particules = particules;
-// 																}
-// 															}
-// 														}
-// 													}
-// 												}
-												
-// 											} //end !it et !iter
-// 										}//end count
-									  
-// 									} //break
-// 								}
-// 						}
-// 					}
-// 			}
-// 		}
-// 	}
-// 	//cout<<"Affiche "<<endl; Affiche();
-// 	//cout<<"fin break"<<endl;
-// }
-
 
 #endif
