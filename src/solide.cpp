@@ -2161,6 +2161,13 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       maillage_2 >> s >> x >> s >> y >> s >> z >> s;
       f[i].normale = Vector_3(x, y, z);
     }
+
+    //Voisin par face
+    for(int i=0 ; i < nbr_faces ; i++) {
+      int id_voisin;
+      maillage_2 >> id_voisin;
+      f[i].voisin = id_voisin;
+    }
   }
 }
 
