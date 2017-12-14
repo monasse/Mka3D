@@ -254,7 +254,7 @@ void Face::Inertie(){
  * \brief Constructeur par d&eacute;faut. 
  */
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -487,7 +487,7 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), n_elas_pr
 */
 
 Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
-		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
+		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -722,7 +722,7 @@ Particule::Particule(const double &x_min, const double &y_min, const double &z_m
  */
 Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
 		     const double& x_max, const double& y_max,const double& z_max, 
-		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p(), n_elas_prev()
+		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p()
 {
   //discrete_gradient = 0.; //Gradient reconstruit par particule
   //contrainte = 0.; //Contrainte par particule
@@ -2028,17 +2028,14 @@ Solide::Solide(){
   mu = 0.;
 }
 
-Solide::Solide(const std::vector<Particule> & Part){
+/*Solide::Solide(const std::vector<Particule> & Part){
   lambda = 0.;
   mu = 0.;
   for(int i=0; i<Part.size(); i++){
     solide.push_back(Part[i]);
   }
-}
-/*!
-*\fn Cellule::~Cellule()
-*\brief Destructeur.
-*/ 
+  }*/
+
 Solide::~Solide(){   
 }
 
@@ -2048,11 +2045,11 @@ Solide::~Solide(){
 *\param S Solide
 *\return Solide
 */
-Solide & Solide:: operator=(const Solide &S){
+Solide & Solide::operator=(const Solide &S){
   assert(this != &S);
-  solide.resize(S.solide.size());
-  for(int i=0; i<S.solide.size(); i++){
-    solide[i]= S.solide[i];
+  //solide.resize(S.solide.size());
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    solide[P->first]= P->second;
   }
 }
 /*!
@@ -2118,7 +2115,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   while(getline(maillage_2, ligne)) {
     int id;
     int nbr_faces;
-    vector<Faces> f;
+    vector<Face> f;
     double x,y,z;
     double S;
     maillage_2 >> id >> nbr_faces;
@@ -2310,7 +2307,7 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
 }
 
 void Solide::update_triangles(){
-  for(int i=0;i<solide.size();i++){
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (P->second).triangles_prev = (P->second).triangles;
     (P->second).normales_prev = (P->second).normales;
     (P->second).fluide_prev = (P->second).fluide;
@@ -2372,43 +2369,43 @@ void Solide::update_triangles(){
       else{
 			
 	vector<Point_3> si;
-	si.push_back(solide[i].mvt_t(solide[i].faces[f].centre));
-	int j = solide[i].faces[f].voisin;
+	si.push_back((P->second).mvt_t((P->second).faces[f].centre));
+	int j = (P->second).faces[f].voisin;
 	if(j>=0){
-	  si.push_back(solide[j].mvt_t(solide[i].faces[f].centre));
+	  si.push_back(solide[j].mvt_t((P->second).faces[f].centre));
 	}
 	s = centroid(si.begin(),si.end());
 			
-	for(int k=0;k<solide[i].faces[f].size();k++){
-	  int kp = (k+1)%(solide[i].faces[f].size());
+	for(int k=0;k<(P->second).faces[f].size();k++){
+	  int kp = (k+1)%((P->second).faces[f].size());
 	  vector<Point_3> ri,vi;
-	  for(int part=0;part<solide[i].faces[f].vertex[k].size();part++){
-	    int p = solide[i].faces[f].vertex[k].particules[part];
-	    ri.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[k].pos));
+	  for(int part=0;part<(P->second).faces[f].vertex[k].size();part++){
+	    int p = (P->second).faces[f].vertex[k].particules[part];
+	    ri.push_back(solide[p].mvt_t((P->second).faces[f].vertex[k].pos));
 	  }
 	  r = centroid(ri.begin(),ri.end());
-	  for(int part=0;part<solide[i].faces[f].vertex[kp].size();part++){
-	    int p = solide[i].faces[f].vertex[kp].particules[part];
-	    vi.push_back(solide[p].mvt_t(solide[i].faces[f].vertex[kp].pos));
+	  for(int part=0;part<(P->second).faces[f].vertex[kp].size();part++){
+	    int p = (P->second).faces[f].vertex[kp].particules[part];
+	    vi.push_back(solide[p].mvt_t((P->second).faces[f].vertex[kp].pos));
 	  }
 	  v = centroid(vi.begin(),vi.end());
 	  Vector_3 vect0(s,r);
 	  Vector_3 vect1(s,v);
 	  Triangle_3 Tri(s,r,v);
-	  solide[i].triangles.push_back(Tri);
+	  (P->second).triangles.push_back(Tri);
 	  Vector_3 normale = cross_product(vect0,vect1);
 	  normale = normale*(1./sqrt((normale.squared_length())));			  
-	  solide[i].normales.push_back(normale);
-	  if(solide[i].faces[f].voisin < 0){
-	    solide[i].fluide.push_back(true);
+	  (P->second).normales.push_back(normale);
+	  if((P->second).faces[f].voisin < 0){
+	    (P->second).fluide.push_back(true);
 	  } 
 	  else {
-	    solide[i].fluide.push_back(false);
+	    (P->second).fluide.push_back(false);
 	  }
-	  if( solide[i].faces[f].voisin == -2){
-	    solide[i].vide.push_back(true);
+	  if( (P->second).faces[f].voisin == -2){
+	    (P->second).vide.push_back(true);
 	  } else {
-	    solide[i].vide.push_back(false);
+	    (P->second).vide.push_back(false);
 	  }
 	}
       }
