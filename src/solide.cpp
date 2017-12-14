@@ -28,10 +28,11 @@
 #include "vitesse.hpp"
 #include <iostream>
 #include <map>
+//#include <string>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
-
+//using namespace std;
 
 inline double signe(const double &x)
 {
@@ -2090,10 +2091,9 @@ void Solide::Affiche(){
 *\return void
 */
 void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
-  string s;
-  std::ifstream maillage_1(s,ios::in);
-  std::ifstream maillage_2(s,ios::in);
-  std::ifstream maillage_3(s,ios::in);
+  std::ifstream maillage_1(s1,ios::in);
+  std::ifstream maillage_2(s2,ios::in);
+  std::ifstream maillage_3(s2,ios::in);
   if(not(maillage_1 && maillage_2 && maillage_3))
     cout <<"ouverture du maillage ratee" << endl;
 
@@ -2101,15 +2101,19 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   map<int, Particule> P; //map qui indices les particules du maillage par le numéro qu'on va sortir du permier fichier
   string ligne;
   while(getline(maillage_1, ligne)) {
+    //string line(ligne);
     int id;
     Particule part();
     string s;
     int Nvertex;
-    ligne >> id >> Nvertex;
+    //line >> id >> Nvertex;
+    maillage_1 >> id >> Nvertex;
     double x,y,z;
-    ligne >> s; //On enlèva la première parenthèse
+    //line >> s; //On enlèva la première parenthèse
+    maillage_1 >> s;
     while(s != "\n") { //Tant qu'on atteint pas la fin de la ligne, on stock les points des vertex
-      ligne >> x >> s >> y >> s >> z >> s >> s;
+      //line >> x >> s >> y >> s >> z >> s >> s;
+      maillage_1 >> x >> s >> y >> s >> z >> s >> s;
       cout << x << y << z << endl;
       Point_3 point(x,y,z);
       part.vertices.push_back(point); //ajout du vertex dans la particule
@@ -2328,7 +2332,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       solide[i].mvt_t = translation*(rotation*translation_inv);
     }
     update_triangles();
-  }
+    }
   
 }
 
