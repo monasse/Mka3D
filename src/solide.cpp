@@ -804,17 +804,10 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 Particule::~Particule(){
 }
 
-Particule & Particule:: operator=(const Particule &P){
+/*Particule & Particule:: operator=(const Particule &P){
 	
 	assert(this != &P);
-	
-	/*min_x = P.min_x;
-	min_y = P.min_y;
-	min_z = P.min_z;
-	max_x = P.max_x;
-	max_y = P.max_y;
-	max_z = P.max_z;*/
-	bbox = P.bbox;
+       	bbox = P.bbox;
 	cube  = P.cube;
 	
 	faces = P.faces;
@@ -931,34 +924,23 @@ Particule & Particule:: operator=(const Particule &P){
 		}
 	}
 	
-}
-/*!
-* \fn void Particule::Affiche()
-* \brief Fonction auxiliaire utile pour les tests.
- */
+	}*/
+
 void Particule::Affiche(){
-	
-	for(int i=0; i<faces.size(); i++){
-		cout<<"face "<<i<<endl;
-		cout<<" voisin "<<faces[i].voisin<<endl;
-		for(int j=0; j<faces[i].size() ;j++){
-			cout<<" vertex "<<faces[i].vertex[j].num<<endl;
-			for(int k=0; k<faces[i].vertex[j].particules.size();k++){
-				cout<<faces[i].vertex[j].particules[k]<<endl;
-			}
-		}
-	}
+  for(int i=0; i<faces.size(); i++){
+    cout<<"face "<<i<<endl;
+    cout<<" voisin "<<faces[i].voisin<<endl;
+    for(int j=0; j<faces[i].size() ;j++){
+      cout<<" vertex "<<faces[i].vertex[j].num<<endl;
+      for(int k=0; k<faces[i].vertex[j].particules.size();k++){
+	cout<<faces[i].vertex[j].particules[k]<<endl;
+      }
+    }
+  }
 
 }
 
-/*!
-* \fn void Particule::solve_position(double dt, bool flag_2d)
-* \brief Calcul de la position de la particule.
-* \param dt pas de temps
-* \details  \warning Utilisation de \a Particule.Ff et \a Particule.Mf (forces et moments fluides exerc&eacute;s sur le solide entre t et t+dt/2) \n
-  <b>\a Particule.Ff et \a Particule.Mf param&egrave;tres sp&eacute;cifiques au  couplage! </b>
-* \return void
- */
+
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double rot[3][3];
@@ -2244,7 +2226,7 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
   return dt;
 }
 
-void Solide::update_triangles(){
+/*void Solide::update_triangles(){
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (P->second).triangles_prev = (P->second).triangles;
     (P->second).normales_prev = (P->second).normales;
@@ -2350,7 +2332,7 @@ void Solide::update_triangles(){
 			
     }//Calcul de la nouvelle position des triangles
   }
-}
+  }*/
 
 void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au format vtk
   int nb_part = solide.size();
