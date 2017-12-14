@@ -2049,12 +2049,11 @@ Solide::~Solide(){
 *\return Solide
 */
 Solide & Solide:: operator=(const Solide &S){
-	
-	assert(this != &S);
-	solide.resize(S.solide.size());
-	for(int i=0; i<S.solide.size(); i++){
-		solide[i]= S.solide[i];
-	}
+  assert(this != &S);
+  solide.resize(S.solide.size());
+  for(int i=0; i<S.solide.size(); i++){
+    solide[i]= S.solide[i];
+  }
 }
 /*!
 *\fn void Solide::Affiche()
@@ -2082,7 +2081,6 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     cout <<"ouverture du maillage ratee" << endl;
 
   //Importation des particules et des vertex
-  //map<int, Particule> P; //map qui indices les particules du maillage par le numéro qu'on va sortir du permier fichier
   string s;
   string ligne;
   while(getline(maillage_1, ligne)) {
@@ -2146,351 +2144,37 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 }
 
-  //Recuperation du maillage solide
-  /*int Npoint;
-  string sp;
-  maillage >> sp >> Npoint;
-  const int nb_points = Npoint;
-  
-  vector<Point_3> Points(nb_points);
-  
-  for(int i=0;i<nb_points;i++){
-    double x,y,z;
-    maillage >> x >> y >> z;
-    Points[i] = Point_3(x,y,z);
-  }
-  
-  int Npart;
-  string sP;
-  maillage >> sP >> Npart;
-  const int nb_particule = Npart;
-  
-  vector<Particule> P(nb_particule);
-  vector<int> particules_vertex[nb_points];
-  
-  for(int i=0;i<nb_particule;i++){
-    int Nfaces;
-    int fixe;
-    double X,Y,Z,u,v,w,theta,phi,psi,xmin,ymin,zmin,xmax,ymax,zmax;
-    string s;
-    maillage >> s >> Nfaces >> fixe;
-    maillage >> s >> X >> Y >> Z;
-    Point_3 centre(X,Y,Z);
-    maillage >> s >> u >> v >> w;
-    maillage >> s >> theta >> phi >> psi;
-    xmin = X;
-    ymin = Y;
-    zmin = Z;
-    xmax = X;
-    ymax = Y;
-    zmax = Z;
-    const int nb_faces = Nfaces;
-    std::vector<Face> Faces(nb_faces);
-    std::vector<Point_3> points_c;
-    for(int j=0;j<nb_faces;j++){
-      int Nvertex;
-      maillage >> Nvertex;
-      const int nb_vertex = Nvertex;
-      std::vector<Vertex> Vertex(nb_vertex);
-      for(int k=0;k<nb_vertex;k++){
-	int p;
-	maillage >> p;
-	Vertex[k].pos = Points[p];
-	points_c.push_back(Points[p]);
-	Vertex[k].num = p;
-	//points_particules[p][i] = true;
-	particules_vertex[p].push_back(i);
-	double x = (Points[p][0]);
-	double y = (Points[p][1]);
-	double z = (Points[p][2]);
-	xmin = min(x,xmin);
-	xmax = max(x,xmax);
-	ymin = min(y,ymin);
-	ymax = max(y,ymax);
-	zmin = min(z,zmin);
-	zmax = max(z,zmax);
-      }
-      int voisin;
-      maillage >> voisin;
-      Faces[j] = Face(Vertex, voisin);
-    }
-    
-    Point_3 center_part= centroid(points_c.begin(), points_c.end());
-	
-    if(fixe==0 || fixe==1){
-      P[i] = Particule(center_part, xmin, ymin, zmin, xmax, ymax, zmax, Faces);
-    } else {
-      P[i] = Particule(centre, xmin, ymin, zmin, xmax, ymax, zmax, Faces);
-    }
-    P[i].fixe = fixe;
-    P[i].u = Vector_3(u,v,w);
-    P[i].omega = Vector_3(theta,phi,psi);
-    P[i].u_half = Vector_3(u,v,w);
-    P[i].omega_half = Vector_3(theta,phi,psi);
-  }
-  //Boucle de mise a jour des particules sur les sommets du maillage
-  //Mise a jour des distances a l'equilibre entre particules en meme temps
-  for(int i=0;i<P.size();i++){
-    for(int j=0;j<P[i].faces.size();j++){
-      for(int k=0;k<P[i].faces[j].size();k++){
-	for(vector<int>::iterator l=particules_vertex[P[i].faces[j].vertex[k].num].begin();l!=particules_vertex[P[i].faces[j].vertex[k].num].end();l++){
-	  //if(points_particules[P[i].faces[j].vertex[k].num][l]){
-	  P[i].faces[j].vertex[k].particules.push_back(*l);
-	  //cout << i << " " << j << " " << k << " " <<  P[i].faces[j].vertex[k].num << " " << l << endl;
-	  //cout << P[i].faces[j].vertex[k].num << " " << l << endl;
-	  //getchar();
-	  //}
-	}
-	if(P[i].faces[j].voisin>=0){
-	  P[i].faces[j].D0 = sqrt((squared_distance(P[i].x0,P[P[i].faces[j].voisin].x0)));
-	}
-      }
-    }
-  }
-
-  for(int i=0; i<P.size(); i++){
-    solide.push_back(P[i]);
-  }
-  
-  //Initialisation de la position et de l'inertie du solide
-  for(int i=0; i<solide.size(); i++){
-    solide[i].Dx = Vector_3(0.,0.,0.);
-    solide[i].Dxprev = Vector_3(0.,0.,0.);
-    solide[i].Fi = Vector_3(0.,0.,0.);
-    solide[i].Ff = Vector_3(0.,0.,0.);
-    solide[i].Ffprev = Vector_3(0.,0.,0.);
-    solide[i].Mi = Vector_3(0.,0.,0.);
-    solide[i].Mf = Vector_3(0.,0.,0.);
-    solide[i].Mfprev = Vector_3(0.,0.,0.);
-    solide[i].e = Vector_3(0.,0.,0.);
-    solide[i].eprev = Vector_3(0.,0.,0.);
-    solide[i].Inertie(rho);
-    solide[i].mvt_t = Aff_transformation_3(1,0,0,0,1,0,0,0,1);
-    solide[i].mvt_tprev = Aff_transformation_3(1,0,0,0,1,0,0,0,1);
-  }
-
-  //En cas de reprise
-  if(rep){
-    std::ostringstream oss;
-    oss << "resultats/solide" << numrep << ".vtk";
-    string s = oss.str();
-    const char* nom = s.c_str();
-    std::ifstream init(nom,std::ios::in);
-    string dump;
-    int nb_part = solide.size();
-    int nb_triangles = 0.;
-    for(int it=0; it<nb_part; it++){
-      nb_triangles += solide[it].triangles.size();
-    }
-    for(int it=0;it<5*nb_triangles+13;it++){
-      getline(init,dump);
-    }
-    cout << dump << endl;
-    //Recuperation du deplacement
-    for(int it=0; it<nb_part; it++){
-      double Dx,Dy,Dz;
-      init >> Dx >> Dy >> Dz;
-      solide[it].Dx = Vector_3(Dx,Dy,Dz);
-      for(int l= 0; l<solide[it].triangles.size(); l++){
-	getline(init,dump);
-      }
-    }
-    getline(init,dump);
-    getline(init,dump);
-    cout << dump << endl;
-    //Recuperation de la vitesse
-    for(int it=0; it<nb_part; it++){
-      double u,v,w;
-      init >> u >> v >> w;
-      solide[it].u = Vector_3(u,v,w);
-      for(int l= 0; l<solide[it].triangles.size(); l++){
-	getline(init,dump);
-      }
-    }
-    getline(init,dump);
-    getline(init,dump);
-    cout << dump << endl;
-    //Recuperation du vecteur de rotation
-    for(int it=0; it<nb_part; it++){
-      double ex,ey,ez;
-      init >> ex >> ey >> ez;
-      solide[it].e = Vector_3(ex,ey,ez);
-      for(int l= 0; l<solide[it].triangles.size(); l++){
-	getline(init,dump);
-      }
-    }
-    getline(init,dump);
-    getline(init,dump);
-    cout << dump << endl;
-    //Recuperation de la vitesse de rotation
-    for(int it=0; it<nb_part; it++){
-      double omegax,omegay,omegaz;
-      init >> omegax >> omegay >> omegaz;
-      solide[it].omega = Vector_3(omegax,omegay,omegaz);
-      for(int l= 0; l<solide[it].triangles.size(); l++){
-	getline(init,dump);
-      }
-    }
-    init.close();
-    //Mise a jour de differents parametres
-    for(int i=0; i<solide.size(); i++){
-      solide[i].Dxprev = solide[i].Dx;
-      solide[i].eprev = solide[i].e;
-      double rot[3][3];
-      //Recuperation de la matrice de rotation
-      double e0 = sqrt(abs(1.-(solide[i].e.squared_length())));
-      rot[0][0] = 1.-2.*(solide[i].e[1]*solide[i].e[1]+solide[i].e[2]*solide[i].e[2]);
-      rot[0][1] = 2.*(-e0*solide[i].e[2]+solide[i].e[0]*solide[i].e[1]);
-      rot[0][2] = 2.*(e0*solide[i].e[1]+solide[i].e[0]*solide[i].e[2]);
-      rot[1][0] = 2.*(e0*solide[i].e[2]+solide[i].e[1]*solide[i].e[0]);
-      rot[1][1] = 1.-2.*(solide[i].e[0]*solide[i].e[0]+solide[i].e[2]*solide[i].e[2]);
-      rot[1][2] = 2.*(-e0*solide[i].e[0]+solide[i].e[1]*solide[i].e[2]);
-      rot[2][0] = 2.*(-e0*solide[i].e[1]+solide[i].e[2]*solide[i].e[0]);
-      rot[2][1] = 2.*(e0*solide[i].e[0]+solide[i].e[2]*solide[i].e[1]);
-      rot[2][2] = 1.-2.*(solide[i].e[0]*solide[i].e[0]+solide[i].e[1]*solide[i].e[1]);
-      Aff_transformation_3 rotation(rot[0][0],rot[0][1],rot[0][2],rot[1][0],rot[1][1],rot[1][2],rot[2][0],rot[2][1],rot[2][2]);
-      Aff_transformation_3 translation(Vector_3(Point_3(0.,0.,0.),solide[i].x0)+solide[i].Dx);
-
-      Aff_transformation_3 translation_inv(Vector_3(solide[i].x0,Point_3(0.,0.,0.)));
-      solide[i].mvt_tprev = solide[i].mvt_t;
-      solide[i].mvt_t = translation*(rotation*translation_inv);
-    }
-    update_triangles();
-    }
-  
-}*/
-
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  for(int i=0;i<size();i++){
-    solide[i].solve_position(dt, flag_2d, t, T);
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    (P->second).solve_position(dt, flag_2d, t, T);
   }
   //breaking_criterion();
-  update_triangles();
-	for(int i=0;i<size();i++){
-	  //double x_min = solide[i].max_x, y_min=solide[i].max_y, z_min=solide[i].max_z, x_max =solide[i].max_x, y_max=solide[i].max_y, z_max =solide[i].max_z;
-	
-	  for(std::vector<Triangle_3>::iterator it=solide[i].triangles.begin();it!=solide[i].triangles.end();it++){
-	    for(int k=0;k<3;k++){
-	      solide[i].bbox = Bbox(min(solide[i].bbox.xmin(),((*it).vertex(k).x())),min(solide[i].bbox.ymin(),((*it).vertex(k).y())),min(solide[i].bbox.zmin(),((*it).vertex(k).z())),max(solide[i].bbox.xmax(),((*it).vertex(k).x())),max(solide[i].bbox.ymax(),((*it).vertex(k).y())),max(solide[i].bbox.zmax(),((*it).vertex(k).z())));
-	    }
-	  }
-	  
-	  /*for(int j=0;j<solide[i].triangles.size();j++){
-			
-	    
-			x_min = min( x_min ,min((solide[i].triangles[j][0].x()), min((solide[i].triangles[j][1].x()), (solide[i].triangles[j][2].x()) )) );
-			
-			y_min = min( y_min ,min((solide[i].triangles[j][0].y()), min((solide[i].triangles[j][1].y()), (solide[i].triangles[j][2].y()) )) );
-			
-			z_min = min( z_min ,min((solide[i].triangles[j][0].z()), min((solide[i].triangles[j][1].z()), (solide[i].triangles[j][2].z()) )) );
-			
-			x_max = max( x_max ,max((solide[i].triangles[j][0].x()), max((solide[i].triangles[j][1].x()), (solide[i].triangles[j][2].x()) )) );
-			
-			y_max = max( y_max ,max((solide[i].triangles[j][0].y()), max((solide[i].triangles[j][1].y()), (solide[i].triangles[j][2].y()) )) );
-			
-			z_max = max( z_max ,max((solide[i].triangles[j][0].z()), max((solide[i].triangles[j][1].z()), (solide[i].triangles[j][2].z()) )) );
-		}
-		solide[i].min_x = x_min; solide[i].min_y = y_min; solide[i].min_z = z_min;
-		solide[i].max_x = x_max; solide[i].max_y = y_max; solide[i].max_z = z_max;*/
-	}
-	
-}
-
-/*void Solide::stock_def_plastique(const double &dt) {
+  /*update_triangles();
   for(int i=0;i<size();i++){
-    Particule* P = &solide[i];
-    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-      if((*F).voisin>=0 && (*F).plastifie){
-	int part = (*F).voisin;
-	double S = (*F).S;
-	//Demi-incrément car on passe 2 fois par face...
-	(*F).def_plas_cumulee += 0.5 * abs( ((*P).u - solide[part].u) * ((*P).u - solide[part].u) ) / (*F).D0 * dt; //Bien codé ? Semblerait pas...
+    for(std::vector<Triangle_3>::iterator it=solide[i].triangles.begin();it!=solide[i].triangles.end();it++){
+      for(int k=0;k<3;k++){
+	solide[i].bbox = Bbox(min(solide[i].bbox.xmin(),((*it).vertex(k).x())),min(solide[i].bbox.ymin(),((*it).vertex(k).y())),min(solide[i].bbox.zmin(),((*it).vertex(k).z())),max(solide[i].bbox.xmax(),((*it).vertex(k).x())),max(solide[i].bbox.ymax(),((*it).vertex(k).y())),max(solide[i].bbox.zmax(),((*it).vertex(k).z())));
       }
     }
-  }
-  }*/
+    }*/	
+}
 
-/*!
-*\fn void Solide::Solve_vitesse(double dt)
-*\brief Calcul de la vitesse du solide.
-*\param dt pas de temps
-*\warning <b> Proc&eacute;dure sp&eacute;cifique au solide! </b>
-*\return void
-*/
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(int i=0;i<size();i++){
     solide[i].solve_vitesse(dt, flag_2d, Amort, t , T);
   }
 }
 
-/*void Solide::Solve_vitesse_plas(const double& dt, const bool& flag_2d){
-  for(int i=0;i<size();i++){
-    solide[i].solve_vitesse_plas(dt, flag_2d);
-  }
-  }*/
-
-/*!
-*\fn void Solide::Forces(int N_dim, double nu, double E)
-*\brief Calcul des forces. 
-*\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-*\return void
-*/
 void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt, const double& t, const double& T){
   Forces_internes(N_dim,nu,E, dt);
-  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (*P).Fi = (*P).Fi;
-    //(*P).Fi_plas = (*P).Fi_plas + Forces_externes((*P).x0+(*P).Dx,(*P).e);
-    (*P).Mi = (*P).Mi;
-    }*/
 }
 
-
-
-/*!
-*\fn void Solide::Forces_internes(int N_dim, double nu, double E)
-*\brief Calcul des forces internes. 
-*\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-*\return void
-*/
-
-// double Face::Forces_elas(Particule* P, std::vector<Particule> solide, const double &nu, const double &E) {
-//   //Mettre ici forces élastiques !
-//   int part = voisin;
-//   Point_3 xi((*P).x0); //Position particule i en config initiale
-//   Point_3 xj(solide[part].x0); //Position particule j en config initiale
-//   Vector_3 lij(xi, xj);
-//   //double dij = sqrt( lij.squared_length() );
-//   Vector_3 nIJ = lij / D0;
-//   double Dij_n = ((*P).Dx - solide[part].Dx ) * nIJ;
-//   //double K = E/(1.-2.*nu)/3.;
-//   return S/6.*E*(Dij_n/D0 - def_plas_cumulee); //Force élastique du lien
-// }
-
-// double Face::Forces_plas(Particule* P, std::vector<Particule> solide, const double &n, const double &B) {
-//   //Mettre ici forces élastiques !
-//   int part = voisin;
-//   Point_3 xi((*P).x0); //Position particule i en config initiale
-//   Point_3 xj(solide[part].x0); //Position particule j en config initiale
-//   Vector_3 lij(xi, xj);
-//   //double dij = sqrt( lij.squared_length() );
-//   Vector_3 nIJ = lij / D0;
-//   double Dij_n = ((*P).Dx - solide[part].Dx /*- cross_product((*P).omega + solide[part].omega, lij / 2.)*/ ) * nIJ;
-//   double volume_diam = D0 / 2. * S / 3.;
-//   //return -signe(Dij_n)* B * volume_diam / pow(D0, n+1) * pow(abs(Dij_n), n) * nIJ; //Force plastique du lien
-//   return -signe(Dij_n) * B * volume_diam * pow(def_plas_cumulee, n); //Force plastique du lien
-// }
-
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
-  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (*P).Fi = Vector_3(0.,0.,0.);
-    (*P).Mi = Vector_3(0.,0.,0.);
-    }*/
-
   bool plastifie = false;
   
   //Calcul de la contrainte dans chaque particule
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //(*P).Volume_libre();
+    //(P->second).Volume_libre();
     (P->second).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
     (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
     (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
@@ -2498,14 +2182,14 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	Vector_3 nIJ = (*F).normale;
-	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
+	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (P->second).Dx - (P->second).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
 	(P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V;
 
       }
     }
-    //cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
+    //cout << "Trace dev Def : " << (((P->second).discrete_gradient).dev()).tr() << endl;
     (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
-    //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
+    //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
 
     //Mettre ces valeurs dans le param.dat !!!!!
     double B = 292000000.; //En Pa. JC.
@@ -2513,28 +2197,28 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     double A = 90000000.; //En Pa. Vient de JC
 	
     (P->second).seuil_elas = A + B * pow((P->second).def_plas_cumulee, n);
-    /*if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
-      (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      double delta_epsilon_p = (abs((*P).contrainte) - A) / E  * signe( (*P).contrainte );
-      (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
-      //(*P).contrainte = A * signe( (*P).contrainte );
+    /*if(abs((P->second).contrainte) > (P->second).seuil_elas) { //On sort du domaine élastique.
+      (P->second).def_plas_cumulee += (abs((P->second).contrainte) - A) / E; //Nouvelle déformation plastique.
+      //cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
+      double delta_epsilon_p = (abs((P->second).contrainte) - A) / E  * signe( (P->second).contrainte );
+      (P->second).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+      //(P->second).contrainte = A * signe( (P->second).contrainte );
       }*/
 
     if((P->second).contrainte.VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
       plastifie = true;
-      //Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
+      //Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
-      (*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      (*P).epsilon_p += (delta_p / (((*P).contrainte).dev()).norme() * (*P).contrainte).dev();
-      //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
-      //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
+      double delta_p = pow(((P->second).contrainte.VM() - A) / B, 1./n) - (P->second).def_plas_cumulee;
+      (P->second).def_plas_cumulee = pow(((P->second).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      //cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
+      (P->second).epsilon_p += (delta_p / (((P->second).contrainte).dev()).norme() * (P->second).contrainte).dev();
+      //cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
+      //cout << "Norme def plas : " << ((P->second).epsilon_p).norme() << endl;
       
-      //((*P).contrainte.VM() - A) / (2*mu) * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
-      //(*P).contrainte = A * signe( (*P).contrainte );
+      //((P->second).contrainte.VM() - A) / (2*mu) * n_elas;  //* signe( (P->second).contrainte ); //Plasticité parfaite
+      //(P->second).contrainte = A * signe( (P->second).contrainte );
     }
   }
 
@@ -2544,7 +2228,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
   
   //Calcul des forces pour chaque particule
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (*P).Fi = Vector_3(0.,0.,0.);
+    (P->second).Fi = Vector_3(0.,0.,0.);
     for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
@@ -2882,9 +2566,9 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     //vtk << setprecision(15);
     int nb_points = 0;
     int nb_faces = 0;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      nb_faces += (*P).faces.size();
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      nb_faces += (P->second).faces.size();
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
 	nb_points += (*F).vertex.size();
       }
     }
@@ -2898,10 +2582,10 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     vtk << "POINTS " << nb_points << " DOUBLE" << endl;
     
     //Sortie des points
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
 	for(std::vector<Vertex>::iterator V=(*F).vertex.begin();V!=(*F).vertex.end();V++){
-	  vtk << (*P).mvt_t((*V).pos) << endl;
+	  vtk << (P->second).mvt_t((*V).pos) << endl;
 	}
       }
     }
@@ -2909,8 +2593,8 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     //Sortie des faces
     int point_tmp=0;
     vtk << "CELLS " << nb_faces << " " << nb_points+nb_faces << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
 	vtk << (*F).vertex.size();
 	for(std::vector<Vertex>::iterator V=(*F).vertex.begin();V!=(*F).vertex.end();V++){
 	  vtk << " " << point_tmp;
@@ -2929,60 +2613,60 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     //Deplacement
     vtk << "VECTORS deplacement double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).Dx << endl;
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	vtk << (P->second).Dx << endl;
       }
     }
     vtk << "\n";
     //Vitesse
     vtk << "VECTORS vitesse double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).u << endl;
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	vtk << (P->second).u << endl;
       }
     }
     vtk << "\n";
     //Contrainte
     vtk << "TENSORS contraintes double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).contrainte.col1[0] << " " << (*P).contrainte.col1[1] << " " << (*P).contrainte.col1[2] << endl;
-	vtk << (*P).contrainte.col2[0] << " " << (*P).contrainte.col2[1] << " " << (*P).contrainte.col2[2] << endl;
-	vtk << (*P).contrainte.col3[0] << " " << (*P).contrainte.col3[1] << " " << (*P).contrainte.col3[2] << endl;
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	vtk << (P->second).contrainte.col1[0] << " " << (P->second).contrainte.col1[1] << " " << (P->second).contrainte.col1[2] << endl;
+	vtk << (P->second).contrainte.col2[0] << " " << (P->second).contrainte.col2[1] << " " << (P->second).contrainte.col2[2] << endl;
+	vtk << (P->second).contrainte.col3[0] << " " << (P->second).contrainte.col3[1] << " " << (P->second).contrainte.col3[2] << endl;
       }
     }
     vtk << "\n";
     //Déformations
     vtk << "TENSORS deformations double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).discrete_gradient.col1[0] << " " << (*P).discrete_gradient.col1[1] << " " << (*P).discrete_gradient.col1[2] << endl;
-	vtk << (*P).discrete_gradient.col2[0] << " " << (*P).discrete_gradient.col2[1] << " " << (*P).discrete_gradient.col2[2] << endl;
-	vtk << (*P).discrete_gradient.col3[0] << " " << (*P).discrete_gradient.col3[1] << " " << (*P).discrete_gradient.col3[2] << endl;
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	vtk << (P->second).discrete_gradient.col1[0] << " " << (P->second).discrete_gradient.col1[1] << " " << (P->second).discrete_gradient.col1[2] << endl;
+	vtk << (P->second).discrete_gradient.col2[0] << " " << (P->second).discrete_gradient.col2[1] << " " << (P->second).discrete_gradient.col2[2] << endl;
+	vtk << (P->second).discrete_gradient.col3[0] << " " << (P->second).discrete_gradient.col3[1] << " " << (P->second).discrete_gradient.col3[2] << endl;
       }
     }
     vtk << "\n";
     //Epsilon_p
     vtk << "TENSORS epsilon_p double" << endl;
     //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).epsilon_p.col1[0] << " " << (*P).epsilon_p.col1[1] << " " << (*P).epsilon_p.col1[2] << endl;
-	vtk << (*P).epsilon_p.col2[0] << " " << (*P).epsilon_p.col2[1] << " " << (*P).epsilon_p.col2[2] << endl;
-	vtk << (*P).epsilon_p.col3[0] << " " << (*P).epsilon_p.col3[1] << " " << (*P).epsilon_p.col3[2] << endl;
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	vtk << (P->second).epsilon_p.col1[0] << " " << (P->second).epsilon_p.col1[1] << " " << (P->second).epsilon_p.col1[2] << endl;
+	vtk << (P->second).epsilon_p.col2[0] << " " << (P->second).epsilon_p.col2[1] << " " << (P->second).epsilon_p.col2[2] << endl;
+	vtk << (P->second).epsilon_p.col3[0] << " " << (P->second).epsilon_p.col3[1] << " " << (P->second).epsilon_p.col3[2] << endl;
       }
     }
     vtk << "\n";
     //Deformation plastique cumulée
     vtk << "SCALARS p double 1" << endl;
     vtk << "LOOKUP_TABLE default" << endl;
-    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-	vtk << (*P).def_plas_cumulee << endl;
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	vtk << (P->second).def_plas_cumulee << endl;
       }
     }
     vtk << "\n";
