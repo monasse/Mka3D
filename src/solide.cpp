@@ -254,7 +254,7 @@ void Face::Inertie(){
  * \brief Constructeur par d&eacute;faut. 
  */
 
-Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p() {
+Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
@@ -2000,9 +2000,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   while(getline(maillage_1, ligne)) {
     istringstream  stm(ligne);
     int id;
-    //Particule part();
     int Nvertex;
-    //line >> id >> Nvertex;
     stm >> id >> Nvertex;
     cout << id << " " << Nvertex << endl;
     Particule part(id);
@@ -2012,17 +2010,22 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     while(test) { //Tant qu'on atteint pas la fin de la ligne, on stock les points des vertex
       char aux_bis;
       stm >> x >> aux >> y >> aux >> z >> aux >> aux_bis;
-      //cout << "aux : " << aux << "aux_bis : " << aux_bis << " " << s << endl;
-      cout << x << " " << y << " " << z << endl;
+      //cout << x << " " << y << " " << z << endl;
       Point_3 point(x,y,z);
-      if(part.vertices.size() > 0 && *part.vertices.end() == point)
+      /*if(part.vertices.size() > 0) {
+	//cout << (*(--part.vertices.end()))[0] << " " << (*(--part.vertices.end()))[1] << " " << (*(--part.vertices.end()))[2] << endl;
+	//cout << (*(part.vertices.end()))[0] << " " << (*(part.vertices.end()))[1] << " " << (*(part.vertices.end()))[2] << endl;
+	//cout << (*(part.vertices.begin()))[0] << " " << (*(part.vertices.begin()))[1] << " " << (*(part.vertices.begin()))[2] << endl;
+	}*/
+      if(part.vertices.size() > 0 && *(--part.vertices.end()) == point) {
 	test = false; //On est au bout du fichier...
+	//cout << "On est au bout de la ligne !" << endl;
+      }
       else
 	part.vertices.push_back(point); //ajout du vertex dans la particule
     }
     solide[id] = part; //Ajout de la particule indexée par id
     }
-  //Semble être la bonne idée. Continuer avec ça !!!
 
   //Importation des volumes et des centres de Voronoi
   while(getline(maillage_3, ligne)) {

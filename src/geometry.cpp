@@ -166,7 +166,8 @@ double squared_distance(const Point_3 &p, const Point_3 &q)
 }
 
 bool operator==(const Point_3 &vec1, const Point_3 &vec2){
-  return (vec1[0] - vec2[0]) < pow(10., -10.) && (vec1[1] - vec2[1]) < pow(10., -10.) && (vec1[2] - vec2[2]) < pow(10., -10.);
+  return sqrt(squared_distance(vec1,vec2)) < pow(10., -10.);
+  //return (vec1[0] - vec2[0]) < pow(10., -14.) && (vec1[1] - vec2[1]) < pow(10., -14.) && (vec1[2] - vec2[2]) < pow(10., -14.);
 }
 
 //////////////////////////////////////////
