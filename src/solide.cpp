@@ -804,8 +804,7 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
 Particule::~Particule(){
 }
 
-/*Particule & Particule:: operator=(const Particule &P){
-	
+Particule & Particule:: operator=(const Particule &P){
 	assert(this != &P);
        	bbox = P.bbox;
 	cube  = P.cube;
@@ -816,12 +815,12 @@ Particule::~Particule(){
 	V = P.V; 
 	Vl = P.Vl; 
 	epsilon = P.epsilon; 
-	for(int i=0; i<3;i++){
-		I[i] = P.I[i];
-		for(int j=0; j<3;j++){
-			rotref[i][j] = P.rotref[i][j];
-		}
-	}
+	/*for(int i=0; i<3;i++){
+	  I[i] = P.I[i];
+	  for(int j=0; j<3;j++){
+	    rotref[i][j] = P.rotref[i][j];
+	  }
+	  }*/
 	
 	x0 = P.x0;
 	Dx = P.Dx;
@@ -840,8 +839,9 @@ Particule::~Particule(){
 	eprev = P.eprev;
 	mvt_t = P.mvt_t;
 	mvt_tprev = P.mvt_tprev;
+}
 	
-	triangles.resize(P.triangles.size()); 
+/*	triangles.resize(P.triangles.size()); 
 	for(int i = 0; i< P.triangles.size(); i++){
 		triangles[i] = P.triangles[i];
 	}

@@ -274,14 +274,14 @@ int main(){
     cout<< "Solid energy:" << S.Energie(N_dim, nu, E) <<endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
-    for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
-      qdm = qdm+ (*P).m*(*P).u;
+    for(std::map<int, Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
+      qdm = qdm+ (P->second).m*(P->second).u;
     }
     
     ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
     cout<<"Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
-    dt = 2. * pow(10., -6.);//S.pas_temps(t,T,cfl, E, nu, rho);
+    dt = S.pas_temps(t,T,cfl, E, nu, rho); //2. * pow(10., -6.);
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of forces

@@ -97,8 +97,8 @@ class Particule
 			const double &x_max, const double &y_max,const double &z_max, 
 			const std::vector<Face> & F);
   ~Particule();
-	Particule & operator=(const Particule &P); // opérateur = surcharge pour l'affectation
-	void Affiche();  //fonction auxilaire utile pour les tests
+  Particule & operator=(const Particule &P); // opérateur = surcharge pour l'affectation
+  void Affiche();  //fonction auxilaire utile pour les tests
   double volume(); 
   void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
   void Inertie(const double &rho);
@@ -230,8 +230,8 @@ public:
   Solide(const double& E, const double& nu);
   Solide(const std::vector<Particule> & Part);
   ~Solide();
-	Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
-	void Affiche();  //fonction auxilaire utile pour les test
+  Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
+  void Affiche();  //fonction auxilaire utile pour les test
   int size(){
 	return solide.size();
   }
