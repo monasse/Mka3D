@@ -2043,29 +2043,30 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
   //Importation de toutes les infos sur les faces (le bordel...)
   while(getline(maillage_2, ligne)) {
+    istringstream  stm(ligne);
     int id;
     int nbr_faces;
     vector<Face> f;
     double x,y,z;
     double S;
-    maillage_2 >> id >> nbr_faces;
+    stm >> id >> nbr_faces;
     for(int i=1 ; i <= nbr_faces ; i++) {
-      maillage_2 >> S;
+      stm >> S;
       Face face(S);
       f.push_back(face);
     }
-    //Voir si besoin de connaitre les vertex par face...
 
     //Vecteur normal par face
     for(int i=0 ; i < nbr_faces ; i++) {
-      maillage_2 >> s >> x >> s >> y >> s >> z >> s;
+      stm >> aux >> x >> aux >> y >> aux >> z >> aux;
       f[i].normale = Vector_3(x, y, z);
+      cout << x << " " << y << " " << z << endl;
     }
 
     //Voisin par face
     for(int i=0 ; i < nbr_faces ; i++) {
       int id_voisin;
-      maillage_2 >> id_voisin;
+      stm >> id_voisin;
       f[i].voisin = id_voisin;
     }
   }
