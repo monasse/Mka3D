@@ -2357,7 +2357,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
 //const char* solidevtk;
 //{
     std::ostringstream oss;
-    oss << "resultats/solide" << n << ".vtk";
+    oss << "solide" << n << ".vtk";
     string s = oss.str();
     //cout << s << endl;
     const char* const solidevtk = s.c_str();
@@ -2476,7 +2476,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
   //Sortie sans reconstruction
   else{
     std::ostringstream oss;
-    oss << "resultats/solide" << n << ".vtk";
+    oss << "solide" << n << ".vtk";
     string s = oss.str();
     //cout << s << endl;
     const char* const solidevtk = s.c_str();
