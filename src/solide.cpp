@@ -1989,7 +1989,7 @@ void Solide::Affiche(){
 void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
   std::ifstream maillage_1(s1,ios::in);
   std::ifstream maillage_2(s2,ios::in);
-  std::ifstream maillage_3(s2,ios::in);
+  std::ifstream maillage_3(s3,ios::in);
   if(not(maillage_1 && maillage_2 && maillage_3))
     cout <<"ouverture du maillage ratee" << endl;
 
@@ -2002,7 +2002,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     int id;
     int Nvertex;
     stm >> id >> Nvertex;
-    cout << id << " " << Nvertex << endl;
+    //cout << id << " " << Nvertex << endl;
     Particule part(id);
     double x,y,z;
     stm >> aux; //Enlève la première parenthèse
@@ -2029,10 +2029,14 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
   //Importation des volumes et des centres de Voronoi
   while(getline(maillage_3, ligne)) {
+    istringstream  stm(ligne);
     int id;
     double volume = 0.;
     double x,y,z;
-    maillage_3 >> id >> volume >> x >> y >> z;
+    stm >> id >> volume >> x >> y >> z;
+    /*cout << "id : " << id << endl;
+    cout << "Volume : " << volume << endl;
+    cout << x << " " << y << " " << z << endl;*/
     (solide[id]).V = volume;
     (solide[id]).x0 = Point_3(x, y, z);
   }
