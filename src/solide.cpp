@@ -28,7 +28,7 @@
 #include "vitesse.hpp"
 #include <iostream>
 #include <map>
-//#include <string>
+#include <string>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
@@ -1971,14 +1971,11 @@ Solide & Solide::operator=(const Solide &S){
     solide[P->first]= P->second;
   }
 }
-/*!
-*\fn void Solide::Affiche()
-*\brief Fonction auxiliaire utile pour les tests.
-*/
+
 void Solide::Affiche(){
 	
   for(int i=0; i<solide.size(); i++){
-		cout<<"Particule "<<i<<endl;
+    cout<<"Particule "<<i<<endl;
     solide[i].Affiche();
   }
 
@@ -1998,27 +1995,33 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
   //Importation des particules et des vertex
   string s;
+  char aux;
   string ligne;
   while(getline(maillage_1, ligne)) {
-    //string line(ligne);
+    istringstream  stm(ligne);
     int id;
     //Particule part();
     int Nvertex;
     //line >> id >> Nvertex;
-    maillage_1 >> id >> Nvertex;
+    stm >> id >> Nvertex;
+    cout << id << " " << Nvertex << endl;
     Particule part(id);
     double x,y,z;
-    //line >> s; //On enlèva la première parenthèse
-    maillage_1 >> s;
-    while(s != "\n") { //Tant qu'on atteint pas la fin de la ligne, on stock les points des vertex
-      //line >> x >> s >> y >> s >> z >> s >> s;
-      maillage_1 >> x >> s >> y >> s >> z >> s >> s;
-      cout << x << y << z << endl;
+    stm >> aux; //Enlève la première parenthèse
+    bool test = true;
+    while(test) { //Tant qu'on atteint pas la fin de la ligne, on stock les points des vertex
+      char aux_bis;
+      stm >> x >> aux >> y >> aux >> z >> aux >> aux_bis;
+      //cout << "aux : " << aux << "aux_bis : " << aux_bis << " " << s << endl;
+      cout << x << " " << y << " " << z << endl;
       Point_3 point(x,y,z);
-      part.vertices.push_back(point); //ajout du vertex dans la particule
+      if(part.vertices.size() > 0 && *part.vertices.end() == point)
+	test = false; //On est au bout du fichier...
+      else
+	part.vertices.push_back(point); //ajout du vertex dans la particule
     }
     solide[id] = part; //Ajout de la particule indexée par id
-  }
+    }
   //Semble être la bonne idée. Continuer avec ça !!!
 
   //Importation des volumes et des centres de Voronoi

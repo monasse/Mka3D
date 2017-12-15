@@ -75,6 +75,7 @@ public:
 
 ostream& operator<<(ostream &os, const Point_3 &p);
 double squared_distance(const Point_3 &p, const Point_3 &q);
+bool operator==(const Point_3 &vec1, const Point_3 &vec2);
 
 class Vector_3 
 {

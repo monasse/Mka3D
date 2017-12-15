@@ -165,7 +165,9 @@ double squared_distance(const Point_3 &p, const Point_3 &q)
   return Vector_3(p,q).squared_length();
 }
 
-
+bool operator==(const Point_3 &vec1, const Point_3 &vec2){
+  return (vec1[0] - vec2[0]) < pow(10., -10.) && (vec1[1] - vec2[1]) < pow(10., -10.) && (vec1[2] - vec2[2]) < pow(10., -10.);
+}
 
 //////////////////////////////////////////
 //    Class Vector_3                   ///

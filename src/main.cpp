@@ -235,7 +235,9 @@ int main(){
   }
   Solide S(E, nu);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
-  S.Init("../build/packing.custom1", "../build/packing.custom2", "../build/packing.custom3", rep, numrep, rho); 
+  S.Init("../build/packing.custom1", "../build/packing.custom2", "../build/packing.custom3", rep, numrep, rho);
+
+  cout << "Lecture des fichiers de maillage terminée !" << endl;
   	
   //Initialization of time measurements
   int iter=0;	
