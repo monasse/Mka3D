@@ -1013,24 +1013,6 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
     Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
     Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);//*/
     double e0 = sqrt(abs(1.-(e.squared_length())));
-    /*Recuperation de la matrice de rotation
-    double rot[3][3];
-    rot[0][0] = 1.-2.*(e[1]*e[1]+e[2]*e[2]);
-    rot[0][1] = 2.*(-e0*e[2]+e[0]*e[1]);
-    rot[0][2] = 2.*(e0*e[1]+e[0]*e[2]);
-    rot[1][0] = 2.*(e0*e[2]+e[1]*e[0]);
-    rot[1][1] = 1.-2.*(e[0]*e[0]+e[2]*e[2]);
-    rot[1][2] = 2.*(-e0*e[0]+e[1]*e[2]);
-    rot[2][0] = 2.*(-e0*e[1]+e[2]*e[0]);
-    rot[2][1] = 2.*(e0*e[0]+e[2]*e[1]);
-    rot[2][2] = 1.-2.*(e[0]*e[0]+e[1]*e[1]);
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	Q[i][j] = rot[i][0]*rotref[0][j];
-	Q[i][j] += rot[i][1]*rotref[1][j];
-	Q[i][j] += rot[i][2]*rotref[2][j];
-      }
-    } //*/
     //Recuperation de Zn+1/2 a partir de omega
     double Omega[3];
     Omega[0] = Omega[1] = Omega[2] = 0.;
@@ -1128,44 +1110,6 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   }//Fin du calcul dans le cas d'une particule libre
 }
 
-/*void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
-  if(fixe==1){
-    u_plas = Vector_3(0.,0.,0.);
-  } else {
-    if(fixe==0){
-      u_plas = u_plas + Fi_plas/2.*(dt/m);
-    }
-    else if(fixe==2 || fixe==3){
-      u_plas = Vector_3(0.,0.,0.);
-    }
-  }
-  }*/
-
-/*!
-* \fn double Particule::volume()
-* \brief Fonction auxilaire utile pour les tests. Calcul du volume de la particule.
-* \return double
- */
-// double Particule::volume(){
-// 	
-//   double vol = 0.;
-//   std::vector<Point_3> Points_poly; 
-// 	
-//   for(int l= 0; l<triangles.size(); l++)
-//   {
-//     Points_poly.push_back(triangles[l][0]);
-//     Points_poly.push_back(triangles[l][1]);
-//     Points_poly.push_back(triangles[l][2]);
-//   }	
-//   Finite_cells_iterator cit;
-//   Triangulation T(Points_poly.begin(), Points_poly.end());
-// 	
-//   for (cit = T.finite_cells_begin(); cit!= T.finite_cells_end(); cit++){
-//     vol+= CGAL::to_double(T.tetrahedron( cit).volume());
-//   }
-// 	
-//   return vol;
-// }
 double Particule::volume(){
 	
 	double vol = 0.;
@@ -1191,30 +1135,13 @@ double Particule::volume(){
 	return vol;
 }
 
-/*!
-* \fn Particule::vitesse_parois(Point_3& X_f)
-* \brief Vitesse au centre de la parois au temps t. \n
-* \f$ V_f = V_I + \Omega_{rot} \wedge \left( X_f - X_I \right). \f$ 
-* \f$ V_I \f$ -vitesse de la particule(\a Particule.u_half),  \f$ X_I \f$ -centre de la particule(\a Particule.x0 + \a Particule.Dx),  \f$ \Omega_{rot} \f$ -rotation de la particule(\a Particule.omega_half).
-* \param X_f centre de la parois
-* \warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-* \return Vector_3
-*/
 Vector_3 Particule::vitesse_parois(const Point_3& X_f){
 		
   Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
 
 	return V_f;
 }	
-/*!
-* \fn Particule::vitesse_parois_prev(Point_3& X_f)
-* \brief Vitesse au centre de la parois au temps t-dt.
- * \f$ V_f = V_I + \Omega_{rot} \wedge \left( X_f - X_I \right). \f$ \n
- * \f$ V_I \f$ -vitesse de la particule(\a Particule.u_half),  \f$ X_I \f$ -centre de la particule(\a Particule.x0 + \a Particule.Dxprev),  \f$ \Omega_{rot} \f$ -rotation de la particule(\a Particule.omega_half).
-* \param X_f centre de la parois
-* \warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
-* \return Vector_3
- */
+
 Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
 	
   Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
@@ -1222,13 +1149,6 @@ Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
 	return V_f;
 }	
 
-/*!
-* \fn void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, int a, int b, int c)
-*\brief Calcul des projections.
-* \details Utilisation de la fonction d&eacute;crite par Brian Mirtich 1996(cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar).
-* \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-* \return void
-*/
 void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int& a, const int& b, const int& c){
   //Utilisation de la fonction decrite par Brian Mirtich 1996 (cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar)
   P1 = Pa = Pb = Paa = Pab = Pbb = Paaa = Paab = Pabb = Pbbb = 0.;
@@ -1277,13 +1197,7 @@ void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &P
   Paab /= 60.;
   Pabb /= -60.;
 }
-/*!
-* \fn void Face::compFaceIntegrals(double &Fa, double &Fb, double &Fc, double &Faa, double &Fbb, double &Fcc, double &Faaa, double &Fbbb, double &Fccc, double &Faab, double &Fbbc, double &Fcca, double na, double nb, double nc, int a, int b, int c)
-* \brief Calcul des int&eacute;grales sur les faces. 
-* \details Utilisation de la fonction d&eacute;crite par Brian Mirtich 1996(cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar).
-* \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-* \return void
-*/
+
 void Face::compFaceIntegrals(double &Fa, double &Fb, double &Fc, double &Faa, double &Fbb, double &Fcc, double &Faaa, double &Fbbb, double &Fccc, double &Faab, double &Fbbc, double &Fcca, const double& na, const double& nb, const double& nc, const int& a, const int& b, const int& c){
   //Utilisation de la fonction decrite par Brian Mirtich 1996 (cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar)
   double P1,Pa,Pb,Paa,Pab,Pbb,Paaa,Paab,Pabb,Pbbb;
@@ -1308,13 +1222,6 @@ void Face::compFaceIntegrals(double &Fa, double &Fb, double &Fc, double &Faa, do
   Fcca = k3*(na*na*Paaa+2.*na*nb*Paab+nb*nb*Pabb+2.*na*w*Paa+2.*nb*w*Pab+w*w*Pa);
 }
 
-/*!
-* \fn void Particule::CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx)
-* \brief Calcul des int&eacute;grales de volume.
-*\details Utilisation de la fonction d&eacute;crite par Brian Mirtich 1996(cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar).
-* \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-* \return void
-*/
 void Particule::CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx){
   //Utilisation de la fonction decrite par Brian Mirtich 1996 (cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar)
   T1 = Tx=Ty=Tz=Txx=Tyy=Tzz=Txy=Tyz=Tzx=0.;
@@ -1664,23 +1571,9 @@ Solide::Solide(){
   mu = 0.;
 }
 
-/*Solide::Solide(const std::vector<Particule> & Part){
-  lambda = 0.;
-  mu = 0.;
-  for(int i=0; i<Part.size(); i++){
-    solide.push_back(Part[i]);
-  }
-  }*/
-
 Solide::~Solide(){   
 }
 
-/*!
-*\fn Solide & Solide:: operator=(const Solide &S)
-*\brief op&eacute;rateur = Surcharge pour l'affectation.
-*\param S Solide
-*\return Solide
-*/
 Solide & Solide::operator=(const Solide &S){
   assert(this != &S);
   //solide.resize(S.solide.size());
@@ -1697,12 +1590,7 @@ void Solide::Affiche(){
   }
 
 }
-/*!
-*\fn void Solide::Init(const char* s)
-*\brief Initialisation du solide &agrave; partir d'un fichier. 
-*\param s maillage solide
-*\return void
-*/
+
 void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
   std::ifstream maillage_1(s1,ios::in);
   std::ifstream maillage_2(s2,ios::in);
@@ -1721,6 +1609,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     stm >> id >> Nvertex;
     //cout << id << " " << Nvertex << endl;
     Particule part(id);
+    solide[id] = part; //Ajout de la particule indexée par id
     double x,y,z;
     stm >> aux; //Enlève la première parenthèse
     bool test = true;
@@ -1734,15 +1623,23 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	//cout << (*(part.vertices.end()))[0] << " " << (*(part.vertices.end()))[1] << " " << (*(part.vertices.end()))[2] << endl;
 	//cout << (*(part.vertices.begin()))[0] << " " << (*(part.vertices.begin()))[1] << " " << (*(part.vertices.begin()))[2] << endl;
 	}*/
-      if(part.vertices.size() > 0 && *(--part.vertices.end()) == point) {
+      //if(part.vertices.size() > 0 && *(--part.vertices.end()) == point) {
+      if(solide[id].vertices.size() > 0 && *(--solide[id].vertices.end()) == point) {
 	test = false; //On est au bout du fichier...
 	//cout << "On est au bout de la ligne !" << endl;
       }
-      else
-	part.vertices.push_back(point); //ajout du vertex dans la particule
+      else {
+	//part.vertices.push_back(point); //ajout du vertex dans la particule
+	solide[id].vertices.push_back(point); //ajout du vertex dans la particule
+      }
     }
+    solide[id].id = id;
+    /*cout << "id : " << id << endl;
+    cout << "Vertex vide ? " << part.vertices[0] << endl;
     solide[id] = part; //Ajout de la particule indexée par id
-    }
+    cout << "id : " << solide[id].id << endl;
+    cout << "Vertex vide ? " << (solide[id].vertices)[0] << endl;*/
+  }
 
   //Importation des volumes et des centres de Voronoi
   while(getline(maillage_3, ligne)) {
@@ -1756,6 +1653,9 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     cout << x << " " << y << " " << z << endl;*/
     (solide[id]).V = volume;
     (solide[id]).x0 = Point_3(x, y, z);
+    cout << "id : " << solide[id].id << endl;
+    cout << "Vertex vide ? " << (solide[id].vertices)[0] << endl;
+    cout << "Volume : " << solide[id].V << endl;
   }
 
   //Importation de toutes les infos sur les faces (le bordel...)
