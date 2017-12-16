@@ -167,8 +167,8 @@ int main(){
   const bool rec = rec1;   //Flag pour décider si la sortie se fait avec reconstruction de l'interface ou particule par particule
   const double Amortissement = Amort; //Ajoute une force de frottement entre 0 et 1 pour amortir la solution
   
-  char temps_it[]="resultats/temps.dat";
-  char temps_reprise[]="resultats/temps_reprise.dat";
+  char temps_it[]="temps.dat";
+  char temps_reprise[]="temps_reprise.dat";
 
 //En cas de reprise
   double temps[numrep+1];
@@ -182,9 +182,9 @@ int main(){
       in >> temps[i];
     }
     //Recuperation de l'energie
-    int result = system("cp resultats/energie.dat resultats/energie_reprise.dat");
-  }
-  std::ifstream in_energie("resultats/energie_reprise.dat",ios::in);
+    int result = system("cp energie.dat energie_reprise.dat");
+    }
+    std::ifstream in_energie("energie_reprise.dat",ios::in);
   
 	
   //Ouverture des flux en donne en ecriture
@@ -203,7 +203,7 @@ int main(){
   }
   
   
-  char energie[]="resultats/energie.dat";
+  char energie[]="energie.dat";
   
   //Ouverture des flux en donne en ecriture
   std::ofstream ener(energie,ios::out);
@@ -211,7 +211,7 @@ int main(){
   {
     // cout <<"ouverture de xt.vtk reussie" << endl;
   } else {
-    cout <<"ouverture de resultats/energie.dat rate" << endl;
+    cout <<"ouverture de energie.dat rate" << endl;
   }
   double dE0rep,dE0Srep,dm0;
   if(rep){
@@ -224,7 +224,7 @@ int main(){
 	dE0rep = dE;
       }
     }
-    int result = system("rm resultats/energie_reprise.dat");
+    int result = system("rm energie_reprise.dat");
   } 
   
   
@@ -235,7 +235,7 @@ int main(){
   }
   Solide S(E, nu);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
-  S.Init("../build/packing.custom1", "../build/packing.custom2", "../build/packing.custom3", rep, numrep, rho);
+  S.Init("packing.custom1", "packing.custom2", "packing.custom3", rep, numrep, rho);
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
   	
