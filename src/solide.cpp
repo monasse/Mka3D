@@ -1686,6 +1686,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       stm >> id_voisin;
       f[i].voisin = id_voisin;
     }
+    solide[id].faces = f;
   }
 }
 
@@ -2133,26 +2134,28 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
 	vtk << (P->second).mvt_t(*V) << endl;
       }
     }
-      /*for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
-	for(std::vector<Vertex>::iterator V=(*F).vertex.begin();V!=(*F).vertex.end();V++){
-	  vtk << (P->second).mvt_t((*V).pos) << endl;
-	}
-	}*/
     vtk << "\n";
+    
     //Sortie des faces
     int point_tmp=0;
     vtk << "CELLS " << nb_faces << " " << nb_points+nb_faces << endl;
-   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
-	vtk << (*F).vertex.size();
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      vtk << (P->second).faces.size();
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+	vtk << " " << F->voisin;
+      vtk << endl;
+    }
+      /*for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	//vtk << (*F).vertex.size();
 	for(std::vector<Vertex>::iterator V=(*F).vertex.begin();V!=(*F).vertex.end();V++){
 	  vtk << " " << point_tmp;
 	  point_tmp++;
 	}
 	vtk << endl;
       }
-    }
+    }*/
     vtk << "\n";
+    //A quoi servent les sorties "CELLS" ???
     vtk << "CELL_TYPES " << nb_faces << endl;
     for(int i=0;i<nb_faces;i++){
       vtk << 7 << endl;
