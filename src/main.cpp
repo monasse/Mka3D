@@ -239,9 +239,9 @@ int main(){
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
-  for(std::map<int, Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
+  /*for(std::map<int, Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
     cout << "Particle ID : " << (P->second).id << endl;
-  }
+    }*/
   	
   //Initialization of time measurements
   int iter=0;	

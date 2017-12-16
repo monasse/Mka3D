@@ -1653,9 +1653,9 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     cout << x << " " << y << " " << z << endl;*/
     (solide[id]).V = volume;
     (solide[id]).x0 = Point_3(x, y, z);
-    cout << "id : " << solide[id].id << endl;
+    /*cout << "id : " << solide[id].id << endl;
     cout << "Vertex vide ? " << (solide[id].vertices)[0] << endl;
-    cout << "Volume : " << solide[id].V << endl;
+    cout << "Volume : " << solide[id].V << endl;*/
   }
 
   //Importation de toutes les infos sur les faces (le bordel...)
@@ -2113,9 +2113,10 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     int nb_faces = 0;
     for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
       nb_faces += (P->second).faces.size();
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+      nb_points += (P->second).vertices.size();
+      /*for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
 	nb_points += (*F).vertex.size();
-      }
+      }*/
     }
     
     //Initialisation du fichier vtk
@@ -2128,12 +2129,15 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     
     //Sortie des points
     for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+      for(std::vector<Point_3>::iterator V=(P->second).vertices.begin();V!=(P->second).vertices.end();V++) {
+	vtk << (P->second).mvt_t(*V) << endl;
+      }
+    }
+      /*for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
 	for(std::vector<Vertex>::iterator V=(*F).vertex.begin();V!=(*F).vertex.end();V++){
 	  vtk << (P->second).mvt_t((*V).pos) << endl;
 	}
-      }
-    }
+	}*/
     vtk << "\n";
     //Sortie des faces
     int point_tmp=0;

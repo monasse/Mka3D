@@ -51,7 +51,7 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
   //Chargement linéaire en traction
   if(p.z() <= 0.2)
     return Vector_3(0,0,-10.); // * t / T; //En m.s^-1
-  else if(p.z() >= 18)
+  else if(p.z() >= 14.)
   return Vector_3(0,0,0);
 
   /*if(pos_z <= 0.1) { //Vitesse en BC...

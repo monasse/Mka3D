@@ -161,7 +161,7 @@ Bbox bbox;
   /*! 
    * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
      */
-		std::vector< std::vector<std::vector<int> > > Position_Triangles_interface_prev; //!< index de la cellule o&ugrave; se trouve \a Triangles_interface au temps t-dt
+  std::vector< std::vector<std::vector<int> > > Position_Triangles_interface_prev; //!< index de la cellule o&ugrave; se trouve \a Triangles_interface au temps t-dt
 
   int fixe; //!< =true si la particule est fix&eacute;e, false sinon
   double m; //!< Masse de la particule
