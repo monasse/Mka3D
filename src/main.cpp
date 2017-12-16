@@ -283,7 +283,7 @@ int main(){
     ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
     cout<<"Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
-    dt = S.pas_temps(t,T,cfl, E, nu, rho); //2. * pow(10., -6.);
+    dt = 2. * pow(10., -6.); //S.pas_temps(t,T,cfl, E, nu, rho);
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of forces

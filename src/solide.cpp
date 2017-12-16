@@ -2060,7 +2060,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     for(int i=0 ; i < nbr_faces ; i++) {
       stm >> aux >> x >> aux >> y >> aux >> z >> aux;
       f[i].normale = Vector_3(x, y, z);
-      cout << x << " " << y << " " << z << endl;
+      //cout << x << " " << y << " " << z << endl;
     }
 
     //Voisin par face
