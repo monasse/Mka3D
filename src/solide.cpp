@@ -988,19 +988,26 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 }
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  if(fixe==1){
+  /*if(fixe==1){
     u = Vector_3(0.,0.,0.);
     omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort;// + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+      u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
-    }
+      }*/
+
+  if(x0.z() <= 4.)
+    u = Vector_3(0,0,-10.); //En m.s^-1
+  else if(x0.z() >= 14.)
+    u= Vector_3(0,0,0);
+  else
+    u = u+(Fi+Ff)/2.*(dt/m)*Amort;
     
     //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
-    double Q[3][3];
+  /*   double Q[3][3];
     double eref0 = sqrt(abs(1.-(eref.squared_length())));
     //Recuperation de la matrice de rotation
     Q[0][0] = 1.-2.*(eref[1]*eref[1]+eref[2]*eref[2]);
@@ -1011,7 +1018,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
     Q[1][2] = 2.*(-eref0*eref[0]+eref[1]*eref[2]);
     Q[2][0] = 2.*(-eref0*eref[1]+eref[2]*eref[0]);
     Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
-    Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);//*/
+    Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);
     double e0 = sqrt(abs(1.-(e.squared_length())));
     //Recuperation de Zn+1/2 a partir de omega
     double Omega[3];
@@ -1106,8 +1113,9 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
 		//rotprev[0][1] = rotprev[0][2] =rotprev[1][0] = rotprev[1][2] = rotprev[2][0] = rotprev[2][1] = 0.;
 		omega = Vector_3(0.,0.,0.);
 		omega_half = omega;
-		//fin test */
+		//fin test
   }//Fin du calcul dans le cas d'une particule libre
+*/
 }
 
 double Particule::volume(){
@@ -1706,8 +1714,8 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  for(int i=0;i<size();i++){
-    solide[i].solve_vitesse(dt, flag_2d, Amort, t , T);
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    (P->second).solve_vitesse(dt, flag_2d, Amort, t , T);
   }
 }
 
@@ -1725,8 +1733,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
     (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
     for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
-      if((*F).voisin>=0){
-	int part = (*F).voisin;
+      if(F->voisin>=0){
+	int part = F->voisin;
 	Vector_3 nIJ = (*F).normale;
 	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (P->second).Dx - (P->second).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
 	(P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V;
@@ -1785,16 +1793,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	(P->second).Fi = (P->second).Fi + Fij_elas; // * nIJ; //Force sur particule
 	
       }
+      //cout << "Force interne : " << (P->second).Fi << endl;
     }
   }
 }
 
-/*!
-*\fn double Solide::Energie(int N_dim, double nu, double E)
-*\brief Calcul d'&eacute;nergie. 
-*\warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-*\return void
-*/
 double Solide::Energie(const int& N_dim, const double& nu, const double& E){
   return Energie_cinetique()+Energie_potentielle(N_dim, nu, E);
 }
