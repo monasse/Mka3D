@@ -41,7 +41,7 @@ Vector_3 omega(const Point_3 &p)
 
 //Boundary velocities of the solid particles
 Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx) {
-  return Vector_3(0,0,-10.); // * t / T; //En m.s^-1
+  return Vector_3(0,0,-1.); // * t / T; //En m.s^-1
 }
 
   

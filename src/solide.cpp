@@ -1109,6 +1109,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     cout << x << " " << y << " " << z << endl;*/
     (solide[id]).V = volume;
     (solide[id]).x0 = Point_3(x, y, z);
+    (solide[id]).m = volume * rho;
     /*cout << "id : " << solide[id].id << endl;
     cout << "Vertex vide ? " << (solide[id].vertices)[0] << endl;
     cout << "Volume : " << solide[id].V << endl;*/
@@ -1261,6 +1262,7 @@ double Solide::Energie_cinetique(){
     double u2 = ((P->second).u.squared_length());
     E += 1./2. * (P->second).m * u2;
   }
+  cout << "Energie cinetique : " << E << endl;
   return E;
 }
 
@@ -1274,6 +1276,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     Ep += ( 0.5 * contraction_double(((P->second)).contrainte, ((P->second)).discrete_gradient - ((P->second)).epsilon_p)  + B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
   }
+  cout << "Energie potentielle : " << Ep << endl;
   return Ep;
 }
 
@@ -1293,8 +1296,7 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
     for(int j=0;j<(P->second).faces.size();j++){
       if((P->second).faces[j].voisin>=0){
 	dt = min(dt,cfls*(P->second).faces[j].D0/cs);
-	//dt = min(dt,cfls*0.26*sqrt(pow(sigma,5)/solide[i].faces[j].S/solide[i].faces[j].D0)/cs);
-	double Imin = min(min((P->second).I[0],(P->second).I[1]),(P->second).I[2]);
+	/*double Imin = min(min((P->second).I[0],(P->second).I[1]),(P->second).I[2]);
 	double S = (P->second).faces[j].S;
 	double D0 = (P->second).faces[j].D0;
 	double kappa = 1.;
@@ -1303,7 +1305,7 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
 	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(P->second).faces[j].It-(2.+2.*nu-kappa)*(P->second).faces[j].Is);
 	dt = min(dt,cfls*sqrt(Imin*D0/S/alphan));
 	dt = min(dt,cfls*sqrt(Imin*D0/S/alphas));
-	dt = min(dt,cfls*sqrt(Imin*D0/S/alphat));
+	dt = min(dt,cfls*sqrt(Imin*D0/S/alphat));*/
       }
     }
   }
