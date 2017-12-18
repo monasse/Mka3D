@@ -303,7 +303,7 @@ int main(){
 
   //Final output
   cout << "Final time of the simulation: " << t<<endl;
-  cout << "Computational time: " <<(double) (end-start)/CLOCKS_PER_SEC << endl; 
+  cout << "Computational time: " << (double) (end-start)/CLOCKS_PER_SEC << endl; 
   cout << "Energy variation: " << S.Energie(N_dim, nu, E) - E0 << endl;
   return 0;
 }

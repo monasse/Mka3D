@@ -248,16 +248,11 @@ void Face::Inertie(){
   }
 }
 
-
-/*!
- * \fn Particule::Particule()
- * \brief Constructeur par d&eacute;faut. 
- */
-
 Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
+  fixe = 0;
 }
 
 Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
@@ -265,580 +260,48 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
   id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
+  fixe = 0;
 }
-/*Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
-{
-  id = 0;
-  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
-  seuil_elas = 0.;
-  //epsilon_p = 0.;
-  
-  bbox = Bbox(0.,0.,0.,1.,1.,1.);
-  
-  x0 = Point_3(0.5,0.5,0.5);
-	
-  cube = true;
-	
-  const Point_3 s1(0.,0.,0.);
-  const Point_3 r1(1.,0.,0.);
-  const Point_3 t1(1.,1.,0.);
-  const Point_3 v1(0.,1.,0.);
-	
-	
-  const Point_3 s2(0.,0.,1.);
-  const Point_3 r2(1.,0.,1.);
-  const Point_3 t2(1.,1.,1.);
-  const Point_3 v2(0.,1.,1.);
 
-  //Face 1
-  std::vector<Vertex> vert1(4);
-  vert1[0].pos = s1;
-  vert1[0].particules.push_back(-1);
-  vert1[1].pos = v1;
-  vert1[1].particules.push_back(-1);
-  vert1[2].pos = t1;
-  vert1[2].particules.push_back(-1);
-  vert1[3].pos = r1;
-  vert1[3].particules.push_back(-1);
-  vector<Point_3> points1(4);
-  for(int i=0;i<4;i++){
-    points1[i] = vert1[i].pos;
-  }
-  Face face1 = Face(vert1,-1,1.);
-  face1.centre = centroid(points1.begin(),points1.end());
-  face1.normale = orthogonal_vector(points1[0],points1[1],points1[2]);
-  double norm1 = sqrt((face1.normale.squared_length()));
-  face1.normale = face1.normale*1./norm1;
-
-  //Face 2
-  std::vector<Vertex> vert2(4);
-  vert2[0].pos = s1;
-  vert2[0].particules.push_back(-1);
-  vert2[1].pos = r1;
-  vert2[1].particules.push_back(-1);
-  vert2[2].pos = r2;
-  vert2[2].particules.push_back(-1);
-  vert2[3].pos = s2;
-  vert2[3].particules.push_back(-1);
-  vector<Point_3> points2(4);
-  for(int i=0;i<4;i++){
-    points2[i] = vert2[i].pos;
-  }
-  Face face2 = Face(vert2,-1,1.);
-  face2.centre = centroid(points2.begin(),points2.end());
-  face2.normale = orthogonal_vector(points2[0],points2[1],points2[2]);
-  double norm2 = sqrt((face2.normale.squared_length()));
-  face2.normale = face2.normale*1./norm2;
-
-  //Face 3
-  std::vector<Vertex> vert3(4);
-  vert3[0].pos = r1;
-  vert3[0].particules.push_back(-1);
-  vert3[1].pos = t1;
-  vert3[1].particules.push_back(-1);
-  vert3[2].pos = t2;
-  vert3[2].particules.push_back(-1);
-  vert3[3].pos = r2;
-  vert3[3].particules.push_back(-1);
-  vector<Point_3> points3(4);
-  for(int i=0;i<4;i++){
-    points3[i] = vert3[i].pos;
-  }
-  Face face3 = Face(vert3,-1,1.);
-  face3.centre = centroid(points3.begin(),points3.end());
-  face3.normale = orthogonal_vector(points3[0],points3[1],points3[2]);
-  double norm3 = sqrt((face3.normale.squared_length()));
-  face3.normale = face3.normale*1./norm3;
-
-  //Face 4
-  std::vector<Vertex> vert4(4);
-  vert4[0].pos = t1;
-  vert4[0].particules.push_back(-1);
-  vert4[1].pos = v1;
-  vert4[1].particules.push_back(-1);
-  vert4[2].pos = v2;
-  vert4[2].particules.push_back(-1);
-  vert4[3].pos = t2;
-  vert4[3].particules.push_back(-1);
-  vector<Point_3> points4(4);
-  for(int i=0;i<4;i++){
-    points4[i] = vert4[i].pos;
-  }
-  Face face4 = Face(vert4,-1,1.);
-  face4.centre = centroid(points4.begin(),points4.end());
-  face4.normale = orthogonal_vector(points4[0],points4[1],points4[2]);
-  double norm4 = sqrt((face4.normale.squared_length()));
-  face4.normale = face4.normale*1./norm4;
-	
-  //Face 5
-  std::vector<Vertex> vert5(4);
-  vert5[0].pos = s1;
-  vert5[0].particules.push_back(-1);
-  vert5[1].pos = r1;
-  vert5[1].particules.push_back(-1);
-  vert5[2].pos = r2;
-  vert5[2].particules.push_back(-1);
-  vert5[3].pos = s2;
-  vert5[3].particules.push_back(-1);
-  vector<Point_3> points5(4);
-  for(int i=0;i<4;i++){
-    points5[i] = vert5[i].pos;
-  }
-  Face face5 = Face(vert5,-1,1.);
-  face5.centre = centroid(points5.begin(),points5.end());
-  face5.normale = orthogonal_vector(points5[0],points5[1],points5[2]);
-  double norm5 = sqrt((face5.normale.squared_length()));
-  face5.normale = face5.normale*1./norm5;
-  
-  //Face 6
-  std::vector<Vertex> vert6(4);
-  vert6[0].pos = s1;
-  vert6[0].particules.push_back(-1);
-  vert6[1].pos = r1;
-  vert6[1].particules.push_back(-1);
-  vert6[2].pos = r2;
-  vert6[2].particules.push_back(-1);
-  vert6[3].pos = s2;
-  vert6[3].particules.push_back(-1);
-  vector<Point_3> points6(4);
-  for(int i=0;i<4;i++){
-    points6[i] = vert6[i].pos;
-  }
-  Face face6 = Face(vert6,-1,1.);
-  face6.centre = centroid(points6.begin(),points6.end());
-  face6.normale = orthogonal_vector(points6[0],points6[1],points6[2]);
-  double norm6 = sqrt((face6.normale.squared_length()));
-  face6.normale = face6.normale*1./norm6;
-
-  std::vector<Face> f(6);
-  f[0] = face1;
-  f[1] = face2;
-  f[2] = face3;
-  f[3] = face4;
-  f[4] = face5;
-  f[5] = face6;
-
-  faces = f;
-	
-  //triangles par face	
-  Triangle_3 Tri1(s1,r1,v1);
-  Triangle_3 Tri2(t1,r1,v1);	
-  triangles.push_back(Tri1);
-  triangles.push_back(Tri2);
-  normales.push_back(face1.normale);
-  normales.push_back(face1.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face2
-  Triangle_3 Tri5(s2,r2,v2);
-  Triangle_3 Tri6(t2,r2,v2);
-  triangles.push_back(Tri5);
-  triangles.push_back(Tri6);
-  normales.push_back(face2.normale);
-  normales.push_back(face2.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face3
-  Triangle_3 Tri9(s2,s1,v2);
-  Triangle_3 Tri10(v1,s1,v2);
-  triangles.push_back(Tri9);
-  triangles.push_back(Tri10);
-  normales.push_back(face3.normale);
-  normales.push_back(face3.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face4	
-  Triangle_3 Tri13(r2,r1,t2);
-  Triangle_3 Tri14(t1,r1,t2);
-  triangles.push_back(Tri13);
-  triangles.push_back(Tri14);
-  normales.push_back(face4.normale);
-  normales.push_back(face4.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face5	
-  Triangle_3 Tri17(v2,v1,t2);
-  Triangle_3 Tri18(t1,v1,t2);
-  triangles.push_back(Tri17);
-  triangles.push_back(Tri18);
-  normales.push_back(face5.normale);
-  normales.push_back(face5.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face6
-  Triangle_3 Tri21(s2,s1,r2);
-  Triangle_3 Tri22(r1,s1,r2);
-  triangles.push_back(Tri21);
-  triangles.push_back(Tri22); 
-  normales.push_back(face6.normale);
-  normales.push_back(face6.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  Points_interface.resize(triangles.size(), std::vector<Point_3>(0));
-  Triangles_interface.resize(triangles.size(), std::vector<Triangle_3>(0));
-	Position_Triangles_interface.resize(triangles.size(), std::vector< std::vector<int> >(0));
-	Points_interface_prev.resize(triangles.size(), std::vector<Point_3>(0));
-	Triangles_interface_prev.resize(triangles.size(), std::vector<Triangle_3>(0));
-	Position_Triangles_interface_prev.resize(triangles.size(), std::vector<std::vector<int> >(0));
-	Ff = Vector_3(0.,0.,0.); Ffprev = Vector_3(0.,0.,0.); 
-	Mf = Vector_3(0.,0.,0.); Mfprev = Vector_3(0.,0.,0.);
-	}*/
-
-
-/*Particule::Particule(const double &x_min, const double &y_min, const double &z_min, 
-		     const double &x_max, const double &y_max, const double &z_max) : discrete_gradient(), contrainte(), epsilon_p()
-{
-  id = 0;
-  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
-  seuil_elas = 0.;
-  //epsilon_p = 0.;
-  
-
-  bbox = Bbox(x_min,y_min,z_min,x_max,y_max,z_max);
-  
-  x0 = Point_3((x_min+x_max)/2.,(y_min+y_max)/2.,(z_min+z_max)/2.);
-	
-  cube = true;
-	
-  const Point_3 s1(x_min, y_min, z_min);
-  const Point_3 r1(x_max, y_min, z_min);
-  const Point_3 t1(x_max, y_max, z_min);
-  const Point_3 v1(x_min, y_max, z_min);
-	
-	
-  const Point_3 s2(x_min, y_min, z_max);
-  const Point_3 r2(x_max, y_min, z_max);
-  const Point_3 t2(x_max, y_max, z_max);
-  const Point_3 v2(x_min, y_max, z_max);
-	
-  //Face 1
-  std::vector<Vertex> vert1(4);
-  vert1[0].pos = s1;
-  vert1[0].particules.push_back(-1);
-  vert1[1].pos = v1;
-  vert1[1].particules.push_back(-1);
-  vert1[2].pos = t1;
-  vert1[2].particules.push_back(-1);
-  vert1[3].pos = r1;
-  vert1[3].particules.push_back(-1);
-  vector<Point_3> points1(4);
-  for(int i=0;i<4;i++){
-    points1[i] = vert1[i].pos;
-  }
-  Face face1 = Face(vert1,-1,1.);
-  face1.centre = centroid(points1.begin(),points1.end());
-  face1.normale = orthogonal_vector(points1[0],points1[1],points1[2]);
-  double norm1 = sqrt((face1.normale.squared_length()));
-  face1.normale = face1.normale*1./norm1;
-	
-  //Face 2
-  std::vector<Vertex> vert2(4);
-  vert2[0].pos = s1;
-  vert2[0].particules.push_back(-1);
-  vert2[1].pos = r1;
-  vert2[1].particules.push_back(-1);
-  vert2[2].pos = r2;
-  vert2[2].particules.push_back(-1);
-  vert2[3].pos = s2;
-  vert2[3].particules.push_back(-1);
-  vector<Point_3> points2(4);
-  for(int i=0;i<4;i++){
-    points2[i] = vert2[i].pos;
-  }
-  Face face2 = Face(vert2,-1,1.);
-  face2.centre = centroid(points2.begin(),points2.end());
-  face2.normale = orthogonal_vector(points2[0],points2[1],points2[2]);
-  double norm2 = sqrt((face2.normale.squared_length()));
-  face2.normale = face2.normale*1./norm2;
-	
-  //Face 3
-  std::vector<Vertex> vert3(4);
-  vert3[0].pos = r1;
-  vert3[0].particules.push_back(-1);
-  vert3[1].pos = t1;
-  vert3[1].particules.push_back(-1);
-  vert3[2].pos = t2;
-  vert3[2].particules.push_back(-1);
-  vert3[3].pos = r2;
-  vert3[3].particules.push_back(-1);
-  vector<Point_3> points3(4);
-  for(int i=0;i<4;i++){
-    points3[i] = vert3[i].pos;
-  }
-  Face face3 = Face(vert3,-1,1.);
-  face3.centre = centroid(points3.begin(),points3.end());
-  face3.normale = orthogonal_vector(points3[0],points3[1],points3[2]);
-  double norm3 = sqrt((face3.normale.squared_length()));
-  face3.normale = face3.normale*1./norm3;
-
-  //Face 4
-  std::vector<Vertex> vert4(4);
-  vert4[0].pos = t1;
-  vert4[0].particules.push_back(-1);
-  vert4[1].pos = v1;
-  vert4[1].particules.push_back(-1);
-  vert4[2].pos = v2;
-  vert4[2].particules.push_back(-1);
-  vert4[3].pos = t2;
-  vert4[3].particules.push_back(-1);
-  vector<Point_3> points4(4);
-  for(int i=0;i<4;i++){
-    points4[i] = vert4[i].pos;
-  }
-  Face face4 = Face(vert4,-1,1.);
-  face4.centre = centroid(points4.begin(),points4.end());
-  face4.normale = orthogonal_vector(points4[0],points4[1],points4[2]);
-  double norm4 = sqrt((face4.normale.squared_length()));
-  face4.normale = face4.normale*1./norm4;
-
-  //Face 5
-  std::vector<Vertex> vert5(4);
-  vert5[0].pos = s1;
-  vert5[0].particules.push_back(-1);
-  vert5[1].pos = r1;
-  vert5[1].particules.push_back(-1);
-  vert5[2].pos = r2;
-  vert5[2].particules.push_back(-1);
-  vert5[3].pos = s2;
-  vert5[3].particules.push_back(-1);
-  vector<Point_3> points5(4);
-  for(int i=0;i<4;i++){
-    points5[i] = vert5[i].pos;
-  }
-  Face face5 = Face(vert5,-1,1.);
-  face5.centre = centroid(points5.begin(),points5.end());
-  face5.normale = orthogonal_vector(points5[0],points5[1],points5[2]);
-  double norm5 = sqrt((face5.normale.squared_length()));
-  face5.normale = face5.normale*1./norm5;
-
-  //Face 6
-  std::vector<Vertex> vert6(4);
-  vert6[0].pos = s1;
-  vert6[0].particules.push_back(-1);
-  vert6[1].pos = r1;
-  vert6[1].particules.push_back(-1);
-  vert6[2].pos = r2;
-  vert6[2].particules.push_back(-1);
-  vert6[3].pos = s2;
-  vert6[3].particules.push_back(-1);
-  vector<Point_3> points6(4);
-  for(int i=0;i<4;i++){
-    points6[i] = vert6[i].pos;
-  }
-  Face face6 = Face(vert6,-1,1.);
-  face6.centre = centroid(points6.begin(),points6.end());
-  face6.normale = orthogonal_vector(points6[0],points6[1],points6[2]);
-  double norm6 = sqrt((face6.normale.squared_length()));
-  face6.normale = face6.normale*1./norm6;
-
-  std::vector<Face> f(6);
-  f[0] = face1;
-  f[1] = face2;
-  f[2] = face3;
-  f[3] = face4;
-  f[4] = face5;
-  f[5] = face6;
-
-  faces = f;
-	
-  //triangles par face	
-  Triangle_3 Tri1(s1,r1,v1);
-  Triangle_3 Tri2(t1,r1,v1);	
-  triangles.push_back(Tri1);
-  triangles.push_back(Tri2);
-  normales.push_back(face1.normale);
-  normales.push_back(face1.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face2
-  Triangle_3 Tri5(s2,r2,v2);
-  Triangle_3 Tri6(t2,r2,v2);
-  triangles.push_back(Tri5);
-  triangles.push_back(Tri6);
-  normales.push_back(face2.normale);
-  normales.push_back(face2.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face3
-  Triangle_3 Tri9(s2,s1,v2);
-  Triangle_3 Tri10(v1,s1,v2);
-  triangles.push_back(Tri9);
-  triangles.push_back(Tri10);
-  normales.push_back(face3.normale);
-  normales.push_back(face3.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face4	
-  Triangle_3 Tri13(r2,r1,t2);
-  Triangle_3 Tri14(t1,r1,t2);
-  triangles.push_back(Tri13);
-  triangles.push_back(Tri14);
-  normales.push_back(face4.normale);
-  normales.push_back(face4.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face5	
-  Triangle_3 Tri17(v2,v1,t2);
-  Triangle_3 Tri18(t1,v1,t2);
-  triangles.push_back(Tri17);
-  triangles.push_back(Tri18);
-  normales.push_back(face5.normale);
-  normales.push_back(face5.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  //face6
-  Triangle_3 Tri21(s2,s1,r2);
-  Triangle_3 Tri22(r1,s1,r2);
-  triangles.push_back(Tri21);
-  triangles.push_back(Tri22); 
-  normales.push_back(face6.normale);
-  normales.push_back(face6.normale);
-  fluide.push_back(true);
-  fluide.push_back(true);
-  Points_interface.resize(triangles.size(), std::vector<Point_3>(0));
-  Triangles_interface.resize(triangles.size(), std::vector<Triangle_3>(0));
-	Position_Triangles_interface.resize(triangles.size(), std::vector< std::vector<int> >(0));
-	Points_interface_prev.resize(triangles.size(), std::vector<Point_3>(0));
-	Triangles_interface_prev.resize(triangles.size(), std::vector<Triangle_3>(0));
-	Position_Triangles_interface_prev.resize(triangles.size(), std::vector< std::vector<int> >(0));
-	Ff = Vector_3(0.,0.,0.); Ffprev = Vector_3(0.,0.,0.); 
-	Mf = Vector_3(0.,0.,0.); Mfprev = Vector_3(0.,0.,0.);
-	}*/
-
-
-/*Particule::Particule(const Point_3& c, const double &x_min, const double& y_min, const double& z_min, 
-		     const double& x_max, const double& y_max,const double& z_max, 
-		     const std::vector<Face> & F) : discrete_gradient(), contrainte(), epsilon_p()
-{
-  //discrete_gradient = 0.; //Gradient reconstruit par particule
-  //contrainte = 0.; //Contrainte par particule
-  def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
-  seuil_elas = 0.;
-  //epsilon_p = 0.;
-  
-  bbox = Bbox(x_min,y_min,z_min,x_max,y_max,z_max);
-  
-  x0 = c;
-	
-  cube = false;
-
-  faces = F;
-
-  for(int i=0;i<faces.size();i++){
-		
- 		if(faces[i].size() == 3){
-			Point_3 s,r,v;
-			s = faces[i].vertex[0].pos;
-			r = faces[i].vertex[1].pos;
-			v = faces[i].vertex[2].pos;
-			
-			Vector_3 vect0(s,r);
-			Vector_3 vect1(s,v);
-			Vector_3 normale = cross_product(vect0,vect1);
-			normale = normale*(1./sqrt((normale.squared_length())));
-			if (normale*faces[i].normale > 0.){
-			Triangle_3 Tri(s,r,v);
-			triangles.push_back(Tri);
-			normales.push_back(faces[i].normale);
-			if(faces[i].voisin < 0){
-				fluide.push_back(true);
-			} else {
-				fluide.push_back(false);
-			}
-			}
-			else{
-				Triangle_3 Tri(s,v,r);
-				triangles.push_back(Tri);
-				normales.push_back(faces[i].normale);
-				if(faces[i].voisin < 0){
-					fluide.push_back(true);
-				} else {
-					fluide.push_back(false);
-				}
-			}
-			if(faces[i].voisin == -2){
-				vide.push_back(true);
-			} else {
-				vide.push_back(false);
-			}
-		}
-		else{
-			Point_3 s,r,v;
-			s = faces[i].centre;
-			for(int k=0;k<faces[i].size();k++){
-				int kp = (k+1)%(faces[i].size());
-				r = faces[i].vertex[k].pos;
-				v = faces[i].vertex[kp].pos;
-				Vector_3 vect0(s,r);
-				Vector_3 vect1(s,v);
-				
-				Triangle_3 Tri(s,r,v);
-				triangles.push_back(Tri);
-				normales.push_back(faces[i].normale);
-				
-				if(faces[i].voisin < 0){
-					fluide.push_back(true);
-				} else {
-					fluide.push_back(false);
-				}
-				if(faces[i].voisin == -2){
-					vide.push_back(true);
-				} else {
-					vide.push_back(false);
-				}
-			}
-		}
-		
-  }// end boucle sur les faces
-  
-  Points_interface.resize(triangles.size(), std::vector<Point_3>(0));
-  Triangles_interface.resize(triangles.size(), std::vector<Triangle_3>(0));
-	Position_Triangles_interface.resize(triangles.size(), std::vector< std::vector<int> >(0));
-	Points_interface_prev.resize(triangles.size(), std::vector<Point_3>(0));
-	Triangles_interface_prev.resize(triangles.size(), std::vector<Triangle_3>(0));
-	Position_Triangles_interface_prev.resize(triangles.size(), std::vector< std::vector<int> >(0));
-	Ff = Vector_3(0.,0.,0.); Ffprev = Vector_3(0.,0.,0.); 
-	Mf = Vector_3(0.,0.,0.); Mfprev = Vector_3(0.,0.,0.);
-	}*/
 
 Particule::~Particule(){
 }
 
 Particule & Particule:: operator=(const Particule &P){
-	assert(this != &P);
-       	bbox = P.bbox;
-	cube  = P.cube;
+  assert(this != &P);
+  bbox = P.bbox;
+  cube  = P.cube;
 	
-	faces = P.faces;
-	fixe = P.fixe;
-	m  = P.m; 
-	V = P.V; 
-	Vl = P.Vl; 
-	epsilon = P.epsilon; 
-	/*for(int i=0; i<3;i++){
-	  I[i] = P.I[i];
-	  for(int j=0; j<3;j++){
-	    rotref[i][j] = P.rotref[i][j];
-	  }
-	  }*/
+  faces = P.faces;
+  fixe = P.fixe;
+  m  = P.m; 
+  V = P.V; 
+  Vl = P.Vl; 
+  epsilon = P.epsilon; 
+  /*for(int i=0; i<3;i++){
+    I[i] = P.I[i];
+    for(int j=0; j<3;j++){
+    rotref[i][j] = P.rotref[i][j];
+    }
+    }*/
 	
-	x0 = P.x0;
-	Dx = P.Dx;
-	Dxprev = P.Dxprev;
-	Fi = P.Fi;
-	Ff = P.Ff;
-	Ffprev = P.Ffprev;
-	Mi = P.Mi;
-	Mf = P.Mf;
-	Mfprev = P.Mfprev;
-	u = P.u;
-	u_half = P.u_half;
-	omega = P.omega;
-	omega_half = P.omega_half;
-	e = P.e;
-	eprev = P.eprev;
-	mvt_t = P.mvt_t;
-	mvt_tprev = P.mvt_tprev;
+  x0 = P.x0;
+  Dx = P.Dx;
+  Dxprev = P.Dxprev;
+  Fi = P.Fi;
+  Ff = P.Ff;
+  Ffprev = P.Ffprev;
+  Mi = P.Mi;
+  Mf = P.Mf;
+  Mfprev = P.Mfprev;
+  u = P.u;
+  u_half = P.u_half;
+  omega = P.omega;
+  omega_half = P.omega_half;
+  e = P.e;
+  eprev = P.eprev;
+  mvt_t = P.mvt_t;
+  mvt_tprev = P.mvt_tprev;
 }
 	
 /*	triangles.resize(P.triangles.size()); 
@@ -988,26 +451,27 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 }
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  /*if(fixe==1){
+  if(fixe==1){
     u = Vector_3(0.,0.,0.);
-    omega = Vector_3(0.,0.,0.);
+    //omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
       u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
-      }*/
+    }
+  }
 
-  if(x0.z() <= 4.)
+  /*if(x0.z() <= 4.)
     u = Vector_3(0,0,-10.); //En m.s^-1
   else if(x0.z() >= 14.)
     u= Vector_3(0,0,0);
   else
-    u = u+(Fi+Ff)/2.*(dt/m)*Amort;
+  u = u+(Fi+Ff)/2.*(dt/m)*Amort;*/
     
     //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
-  /*   double Q[3][3];
+     double Q[3][3];
     double eref0 = sqrt(abs(1.-(eref.squared_length())));
     //Recuperation de la matrice de rotation
     Q[0][0] = 1.-2.*(eref[1]*eref[1]+eref[2]*eref[2]);
@@ -1105,57 +569,47 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
 			
 // 		//fin test 
     omega = Vector_3(omega1,omega2,omega3);
-    /*Test de fixer la rotation
-		rot[0][0]= rot[1][1] = rot[2][2] =1.;
-		rot[0][1] = rot[0][2] =rot[1][0] = rot[1][2] = rot[2][0] = rot[2][1] = 0.;
-		e = Vector_3(0,0,0);
-		//rotprev[0][0]= rotprev[1][1] = rotprev[2][2] =1.;
-		//rotprev[0][1] = rotprev[0][2] =rotprev[1][0] = rotprev[1][2] = rotprev[2][0] = rotprev[2][1] = 0.;
-		omega = Vector_3(0.,0.,0.);
-		omega_half = omega;
-		//fin test
-  }//Fin du calcul dans le cas d'une particule libre
-*/
+  //}Fin du calcul dans le cas d'une particule libre
 }
 
-double Particule::volume(){
+  double Particule::volume(){
 	
-	double vol = 0.;
+    double vol = 0.;
 	
-	Point_3 center;
+    Point_3 center;
 	
-	std::vector<Point_3> Points_poly; 
+    std::vector<Point_3> Points_poly; 
 	
-	for(int l= 0; l<triangles.size(); l++)
-	{
-		Points_poly.push_back(triangles[l][0]);
-		Points_poly.push_back(triangles[l][1]);
-		Points_poly.push_back(triangles[l][2]);
-	}	
-	center = centroid(Points_poly.begin(),Points_poly.end());
+    for(int l= 0; l<triangles.size(); l++)
+      {
+	Points_poly.push_back(triangles[l][0]);
+	Points_poly.push_back(triangles[l][1]);
+	Points_poly.push_back(triangles[l][2]);
+      }	
+    center = centroid(Points_poly.begin(),Points_poly.end());
 	
-	for(int l= 0; l<triangles.size(); l++)
-	{
-		Tetrahedron tetra(center, triangles[l][0], triangles[l][1], triangles[l][2]);
-		vol += abs((tetra.volume()));
-	}
+    for(int l= 0; l<triangles.size(); l++)
+      {
+	Tetrahedron tetra(center, triangles[l][0], triangles[l][1], triangles[l][2]);
+	vol += abs((tetra.volume()));
+      }
 	
-	return vol;
-}
+    return vol;
+  }
 
-Vector_3 Particule::vitesse_parois(const Point_3& X_f){
+  Vector_3 Particule::vitesse_parois(const Point_3& X_f){
 		
-  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
+    Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
 
-	return V_f;
-}	
+    return V_f;
+  }	
 
-Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
+  Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
 	
-  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
+    Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
 	
-	return V_f;
-}	
+    return V_f;
+  }	
 
 void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int& a, const int& b, const int& c){
   //Utilisation de la fonction decrite par Brian Mirtich 1996 (cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar)
@@ -1420,12 +874,6 @@ void Particule::Inertie(const double &rho){
   double yG = (x0[1]);
   double zG = (x0[2]);
   
-//  cout << "T=" << endl;
-//  cout << Txx << " " << Txy << " " << Tzx << endl;
-//  cout << Txy << " " << Tyy << " " << Tyz << endl;
-//  cout << Tzx << " " << Tyz << " " << Tzz << endl;
-//  getchar();
-  
   R[0][0] = rho*(Tyy-2.*yG*Ty+yG*yG*T1+Tzz-2.*zG*Tz+zG*zG*T1);
   R[1][0] = R[0][1] = rho*(Txy-yG*Tx-xG*Ty+xG*yG*T1);
   R[2][0] = R[0][2] = rho*(Tzx-zG*Tx-xG*Tz+xG*zG*T1);
@@ -1666,7 +1114,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     cout << "Volume : " << solide[id].V << endl;*/
   }
 
-  //Importation de toutes les infos sur les faces (le bordel...)
+  //Importation de toutes les infos sur les faces
   while(getline(maillage_2, ligne)) {
     istringstream  stm(ligne);
     int id;
@@ -1692,7 +1140,12 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     for(int i=0 ; i < nbr_faces ; i++) {
       int id_voisin;
       stm >> id_voisin;
-      f[i].voisin = id_voisin;
+      if(id_voisin == -5)
+	solide[id].fixe = 2; //signifie que particule est sur un des bords chargés en contrainte
+      else if(id_voisin == -6)
+	solide[id].fixe = 1; //signifie que particule est encastrée
+      else
+	f[i].voisin = id_voisin;
     }
     solide[id].faces = f;
   }
@@ -2115,6 +1568,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     //vtk << setprecision(15);
     int nb_points = 0;
     int nb_faces = 0;
+    //Revenir à un truc comme avanat car il faut enlever les faces pour les particules qui n'ont pas de voisin (genre le bord)
     for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
       nb_faces += (P->second).faces.size();
       nb_points += (P->second).vertices.size();
@@ -2124,7 +1578,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     vtk << "# vtk DataFile Version 3.0" << endl;
     vtk << "#Simulation Euler" << endl;
     vtk << "ASCII" << endl;
-    vtk<<"\n";
+    vtk<< "\n";
     vtk << "DATASET UNSTRUCTURED_GRID" << endl;
     vtk << "POINTS " << nb_points << " DOUBLE" << endl;
     
