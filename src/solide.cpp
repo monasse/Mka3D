@@ -108,13 +108,7 @@ Face::Face(const double& surface)
   S = surface;
 }
 
-/*!
- *\fn Face::Face(std::vector<Vertex> & v, int part)
- *\brief Surcharge du constructeur
- *\param v vecteur de sommets 
- *\param part num&eacute;ro de la particule voisine. -1 si le voisin est le fluide 
- */
-Face::Face(const std::vector<Vertex> & v, const int& part)
+/*Face::Face(const std::vector<Vertex> & v, const int& part)
 {
   std::vector<Point_3> points;
   for(int i=0; i<v.size(); i++){
@@ -127,15 +121,9 @@ Face::Face(const std::vector<Vertex> & v, const int& part)
   normale = normale*1./norm;
   voisin = part;
   D0 = 1.;
-}
-/*!
-* \fn Face::Face(std::vector<Vertex> & v, int part, double dist)
-* \brief Surcharge du constructeur.
-* \param v vecteur de sommets
-* \param part num&eacute;ro de la particule voisine. -1 si le voisin est le fluide 
-* \param dist distance &agrave; l'&eacute;quilibre avec la particule voisine
- */
-Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
+}*/
+
+/*Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
 {
   std::vector<Point_3> points;
   for(int i=0; i<v.size(); i++){
@@ -148,40 +136,27 @@ Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
   normale = normale*1./norm;
   voisin = part;
   D0 = dist;
-}
-/*!
-* \fn Face & Face:: operator=(const Face &F)
-* \brief op&eacute;rateur =
-* \param F Face
-* \return Face
- */
+}*/
+
 Face & Face:: operator=(const Face &F){
-	
-	assert(this != &F);
-	centre = F.centre;
-	normale = F.normale;
-	voisin = F.voisin;
-	D0  = F.D0; 
-	Is = F.Is; 
-	It = F.It; 
-	s = F.s; 
-	t = F.t;
-	vertex.resize(F.vertex.size());
-	for(int i= 0; i<F.vertex.size(); i++){
-		vertex[i] = F.vertex[i];
-	}
+  assert(this != &F);
+  centre = F.centre;
+  normale = F.normale;
+  voisin = F.voisin;
+  D0  = F.D0; 
+  Is = F.Is; 
+  It = F.It; 
+  s = F.s; 
+  t = F.t;
+  vertex.resize(F.vertex.size());
+  for(int i= 0; i<F.vertex.size(); i++){
+    vertex[i] = F.vertex[i];
+  }
 }
-/*!
-* \fn void Face::Inertie()
-* \brief Calcul d'inertie de la face. 
-* \details 
- * Premier moment d'inertie de la face \n
- * Second moment d'inertie de la face \n
- * Vecteur selon le premier axe principal d'inertie de la face \n
- * Vecteur selon le second axe principal d'inertie de la face 
- * \return void
- */
-void Face::Inertie(){
+
+//Il faudra reprendre le calcul de la matrice d'inertie avec le formalisme Voronoi !!!!!
+
+/*void Face::Inertie(const Particule& part){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   //Choix initial d'un repere orthonorme de la face
   if(normale[0]!=0. || normale[1]!=0.){
@@ -199,7 +174,7 @@ void Face::Inertie(){
   double Tt = 0.;
   for(int i=0;i<size();i++){
     int ip = (i+1)%(size());
-    Vector_3 v1(centre,vertex[i].pos);
+    Vector_3 v1(centre,(part.vertices)[vertex[i]]);
     Vector_3 v2(centre,vertex[ip].pos);
     T1 += 1./2.*(cross_product(v1,v2)*normale);
     Ts += 1./6.*(cross_product(v1,v2)*normale)*((v1+v2)*s);
@@ -246,7 +221,7 @@ void Face::Inertie(){
       t = stemp/(sqrt((ttemp.squared_length())));
     }
   }
-}
+}*/
 
 Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices() {
   id = Id;
@@ -276,7 +251,6 @@ Particule & Particule:: operator=(const Particule &P){
   fixe = P.fixe;
   m  = P.m; 
   V = P.V; 
-  Vl = P.Vl; 
   epsilon = P.epsilon; 
   /*for(int i=0; i<3;i++){
     I[i] = P.I[i];
@@ -389,7 +363,7 @@ Particule & Particule:: operator=(const Particule &P){
 	
 	}*/
 
-void Particule::Affiche(){
+/*void Particule::Affiche(){
   for(int i=0; i<faces.size(); i++){
     cout<<"face "<<i<<endl;
     cout<<" voisin "<<faces[i].voisin<<endl;
@@ -401,7 +375,7 @@ void Particule::Affiche(){
     }
   }
 
-}
+  }*/
 
 
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
@@ -572,46 +546,21 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   //}Fin du calcul dans le cas d'une particule libre
 }
 
-  double Particule::volume(){
-	
-    double vol = 0.;
-	
-    Point_3 center;
-	
-    std::vector<Point_3> Points_poly; 
-	
-    for(int l= 0; l<triangles.size(); l++)
-      {
-	Points_poly.push_back(triangles[l][0]);
-	Points_poly.push_back(triangles[l][1]);
-	Points_poly.push_back(triangles[l][2]);
-      }	
-    center = centroid(Points_poly.begin(),Points_poly.end());
-	
-    for(int l= 0; l<triangles.size(); l++)
-      {
-	Tetrahedron tetra(center, triangles[l][0], triangles[l][1], triangles[l][2]);
-	vol += abs((tetra.volume()));
-      }
-	
-    return vol;
-  }
-
-  Vector_3 Particule::vitesse_parois(const Point_3& X_f){
+Vector_3 Particule::vitesse_parois(const Point_3& X_f){
 		
-    Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
+  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
 
-    return V_f;
-  }	
+  return V_f;
+}	
 
-  Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
+Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
 	
-    Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
+  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
 	
-    return V_f;
-  }	
+  return V_f;
+}	
 
-void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int& a, const int& b, const int& c){
+/*void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int& a, const int& b, const int& c){
   //Utilisation de la fonction decrite par Brian Mirtich 1996 (cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar)
   P1 = Pa = Pb = Paa = Pab = Pbb = Paaa = Paab = Pabb = Pbbb = 0.;
   for(int i=0;i<size();i++){
@@ -739,7 +688,7 @@ void Particule::CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &
   Txy /=2.;
   Tyz /=2.;
   Tzx /=2.;
-}
+}*/
 
 struct Mat3x3
 {
@@ -859,16 +808,11 @@ void jacobi3x3(Mat3x3 &a, Vect3 &d, Mat3x3 &v, int &nrot)
 }
 
 
-/*!
-* \fn void Particule::Inertie(const double &rho)
-* \brief Calcul d'inertie de la particule. 
-* \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-* \return void
-*/
-void Particule::Inertie(const double &rho){
+
+/*void Particule::Inertie(const double &rho){
   double eps = 1.e-14;//std::numeric_limits<double>::epsilon();
   double T1,Tx,Ty,Tz,Txx,Tyy,Tzz,Txy,Tyz,Tzx;
-  CompVolumeIntegrals(T1,Tx,Ty,Tz,Txx,Tyy,Tzz,Txy,Tyz,Tzx);
+  //CompVolumeIntegrals(T1,Tx,Ty,Tz,Txx,Tyy,Tzz,Txy,Tyz,Tzx);
   double R[3][3];
   double xG = (x0[0]);
   double yG = (x0[1]);
@@ -881,15 +825,9 @@ void Particule::Inertie(const double &rho){
   R[1][2] = R[2][1] = rho*(Tyz-zG*Ty-yG*Tz+yG*zG*T1);
   R[2][2] = rho*(Tyy-2.*yG*Ty+yG*yG*T1+Txx-2.*xG*Tx+xG*xG*T1);
   
-//  cout << "R=" << endl;
-//  cout << R[0][0] << " " << R[0][1] << " " << R[0][2] << endl;
-//  cout << R[1][0] << " " << R[1][1] << " " << R[1][2] << endl;
-//  cout << R[2][0] << " " << R[2][1] << " " << R[2][2] << endl;
-//  getchar();
-
   //Masse et volume
-  V = T1;
-  m = rho*T1;
+  //V = T1;
+  //m = rho*T1;
   if(m<eps){
     cout<< "masse nulle " << m << endl;
     getchar();
@@ -912,15 +850,6 @@ void Particule::Inertie(const double &rho){
 	rotref[i][j] = V.tab[j][i];
       }
     }
-    /*} else {
-    I[0] = R[0][0];
-    I[1] = R[1][1];
-    I[2] = R[2][2];
-    rotref[0][0] =rotref[1][1] = rotref[2][2] = 1.;
-    rotref[0][1] = rotref[0][2] = rotref[1][0] = rotref[1][2] = rotref[2][0] = rotref[2][1] = 0.;
-    }*/
-    //  cout << "I=" << I[0] << " " << I[1] << " " << I[2] << endl;
-//  getchar();
   
   //Test : produit scalaire des deux premieres colonnes
   double scal = rotref[0][0]*rotref[0][1]+rotref[1][0]*rotref[1][1]+rotref[2][0]*rotref[2][1];
@@ -985,38 +914,13 @@ void Particule::Inertie(const double &rho){
   eref2 = signe(qref2)*sqrt(max((1.+Q[1][1]-Q[0][0]-Q[2][2])/4.,0.));
   eref3 = signe(qref3)*sqrt(max((1.+Q[2][2]-Q[0][0]-Q[1][1])/4.,0.));
   eref = Vector_3(eref1,eref2,eref3);
-  /*Version alternative
-  Vector_3 qref = Vector_3(Q[2][1]-Q[1][2], Q[0][2]-Q[2][0], Q[1][0]-Q[0][1])/4.;
-  double eref0 = sqrt((1+sqrt(1-4.*qref.squared_length()))/2.);
-  eref = qref/eref0;//*/
   
   //Calcul des moments d'inertie des faces (pour le calcul des torsions)
   for(int i=0;i<faces.size();i++){
     faces[i].Inertie();
   }
-}
-/*!
-* \fn void Particule::Volume_libre()
-* \brief Calcul du volume libre. 
-* \warning  <b> Proc&eacute;dure sp&eacute;cifique au solide! </b> 
-* \return void
-*/
-void Particule::Volume_libre(){
-  Vl = 0.;
-  for(int i=0;i<faces.size();i++){
-    if(faces[i].voisin == -1){
-      Vector_3 v1(faces[i].vertex[0].pos,faces[i].vertex[1].pos);
-      Vector_3 v2(faces[i].vertex[0].pos,faces[i].vertex[2].pos);
-      Vector_3 v3(x0,faces[i].vertex[0].pos);
-      Vl += 1./6.*(cross_product(v1,v2)*v3);
-    }
-  }
-}
+}*/
 
-/*!
-*\fn Solide::Solide()
-*\brief Constructeur par d&eacute;faut. 
-*/
 Solide::Solide(const double& E, const double& nu){
   lambda = E * nu / (1+nu) / (1 - 2.*nu);
   mu = E / 2. / (1+nu);
@@ -1038,14 +942,14 @@ Solide & Solide::operator=(const Solide &S){
   }
 }
 
-void Solide::Affiche(){
+/*void Solide::Affiche(){
 	
   for(int i=0; i<solide.size(); i++){
     cout<<"Particule "<<i<<endl;
     solide[i].Affiche();
   }
 
-}
+  }*/
 
 void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
   std::ifstream maillage_1(s1,ios::in);
@@ -1123,11 +1027,28 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     vector<Face> f;
     double x,y,z;
     double S;
+    int nbr_vertex;
     stm >> id >> nbr_faces;
     for(int i=1 ; i <= nbr_faces ; i++) {
       stm >> S;
       Face face(S);
       f.push_back(face);
+    }
+
+    //Vertex par face
+    for(int i=0 ; i < nbr_faces ; i++) {
+      stm >> nbr_vertex;
+      f[i].nb_vertex = nbr_vertex;
+      //cout << x << " " << y << " " << z << endl;
+    }
+
+    for(int i=0 ; i < nbr_faces ; i++) {
+      stm >> aux; //On enlève la première parenthèse
+      int num_vertex;
+      for(int j =0; j < f[i].nb_vertex ; j++) {
+	stm >> num_vertex >> aux;
+	(f[i].vertex).push_back(num_vertex); //solide[id].vertices[num_vertex]);
+      }
     }
 
     //Vecteur normal par face
@@ -1262,7 +1183,7 @@ double Solide::Energie_cinetique(){
     double u2 = ((P->second).u.squared_length());
     E += 1./2. * (P->second).m * u2;
   }
-  cout << "Energie cinetique : " << E << endl;
+  //cout << "Energie cinetique : " << E << endl;
   return E;
 }
 
@@ -1276,7 +1197,7 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     Ep += ( 0.5 * contraction_double(((P->second)).contrainte, ((P->second)).discrete_gradient - ((P->second)).epsilon_p)  + B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
   }
-  cout << "Energie potentielle : " << Ep << endl;
+  //cout << "Energie potentielle : " << Ep << endl;
   return Ep;
 }
 
@@ -1570,11 +1491,14 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     //vtk << setprecision(15);
     int nb_points = 0;
     int nb_faces = 0;
-    //Revenir à un truc comme avanat car il faut enlever les faces pour les particules qui n'ont pas de voisin (genre le bord)
+    int size = 0;
     for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
       nb_faces += (P->second).faces.size();
       nb_points += (P->second).vertices.size();
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+	size += F->nb_vertex; //Egale à nb_points au final ?
     }
+    size += nb_faces;
     
     //Initialisation du fichier vtk
     vtk << "# vtk DataFile Version 3.0" << endl;
@@ -1594,11 +1518,15 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
     
     //Sortie des faces
     int point_tmp=0;
-    vtk << "CELLS " << nb_faces << " " << nb_points+nb_faces << endl;
+    vtk << "CELLS " << nb_faces << " " << size << endl;
+    int compteur_vertex = 0;
     for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      vtk << (P->second).faces.size();
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
-	vtk << " " << F->voisin;
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
+	vtk << F->nb_vertex;
+	for(int k=0 ; k<F->nb_vertex ; k++)
+	  vtk << " " << compteur_vertex + (F->vertex)[k];
+      }
+      compteur_vertex += (P->second).vertices.size();
       vtk << endl;
     }
     vtk << "\n";

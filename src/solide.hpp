@@ -56,15 +56,15 @@ class Face
 public:
   Face();//:vertex(std::vector<Vertex>(1)){}
   Face(const double& surface);
-  Face(const std::vector<Vertex> & v, const int &part);
-  Face(const std::vector<Vertex> & v, const int &part, const double &dist);
+  //Face(const std::vector<Vertex> & v, const int &part);
+  //Face(const std::vector<Vertex> & v, const int &part, const double &dist);
   Face & operator=(const  Face &F); // op&eacute;rateur = surcharge pour l'affectation
   int size(){
 	return vertex.size();
   }
-  void compFaceIntegrals(double &Fa, double &Fb, double &Fc, double &Faa, double &Fbb, double &Fcc, double &Faaa, double &Fbbb, double &Fccc, double &Faab, double &Fbbc, double &Fcca, const double& na, const double& nb, const double& nc, const int& a, const int& b, const int& c);
-  void compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int &a, const int &b, const int &c);
-  void Inertie();
+  //void compFaceIntegrals(double &Fa, double &Fb, double &Fc, double &Faa, double &Fbb, double &Fcc, double &Faaa, double &Fbbb, double &Fccc, double &Faab, double &Fbbc, double &Fcca, const double& na, const double& nb, const double& nc, const int& a, const int& b, const int& c);
+  //void compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int &a, const int &b, const int &c);
+  //void Inertie(const Particule& part);
   Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante &agrave; la face
   double S; //Surface de la face
@@ -72,7 +72,8 @@ public:
   double It; //!< Second moment d'inertie de la face
   Vector_3 s; //!< Vecteur selon le premier axe principal d'inertie de la face
   Vector_3 t; //!< Vecteur selon le second axe principal d'inertie de la face
-  std::vector<Vertex> vertex; //!< Les sommets de la face
+  int nb_vertex;
+  std::vector<int> vertex; //!< Les sommets de la face
   int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
   //double rayon_plastique; //Taille du domaine élastique
@@ -98,11 +99,9 @@ class Particule
 			const std::vector<Face> & F);
   ~Particule();
   Particule & operator=(const Particule &P); // opérateur = surcharge pour l'affectation
-  void Affiche();  //fonction auxilaire utile pour les tests
-  double volume(); 
-  void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
-  void Inertie(const double &rho);
-  void Volume_libre();
+  //void Affiche();  //fonction auxilaire utile pour les tests
+  //void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
+  //void Inertie(const double &rho);
   void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
 
@@ -166,7 +165,6 @@ Bbox bbox;
   int fixe; //!< =true si la particule est fix&eacute;e, false sinon
   double m; //!< Masse de la particule
   double V; //!< Volume de la particule
-  double Vl; //!< Volume libre de la particule (pour le calcul d'epsilon)
   double epsilon; //!< D&eacute;formation volumique globale de la particule
   double I[3]; //!< Moments d'inertie de la particule
   double rotref[3][3]; //!<Matrice de rotation \f$ Q_0 \f$ telle que la matrice d'inertie \f$ R \f$ s'&eacute;crit :\f$ R = Q_0 R_0 Q_0^{-1}\f$, avec \f$R_0=diag(I_1,I_2,I_3)\f$.
@@ -225,7 +223,7 @@ public:
   Solide(const std::vector<Particule> & Part);
   ~Solide();
   Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
-  void Affiche();  //fonction auxilaire utile pour les test
+  //void Affiche();  //fonction auxilaire utile pour les test
   int size(){
 	return solide.size();
   }
