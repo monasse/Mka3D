@@ -1525,6 +1525,7 @@ void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au f
 	vtk << F->nb_vertex;
 	for(int k=0 ; k<F->nb_vertex ; k++)
 	  vtk << " " << compteur_vertex + (F->vertex)[k];
+	vtk << endl;
       }
       compteur_vertex += (P->second).vertices.size();
       vtk << endl;
