@@ -2448,10 +2448,6 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 // }
 
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
-  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (*P).Fi = Vector_3(0.,0.,0.);
-    (*P).Mi = Vector_3(0.,0.,0.);
-    }*/
 
   bool plastifie = false;
   
@@ -2483,17 +2479,11 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     double B = 292000000.; //En Pa. JC.
     double n = .31; //JC.
     double A = 90000000.; //En Pa. Vient de JC
+    double H = 60000000000.; //En Pa. Moitié du module de Young
 	
-    (*P).seuil_elas = A + B * pow((*P).def_plas_cumulee, n);
-    /*if(abs((*P).contrainte) > (*P).seuil_elas) { //On sort du domaine élastique.
-      (*P).def_plas_cumulee += (abs((*P).contrainte) - A) / E; //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      double delta_epsilon_p = (abs((*P).contrainte) - A) / E  * signe( (*P).contrainte );
-      (*P).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
-      //(*P).contrainte = A * signe( (*P).contrainte );
-      }*/
+    (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
 
-    if((*P).contrainte.VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+    if((P->contrainte - H * P->epsilon_p).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
       plastifie = true;
       //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
@@ -2503,10 +2493,10 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
-      double delta_p = (pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee); //Test quadrature au point milieu du multiplicateur plastique
+      double delta_p = (P->contrainte - H * P->epsilon_p).VM() - A;
       //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      //(*P).epsilon_p += delta_p * n_elas;
+      (*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
       
