@@ -1096,6 +1096,9 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 
 void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt, const double& t, const double& T){
   Forces_internes(N_dim,nu,E, dt);
+  for(std::map<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    (P->second).Fi = (P->second).Fi + Forces_externes((P->second).x0,t,T);
+  }
 }
 
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){

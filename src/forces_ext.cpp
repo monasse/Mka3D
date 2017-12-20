@@ -17,34 +17,34 @@
   along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+/*!
+\authors Laurent Monasse
+ *  \file forces_ext.cpp
+ *  \brief Definition of the functions giving the external forces.
+ */
+
 #include "geometry.hpp"
-#include <math.h>
+#ifndef FORCES_EXT_CPP
+#define FORCES_EXT_CPP
 
-//Initial velocity of the solid particles
-Vector_3 velocity(const Point_3 &p)
+Vector_3 Forces_externes(const Point_3 &X, const double& t, const double& T)
 {
   return Vector_3(0,0,0);
-  //return Vector_3(0.01*(p.x()-1.),0,0);
-  /*if(p.x() <= 1.)
-     return Vector_3(-20.,0,0);
-  else if(p.x() >= 19.)
-  return Vector_3(0,0,0); */
+  /*if(X.x() <= 1.)
+    return Vector_3(-90000000.,0,0); // * t / T; //Chargement lineaire jusqu'à valeure fixée
+  else if(X.x() >= 19.)
+  return Vector_3(0,0,0);*/
 }
 
-//Initial angular velocity of the solid particles
-Vector_3 omega(const Point_3 &p)
+Vector_3 Moments_externes(const Point_3 &X, const Vector_3 &e)
 {
   return Vector_3(0,0,0);
-  //return Vector_3(0.1,0,0);
-  
 }
 
-//Boundary velocities of the solid particles
-/*Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx) {
-  return Vector_3(0,0,-1.); // * t / T; //En m.s^-1
-  }*/
 
-  
+
+//Pression dans tube
 Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx)
 {
   double T_p = 1.;
@@ -76,33 +76,6 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
   }
   else
     return Vector_3(0,0,0); //Point milieu du cylindre donc bouge pas.
-      
 }   
 
-
-//Boundary velocities of the solid particles
-Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
-{
-  double T_p = 0.001;
-  
-  //Chargement linéaire en traction
-  /*if(p.z() <= 0.2)
-    return Vector_3(-0.1,0,0) * t / T_p; //En m.
-  else
-  return Dx;*/
-
-  //Chargement torsion
-  /*if(p.z() <= 0.1) { //Déplacement en BC...
-    double alpha_pt = 3.1416 / 360. * 45 / T; // * t / T; //Rotation de 45° sur [0, T]
-    double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
-    double theta = 0.;
-
-    if(p.x() >= 0.5)
-      theta = atan((p.y() - 0.5) / (p.x() - 0.5));
-    else //if(p.x() >= 0.5 && p.y() >= 0.5)
-      theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));
-    return r * Vector_3(-sin(alpha_pt), cos(alpha_pt), 0.); //En m
-  }
- else */
-    return Dx;
-}
+#endif
