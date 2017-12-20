@@ -922,8 +922,8 @@ void jacobi3x3(Mat3x3 &a, Vect3 &d, Mat3x3 &v, int &nrot)
 }*/
 
 Solide::Solide(const double& E, const double& nu){
-  lambda = E * nu / (1+nu) / (1 - 2.*nu);
-  mu = E / 2. / (1+nu);
+  lambda = E * nu / (1.+nu) / (1. - 2.*nu);
+  mu = E / 2. / (1.+nu);
 }
 
 Solide::Solide(){
