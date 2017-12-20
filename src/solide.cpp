@@ -1124,25 +1124,24 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     double B = 292000000.; //En Pa. JC.
     double n = .31; //JC.
     double A = 90000000.; //En Pa. Vient de JC
+    double H = 0.;
 	
-    (P->second).seuil_elas = A + B * pow((P->second).def_plas_cumulee, n);
-    /*if(abs((P->second).contrainte) > (P->second).seuil_elas) { //On sort du domaine élastique.
-      (P->second).def_plas_cumulee += (abs((P->second).contrainte) - A) / E; //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
-      double delta_epsilon_p = (abs((P->second).contrainte) - A) / E  * signe( (P->second).contrainte );
-      (P->second).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
-      //(P->second).contrainte = A * signe( (P->second).contrainte );
-      }*/
+    (P->second).seuil_elas = A; // + B * pow((P->second).def_plas_cumulee, n);
 
-    if((P->second).contrainte.VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
+    if(((P->second).contrainte - H * (P->second).epsilon_p).VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
       plastifie = true;
-      //Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
+      //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
+      Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
+      /*if((*P).n_elas_prev == -n_elas)
+	cout << "Chargement dans sens oppose !" << endl;
+      (*P).n_elas_prev = n_elas;*/
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      double delta_p = pow(((P->second).contrainte.VM() - A) / B, 1./n) - (P->second).def_plas_cumulee;
-      (P->second).def_plas_cumulee = pow(((P->second).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
-      (P->second).epsilon_p += (delta_p / (((P->second).contrainte).dev()).norme() * (P->second).contrainte).dev();
+      //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
+      double delta_p = (((P->second).contrainte - H * (P->second).epsilon_p).VM() - A) / (2*mu + H);
+      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      (P->second).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
       //cout << "Norme def plas : " << ((P->second).epsilon_p).norme() << endl;
       
