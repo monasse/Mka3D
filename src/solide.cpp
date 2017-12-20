@@ -26,6 +26,7 @@
 #include "solide.hpp"
 #include "geometry.hpp"
 #include "vitesse.hpp"
+#include "forces_ext.hpp"
 #include <iostream>
 #include <map>
 #include <string>
@@ -1039,7 +1040,6 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     for(int i=0 ; i < nbr_faces ; i++) {
       stm >> nbr_vertex;
       f[i].nb_vertex = nbr_vertex;
-      //cout << x << " " << y << " " << z << endl;
     }
 
     for(int i=0 ; i < nbr_faces ; i++) {
@@ -1048,6 +1048,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       for(int j =0; j < f[i].nb_vertex ; j++) {
 	stm >> num_vertex >> aux;
 	(f[i].vertex).push_back(num_vertex); //solide[id].vertices[num_vertex]);
+	f[i].centre = f[i].centre + solide[id].vertices[num_vertex] / double(nbr_vertex);
       }
     }
 
@@ -1096,8 +1097,9 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 
 void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt, const double& t, const double& T){
   Forces_internes(N_dim,nu,E, dt);
-  for(std::map<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (P->second).Fi = (P->second).Fi + Forces_externes((P->second).x0,t,T);
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+      (P->second).Fi = (P->second).Fi + Forces_externes(t,T, *F);
   }
 }
 

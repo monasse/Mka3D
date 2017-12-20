@@ -67,6 +67,7 @@ public:
   Point_3();
   Point_3(const double &x0, const double &y0, const double &z0);
   double operator[](const int &i) const;
+  Point_3 operator/(const double &s) const;
   double x() const;
   double y() const;
   double z() const;
@@ -76,6 +77,7 @@ public:
 ostream& operator<<(ostream &os, const Point_3 &p);
 double squared_distance(const Point_3 &p, const Point_3 &q);
 bool operator==(const Point_3 &vec1, const Point_3 &vec2);
+Point_3 operator+(const Point_3 &p, const Point_3 &v);
 
 class Vector_3 
 {

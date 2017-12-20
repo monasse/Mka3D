@@ -17,31 +17,11 @@
   along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-/*!
-\authors Laurent Monasse
- *  \file forces_ext.cpp
- *  \brief Definition of the functions giving the external forces.
- */
-
 #include "geometry.hpp"
-#include "solide.hpp"
-#ifndef FORCES_EXT_CPP
-#define FORCES_EXT_CPP
+#ifndef FORCES_EXT_HPP
+#define FORCES_EXT_HPP
 
-//Pression dans tube
-Vector_3 Forces_externes(const double& t, const double& T, const Face& face)
-{
-  double p_max = 5. * 67500000.; //En Pa pression max, 5 fois euil elas théorique...
-  double p = p_max * t / T;
+Vector_3 Forces_externes(const double& t, const double& T, const Face& face);
 
-  Point_3 pos_centre = face.centre;
-  double r = sqrt( pos_centre.x() * pos_centre.x() + pos_centre.y() * pos_centre.y());
-
-  if((r - 3.) < 0.1)
-    return p * (-face.normale);
-  else
-    return Vector_3(0., 0., 0.);
-}
 
 #endif

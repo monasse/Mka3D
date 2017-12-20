@@ -147,6 +147,21 @@ double Point_3::z() const
   return p[2];
 }
 
+Point_3 operator+(const Point_3 &p, const Point_3 &v)
+{
+  return Point_3(p[0]+v[0],p[1]+v[1],p[2]+v[2]);
+}
+
+Point_3 Point_3::operator/(const double &s) const
+{
+  if(s!=0.){
+    return Point_3(p[0]/s,p[1]/s,p[2]/s);
+  }
+  else {
+    throw std::invalid_argument( "Division by zero" );
+  }
+}
+
 
 Bbox Point_3::bbox() const
 {
