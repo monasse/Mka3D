@@ -2479,7 +2479,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     double B = 292000000.; //En Pa. JC.
     double n = .31; //JC.
     double A = 90000000.; //En Pa. Vient de JC
-    double H = 60000000000.; //En Pa. Moitié du module de Young
+    double H = 0.; //60000000000.; //En Pa. Moitié du module de Young
 	
     (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
 
