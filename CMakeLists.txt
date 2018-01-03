@@ -8,6 +8,9 @@ set(SOURCES
   ${SRC}/vitesse.cpp
   ${SRC}/forces_ext.cpp
   ${SRC}/geometry.cpp
+  ${SRC}/vertex.cpp
+  ${SRC}/face.cpp
+  ${SRC}/particule.cpp
   ${SRC}/solide.cpp
   ${SRC}/main.cpp
   )
