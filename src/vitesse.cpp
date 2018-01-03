@@ -47,7 +47,7 @@ Vector_3 omega(const Point_3 &p)
   
 Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx)
 {
-  double T_p = 1.;
+  double T_p = 10.;
   double pos_x = p.x() + Dx.x();
   double pos_y = p.y() + Dx.y();
   double pos_z = p.z() + Dx.z();

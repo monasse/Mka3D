@@ -1139,7 +1139,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
       double delta_p = (((P->second).contrainte - H * (P->second).epsilon_p).VM() - A) / (2*mu + H);
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      (P->second).def_plas_cumulee += delta_p;
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (P->second).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
@@ -1150,8 +1150,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     }
   }
 
-  if(plastifie)
-    cout << "Plastification dans ce pas de temps !" << endl;
+  /*if(plastifie)
+    cout << "Plastification dans ce pas de temps !" << endl;*/
 
   
   //Calcul des forces pour chaque particule
