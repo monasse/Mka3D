@@ -40,6 +40,10 @@ Vertex::Vertex()
   num = 0;
 }
 
+Vertex(const Point_3 &p) {
+  pos = p;
+}
+
 Vertex::Vertex(const Point_3& p, const std::vector<int> & parts)
 {
   pos = p;
@@ -50,13 +54,13 @@ Vertex::Vertex(const Point_3& p, const std::vector<int> & parts)
 
 Vertex & Vertex:: operator=(const Vertex &V){
 	
-	assert(this != &V);
-	pos = V.pos;
-	num = V.num;
-	particules.resize(V.particules.size());
-	for(int i=0; i<V.particules.size(); i++){
-		particules[i]= V.particules[i];
-	}
+  assert(this != &V);
+  pos = V.pos;
+  num = V.num;
+  particules.resize(V.particules.size());
+  for(int i=0; i<V.particules.size(); i++){
+    particules[i]= V.particules[i];
+  }
 }
 
 #endif

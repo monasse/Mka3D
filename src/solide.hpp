@@ -26,9 +26,11 @@
 #ifndef SOLIDE_HPP
 #define SOLIDE_HPP
 
-#include <map>
 #include "geometry.hpp"
 #include "particule.hpp"
+#include "vertex.hpp"
+#include <set>
+#include <map>
 
 //! Definition de la classe Solide  
 class Solide
@@ -59,8 +61,9 @@ public:
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   // private :
-  //std::vector<Particule> solide; //!< Maillage solide
-  std::map<int, Particule> solide;
+  std::vector<Vertex> vertex;
+  std::set<Face> faces;
+  std::map<int, Particule> solide; //Particules du maillage
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé

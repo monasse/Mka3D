@@ -27,23 +27,25 @@
 #define FACE_HPP
 
 #include "geometry.hpp"
-#include <map>
+#include <vector>
 
 class Face
 {
 public:
+  //Méthodes
   Face();//:vertex(std::vector<Vertex>(1)){}
   Face(const double& surface);
   //Face(const std::vector<Vertex> & v, const int &part);
   //Face(const std::vector<Vertex> & v, const int &part, const double &dist);
-  Face & operator=(const  Face &F); // op&eacute;rateur = surcharge pour l'affectation
+  Face & operator=(const  Face &F); //opérateur d'affectation
   int size(){
 	return vertex.size();
   }
-  //void compFaceIntegrals(double &Fa, double &Fb, double &Fc, double &Faa, double &Fbb, double &Fcc, double &Faaa, double &Fbbb, double &Fccc, double &Faab, double &Fbbc, double &Fcca, const double& na, const double& nb, const double& nc, const int& a, const int& b, const int& c);
-  //void compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int &a, const int &b, const int &c);
-  //void Inertie(const Particule& part);
-  Point_3 centre; //!< Centre de la face
+  void comp_normal(const Point_3& ext); //Calcul une normale à la face
+  bool& operator==(const Face &F); //Compare les faces
+
+  //Attributs
+  //Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante &agrave; la face
   double S; //Surface de la face
   double Is; //!< Premier moment d'inertie de la face
@@ -52,8 +54,9 @@ public:
   Vector_3 t; //!< Vecteur selon le second axe principal d'inertie de la face
   int nb_vertex;
   std::vector<int> vertex; //!< Les sommets de la face
-  int voisin; //!< Le num&eacute;ro de la particule voisine. -1 si le voisin est le fluide
-  double D0; //!< Distance &agrave; l'&eacute;quilibre avec la particule voisine
+  //int voisin; //!< Le numéro de la particule voisine. -1 si le voisin est le fluide
+  double D0; //!< Distance à l'équilibre avec la particule voisine
+  std::vector<Particule *> parts; //contient les deux particules dans le lien. La normale est dans le sens de la première vers la seconde
 
 };
 

@@ -48,14 +48,14 @@ double abs(const double &x)
   return max(x,-x);
 }
 
-Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices() {
+Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
   fixe = 0;
 }
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), x0()
 {
   id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
@@ -632,7 +632,18 @@ void jacobi3x3(Mat3x3 &a, Vect3 &d, Mat3x3 &v, int &nrot)
   cout << "Trop grand nombre d'iterations de la routine jacobi3x3" << endl;
 }
 
+/*void Particule::barycentre() {
+  for(int i=0 ; i < vertices.size() ; i++)
+    x0 += vertices[i] / 4.;
+}*/
 
+void Particule::barycentre() {
+  x0 = centroid(vertices.begin(), vertices.end());
+}
+
+void volume() {
+  //TODO !!!!
+}
 
 /*void Particule::Inertie(const double &rho){
   double eps = 1.e-14;//std::numeric_limits<double>::epsilon();

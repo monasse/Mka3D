@@ -32,6 +32,7 @@
 #include "forces_ext.hpp"
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
@@ -57,125 +58,120 @@ Solide & Solide::operator=(const Solide &S){
   }
 }
 
-void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
-  std::ifstream maillage_1(s1,ios::in);
-  std::ifstream maillage_2(s2,ios::in);
-  std::ifstream maillage_3(s3,ios::in);
-  if(not(maillage_1 && maillage_2 && maillage_3))
+void Solide::Init(const char* s1, const bool& rep, const int& numrep, const double& rho){
+  std::ifstream maillage(s1,ios::in);
+  if(not(maillage))
     cout <<"ouverture du maillage ratee" << endl;
 
-  //Importation des particules et des vertex
+  //Importation des vertex
   string s;
   char aux;
   string ligne;
-  while(getline(maillage_1, ligne)) {
+  while(getline(maillage, ligne) && ligne != "$Nodes") {} //On fait rien...
+  getline(maillage, ligne); //Nombre de vertex. Pas utile.
+  while(getline(maillage, ligne) && ligne != "$EndNodes") {
     istringstream  stm(ligne);
     int id;
-    int Nvertex;
-    stm >> id >> Nvertex;
-    //cout << id << " " << Nvertex << endl;
-    Particule part(id);
-    solide[id] = part; //Ajout de la particule indexée par id
     double x,y,z;
-    stm >> aux; //Enlève la première parenthèse
-    bool test = true;
-    while(test) { //Tant qu'on atteint pas la fin de la ligne, on stock les points des vertex
-      char aux_bis;
-      stm >> x >> aux >> y >> aux >> z >> aux >> aux_bis;
-      //cout << x << " " << y << " " << z << endl;
-      Point_3 point(x,y,z);
-      /*if(part.vertices.size() > 0) {
-	//cout << (*(--part.vertices.end()))[0] << " " << (*(--part.vertices.end()))[1] << " " << (*(--part.vertices.end()))[2] << endl;
-	//cout << (*(part.vertices.end()))[0] << " " << (*(part.vertices.end()))[1] << " " << (*(part.vertices.end()))[2] << endl;
-	//cout << (*(part.vertices.begin()))[0] << " " << (*(part.vertices.begin()))[1] << " " << (*(part.vertices.begin()))[2] << endl;
-	}*/
-      //if(part.vertices.size() > 0 && *(--part.vertices.end()) == point) {
-      if(solide[id].vertices.size() > 0 && *(--solide[id].vertices.end()) == point) {
-	test = false; //On est au bout du fichier...
-	//cout << "On est au bout de la ligne !" << endl;
+    stm >> id >> x >> y >> z;
+    vertex.push_back(Vertex(Point_3(x,y,z))); //Vertex sont donnés dans l'ordre
+  }
+
+  //Importation des Particules
+  getline(maillage, ligne); //$Elements
+  getline(maillage, ligne); //Nbr Elements
+  while(getline(maillage, ligne) && ligne != "$EndElements") {
+    istringstream  stm(ligne);
+    int id,type,nbr_tag,tag_1,tag_2;
+    stm >> id >> type;
+    if(type == 4) {
+      int v1,v2,v3,v4;
+      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3 >> v4;
+      //Ajout des vertex de la particule
+      Particule p(id);
+      p.vertices.push_back(v1);
+      p.vertices.push_back(v2);
+      p.vertices.push_back(v3);
+      p.vertices.push_back(v4);
+
+      //Création des faces
+      //face 1
+      Face face1();
+      face1.vertex.push_back(v2);
+      face1.vertex.push_back(v3);
+      face1.vertex.push_back(v4);
+      std::set<Face>::iterator it = faces.find(face1);
+      if(it == faces.end()) { //Face pas encore dans le set
+	face1.comp_normal(v1); //Calcul de la normale sortante
+	face1.surf(); //Calcul surface face
+	face1.parts.push_back(this); //Ajout de la particule dans la face
+	p.faces.push_back(&face1);
       }
       else {
-	//part.vertices.push_back(point); //ajout du vertex dans la particule
-	solide[id].vertices.push_back(point); //ajout du vertex dans la particule
+        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+	p.faces.push_back(it);
       }
-    }
-    solide[id].id = id;
-    /*cout << "id : " << id << endl;
-    cout << "Vertex vide ? " << part.vertices[0] << endl;
-    solide[id] = part; //Ajout de la particule indexée par id
-    cout << "id : " << solide[id].id << endl;
-    cout << "Vertex vide ? " << (solide[id].vertices)[0] << endl;*/
-  }
 
-  //Importation des volumes et des centres de Voronoi
-  while(getline(maillage_3, ligne)) {
-    istringstream  stm(ligne);
-    int id;
-    double volume = 0.;
-    double x,y,z;
-    stm >> id >> volume >> x >> y >> z;
-    /*cout << "id : " << id << endl;
-    cout << "Volume : " << volume << endl;
-    cout << x << " " << y << " " << z << endl;*/
-    (solide[id]).V = volume;
-    (solide[id]).x0 = Point_3(x, y, z);
-    (solide[id]).m = volume * rho;
-    /*cout << "id : " << solide[id].id << endl;
-    cout << "Vertex vide ? " << (solide[id].vertices)[0] << endl;
-    cout << "Volume : " << solide[id].V << endl;*/
-  }
-
-  //Importation de toutes les infos sur les faces
-  while(getline(maillage_2, ligne)) {
-    istringstream  stm(ligne);
-    int id;
-    int nbr_faces;
-    vector<Face> f;
-    double x,y,z;
-    double S;
-    int nbr_vertex;
-    stm >> id >> nbr_faces;
-    for(int i=1 ; i <= nbr_faces ; i++) {
-      stm >> S;
-      Face face(S);
-      f.push_back(face);
-    }
-
-    //Vertex par face
-    for(int i=0 ; i < nbr_faces ; i++) {
-      stm >> nbr_vertex;
-      f[i].nb_vertex = nbr_vertex;
-    }
-
-    for(int i=0 ; i < nbr_faces ; i++) {
-      stm >> aux; //On enlève la première parenthèse
-      int num_vertex;
-      for(int j =0; j < f[i].nb_vertex ; j++) {
-	stm >> num_vertex >> aux;
-	(f[i].vertex).push_back(num_vertex); //solide[id].vertices[num_vertex]);
-	f[i].centre = f[i].centre + solide[id].vertices[num_vertex] / double(nbr_vertex);
+      //face 2
+      Face face2();
+      face2.vertex.push_back(v1);
+      face2.vertex.push_back(v3);
+      face2.vertex.push_back(v4);
+      std::set<Face>::iterator it = faces.find(face2);
+      if(it == faces.end()) { //Face pas encore dans le set
+	face2.comp_normal(v2); //Calcul de la normale sortante
+	face2.surf(); //Calcul surface face
+	face2.parts.push_back(this); //Ajout de la particule dans la face
+	p.faces.push_back(&face2); //Ajout de la face dans la particule
       }
-    }
+      else {
+        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+	p.faces.push_back(it);
+      }
 
-    //Vecteur normal par face
-    for(int i=0 ; i < nbr_faces ; i++) {
-      stm >> aux >> x >> aux >> y >> aux >> z >> aux;
-      f[i].normale = Vector_3(x, y, z);
-      //cout << x << " " << y << " " << z << endl;
-    }
+      //face 3
+      Face face3();
+      face3.vertex.push_back(v1);
+      face3.vertex.push_back(v2);
+      face3.vertex.push_back(v4);
+      std::set<Face>::iterator it = faces.find(face3);
+      if(it == faces.end()) { //Face pas encore dans le set
+	face3.comp_normal(v3); //Calcul de la normale sortante
+	face3.surf(); //Calcul surface face
+	face3.parts.push_back(this); //Ajout de la particule dans la face
+	p.faces.push_back(&face3);
+      }
+      else {
+        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+	p.faces.push_back(it);
+      }
 
-    //Voisin par face
-    for(int i=0 ; i < nbr_faces ; i++) {
-      int id_voisin;
-      stm >> id_voisin;
-      if(id_voisin == -5)
-	solide[id].fixe = 2; //signifie que particule est sur un des bords chargés en contrainte
-      else if(id_voisin == -6)
-	solide[id].fixe = 1; //signifie que particule est encastrée
-      else
-	f[i].voisin = id_voisin;
+      //face 4
+      Face face4();
+      face4.vertex.push_back(v1);
+      face4.vertex.push_back(v2);
+      face4.vertex.push_back(v3);
+      std::set<Face>::iterator it = faces.find(face4);
+      if(it == faces.end()) { //Face pas encore dans le set
+	face4.comp_normal(v4); //Calcul de la normale sortante
+	face4.surf(); //Calcul surface face
+	face4.parts.push_back(this); //Ajout de la particule dans la face
+	p.faces.push_back(&face4);
+      }
+      else {
+        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+	p.faces.push_back(it);
+      }   
+
+      //Reste à def masse, volume etc.....
+      p.barycentre(); //Calcul du barycentre
+      p.volume(); //calcul du volume
+      p.m = rho * p.V;
+      //Comment fixer BC ?
+
+      //Ajout de la particule dans le solide
+      solide[id] = p;
     }
-    solide[id].faces = f;
   }
 }
 
