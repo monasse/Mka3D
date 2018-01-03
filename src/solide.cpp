@@ -1099,76 +1099,92 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 }
 
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
-  bool plastifie = false;
+
+  //Integrale des forces sur le pas de temps
+  const int nb_pts = 1;
+  double int_time[nb_pts], weight[nb_pts];
+  int_time[0] = 0.5*dt;
+  weight[0] = 1.;
   
-  //Calcul de la contrainte dans chaque particule
-  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //(P->second).Volume_libre();
-    (P->second).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
-    (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
-    (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
-      if(F->voisin>=0){
-	int part = F->voisin;
-	Vector_3 nIJ = (*F).normale;
-	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (P->second).Dx - (P->second).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
-	(P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V;
-
-      }
-    }
-    //cout << "Trace dev Def : " << (((P->second).discrete_gradient).dev()).tr() << endl;
-    (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
-    //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
-
-    //Mettre ces valeurs dans le param.dat !!!!!
-    double B = 292000000.; //En Pa. JC.
-    double n = .31; //JC.
-    double A = 90000000.; //En Pa. Vient de JC
-	
-    (P->second).seuil_elas = A + B * pow((P->second).def_plas_cumulee, n);
-    /*if(abs((P->second).contrainte) > (P->second).seuil_elas) { //On sort du domaine élastique.
-      (P->second).def_plas_cumulee += (abs((P->second).contrainte) - A) / E; //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
-      double delta_epsilon_p = (abs((P->second).contrainte) - A) / E  * signe( (P->second).contrainte );
-      (P->second).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
-      //(P->second).contrainte = A * signe( (P->second).contrainte );
-      }*/
-
-    if((P->second).contrainte.VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
-      plastifie = true;
-      //Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      //cout << "Trace n_elas : " << n_elas.tr() << endl;
-      //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      double delta_p = pow(((P->second).contrainte.VM() - A) / B, 1./n) - (P->second).def_plas_cumulee;
-      (P->second).def_plas_cumulee = pow(((P->second).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
-      (P->second).epsilon_p += (delta_p / (((P->second).contrainte).dev()).norme() * (P->second).contrainte).dev();
-      //cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
-      //cout << "Norme def plas : " << ((P->second).epsilon_p).norme() << endl;
-      
-      //((P->second).contrainte.VM() - A) / (2*mu) * n_elas;  //* signe( (P->second).contrainte ); //Plasticité parfaite
-      //(P->second).contrainte = A * signe( (P->second).contrainte );
-    }
-  }
-
-  if(plastifie)
-    cout << "Plastification dans ce pas de temps !" << endl;
-
-  
-  //Calcul des forces pour chaque particule
+  //Mise a zero des forces pour chaque particule
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
-    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
-      if((*F).voisin>=0){
-	int part = (*F).voisin;
-	Vector_3 nIJ = (*F).normale;
-        Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
-	//cout << "Force : " << Fij_elas << endl;
+  }
 
-	(P->second).Fi = (P->second).Fi + Fij_elas; // * nIJ; //Force sur particule
-	
+  for(int int_pt=0;int_pt<nb_pts;int_pt++){
+    double t = int_time[int_pt];
+    
+    bool plastifie = false;
+    
+    //Calcul de la contrainte dans chaque particule
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      //(P->second).Volume_libre();
+      (P->second).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+      (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
+      (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	if(F->voisin>=0){
+	  int part = F->voisin;
+	  Vector_3 nIJ = (*F).normale;
+	  Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * t - (P->second).Dx - (P->second).u * t,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
+	  (P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V;
+	  
+	}
       }
-      //cout << "Force interne : " << (P->second).Fi << endl;
+      //cout << "Trace dev Def : " << (((P->second).discrete_gradient).dev()).tr() << endl;
+      (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
+      //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
+      
+      //Mettre ces valeurs dans le param.dat !!!!!
+      double B = 292000000.; //En Pa. JC.
+      double n = .31; //JC.
+      double A = 90000000.; //En Pa. Vient de JC
+      
+      (P->second).seuil_elas = A + B * pow((P->second).def_plas_cumulee, n);
+      /*if(abs((P->second).contrainte) > (P->second).seuil_elas) { //On sort du domaine élastique.
+	(P->second).def_plas_cumulee += (abs((P->second).contrainte) - A) / E; //Nouvelle déformation plastique.
+	//cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
+	double delta_epsilon_p = (abs((P->second).contrainte) - A) / E  * signe( (P->second).contrainte );
+	(P->second).epsilon_p += delta_epsilon_p; //Incrément de la déformation plastique rémanente
+	//(P->second).contrainte = A * signe( (P->second).contrainte );
+	}*/
+      
+      if((P->second).contrainte.VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
+	plastifie = true;
+	//Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
+	//cout << "Trace n_elas : " << n_elas.tr() << endl;
+	//cout << "Norme n_elas : " << n_elas.norme() << endl;
+	double delta_p = pow(((P->second).contrainte.VM() - A) / B, 1./n) - (P->second).def_plas_cumulee;
+	(P->second).def_plas_cumulee = pow(((P->second).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+	//cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
+	(P->second).epsilon_p += (delta_p / (((P->second).contrainte).dev()).norme() * (P->second).contrainte).dev();
+	//cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
+	//cout << "Norme def plas : " << ((P->second).epsilon_p).norme() << endl;
+	
+	//((P->second).contrainte.VM() - A) / (2*mu) * n_elas;  //* signe( (P->second).contrainte ); //Plasticité parfaite
+	//(P->second).contrainte = A * signe( (P->second).contrainte );
+      }
+    }
+    
+    if(plastifie)
+      cout << "Plastification dans ce pas de temps !" << endl;
+    
+    
+    //Calcul des forces pour chaque particule
+    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      //(P->second).Fi = Vector_3(0.,0.,0.);
+      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+	if((*F).voisin>=0){
+	  int part = (*F).voisin;
+	  Vector_3 nIJ = (*F).normale;
+	  Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
+	  //cout << "Force : " << Fij_elas << endl;
+	  
+	  (P->second).Fi = (P->second).Fi + weight[int_pt]*Fij_elas; // * nIJ; //Force sur particule
+	  
+	}
+	//cout << "Force interne : " << (P->second).Fi << endl;
+      }
     }
   }
 }
