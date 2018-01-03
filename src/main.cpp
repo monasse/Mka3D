@@ -238,6 +238,7 @@ int main(){
   S.Init("packing.custom1", "packing.custom2", "packing.custom3", rep, numrep, rho);
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
+  
 
   /*for(std::map<int, Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
     cout << "Particle ID : " << (P->second).id << endl;
@@ -288,12 +289,10 @@ int main(){
     cout<< "Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
     dt = 2. * pow(10., -7.); //S.pas_temps(t,T,cfl, E, nu, rho); //
-    //First half-step of the Verlet+RATTLE Scheme
-    S.Solve_position(dt,flag_2d, t, T);
     //Computation of forces
     S.Forces(N_dim, nu, E, dt, t , T);
-    //Second half-step of the Verlet+RATTLE Scheme
-    S.Solve_vitesse(dt,flag_2d, Amortissement, t, T); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
+    //Integration of the particle dynamics with the MEMM scheme
+    S.Solve(dt,flag_2d, Amortissement, t, T); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
     //Update of time
     t+= dt;
   }

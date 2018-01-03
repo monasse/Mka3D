@@ -50,7 +50,7 @@ public:
 
 class Particule;
 
-//Encore utile ???
+
 class Face
 {
 public:
@@ -102,8 +102,7 @@ class Particule
   //void Affiche();  //fonction auxilaire utile pour les tests
   //void CompVolumeIntegrals(double &T1, double &Tx, double &Ty, double &Tz, double &Txx, double &Tyy, double &Tzz, double &Txy, double &Tyz, double &Tzx);
   //void Inertie(const double &rho);
-  void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
+  void solve(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
 
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);  
@@ -191,9 +190,9 @@ Bbox bbox;
    * \warning  <b> Param&egrave;tre  sp&eacute;cifique  au  couplage! </b>
    */
   Vector_3 Mfprev; //!< Moments fluides exerc&eacute;s sur le solide entre t-dt/2 et t
-  Vector_3 u; //!< Vitesse de la particule au temps t
-  //Vector_3 u_plas; //Vitesse palstique
-  Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
+  Vector_3 u; //!< Vitesse de la particule au temps t+dt/2
+  //Vector_3 u_plas; //Vitesse plastique
+  Vector_3 du; //!< Saut de vitesse au temps t
   Vector_3 omega; //!< Vecteur rotation au temps t
   Vector_3 omega_half;//!< Vecteur rotation au temps t-dt/2
   Vector_3 e; //!<Vecteur de rotation de la particule au temps t
@@ -229,9 +228,7 @@ public:
   }
   void Impression(const int &n, const bool &reconstruction);
   void Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho);
-  void Solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  //void stock_def_plastique(const double &dt);
-  void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
+  void Solve(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void Forces(const int &N_dim, const double &nu, const double &E, const double& dt, const double& t, const double& T);
   void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
   void update_triangles();

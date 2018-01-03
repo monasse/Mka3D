@@ -269,7 +269,7 @@ Particule & Particule:: operator=(const Particule &P){
   Mf = P.Mf;
   Mfprev = P.Mfprev;
   u = P.u;
-  u_half = P.u_half;
+  du = P.du;
   omega = P.omega;
   omega_half = P.omega_half;
   e = P.e;
@@ -278,284 +278,45 @@ Particule & Particule:: operator=(const Particule &P){
   mvt_tprev = P.mvt_tprev;
 }
 	
-/*	triangles.resize(P.triangles.size()); 
-	for(int i = 0; i< P.triangles.size(); i++){
-		triangles[i] = P.triangles[i];
-	}
-	vide.resize(P.vide.size()); 
-	for(int i = 0; i< P.vide.size(); i++){
-		vide[i] = P.vide[i];
-	}
-	triangles_prev.resize(P.triangles_prev.size()); 
-	for(int i = 0; i< P.triangles_prev.size(); i++){
-		triangles_prev[i] = P.triangles_prev[i];
-	}
-	
-	normales.resize(P.normales.size()); 
-	for(int i = 0; i< P.normales.size(); i++){
-		normales[i] = P.normales[i];
-	}
-	normales_prev.resize(P.normales_prev.size()); 
-	for(int i = 0; i< P.normales_prev.size(); i++){
-		normales_prev[i] = P.normales_prev[i];
-	}
-	fluide.resize(P.fluide.size()); 
-	for(int i = 0; i< P.fluide.size(); i++){
-		fluide[i] = P.fluide[i];
-	}
-	fluide_prev.resize(P.fluide_prev.size()); 
-	for(int i = 0; i< P.fluide_prev.size(); i++){
-		fluide_prev[i] = P.fluide_prev[i];
-	}
-	
-	Points_interface.resize(P.Points_interface.size(), std::vector<Point_3>(0));
-	for(int i= 0; i< P.triangles.size(); i++){
-		Points_interface[i].resize(P.Points_interface[i].size());
-		for(int j=0; j<P.Points_interface[i].size(); j++ ){
-			Points_interface[i][j] = P.Points_interface[i][j];
-		}
-	}
-	
-	Points_interface_prev.resize(P.Points_interface_prev.size(), std::vector<Point_3>(0));
-	for(int i= 0; i< P.triangles.size(); i++){
-		Points_interface_prev[i].resize(P.Points_interface_prev[i].size());
-		for(int j=0; j<P.Points_interface_prev[i].size(); j++ ){
-			Points_interface_prev[i][j] = P.Points_interface_prev[i][j];
-		}
-	}
-	
-	Triangles_interface.resize(P.Triangles_interface.size(), std::vector<Triangle_3>(0));
-	for(int i= 0; i< P.triangles.size(); i++){
-		Triangles_interface[i].resize(P.Triangles_interface[i].size());
-		for(int j=0; j<P.Triangles_interface[i].size(); j++ ){
-			Triangles_interface[i][j] = P.Triangles_interface[i][j];
-		}
-	}
-	
-	Triangles_interface_prev.resize(P.Triangles_interface_prev.size(), std::vector<Triangle_3>(0));
-	for(int i= 0; i< P.triangles.size(); i++){
-		Triangles_interface_prev[i].resize(P.Triangles_interface_prev[i].size());
-		for(int j=0; j<P.Triangles_interface_prev[i].size(); j++ ){
-			Triangles_interface_prev[i][j] = P.Triangles_interface_prev[i][j];
-		}
-	}
-	Position_Triangles_interface.resize(P.Position_Triangles_interface.size(), std::vector< std::vector<int> >(0));
-	for(int i= 0; i< P.triangles.size(); i++){
-		Position_Triangles_interface[i].resize(P.Position_Triangles_interface[i].size());
-		for(int j=0; j<P.Position_Triangles_interface[i].size(); j++ ){
-			Position_Triangles_interface[i][j].resize(P.Position_Triangles_interface[i][j].size());
-			for(int k=0; k<P.Position_Triangles_interface[i][j].size(); k++ ){
-				Position_Triangles_interface[i][j][k] = P.Position_Triangles_interface[i][j][k];
-			}
-		}
-	}
-	
-	Position_Triangles_interface_prev.resize(P.Position_Triangles_interface_prev.size(), std::vector< std::vector<int> >(0));
-	for(int i= 0; i< P.triangles.size(); i++){
-		Position_Triangles_interface_prev[i].resize(P.Position_Triangles_interface_prev[i].size());
-		for(int j=0; j<P.Position_Triangles_interface_prev[i].size(); j++ ){
-			Position_Triangles_interface_prev[i][j].resize(P.Position_Triangles_interface_prev[i][j].size());
-			for(int k=0; k<P.Position_Triangles_interface_prev[i][j].size(); k++ ){
-				Position_Triangles_interface_prev[i][j][k] = P.Position_Triangles_interface_prev[i][j][k];
-			}
-		}
-	}
-	
-	}*/
 
-/*void Particule::Affiche(){
-  for(int i=0; i<faces.size(); i++){
-    cout<<"face "<<i<<endl;
-    cout<<" voisin "<<faces[i].voisin<<endl;
-    for(int j=0; j<faces[i].size() ;j++){
-      cout<<" vertex "<<faces[i].vertex[j].num<<endl;
-      for(int k=0; k<faces[i].vertex[j].particules.size();k++){
-	cout<<faces[i].vertex[j].particules[k]<<endl;
-      }
-    }
-  }
-
-  }*/
-
-
-void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  double eps = 1e-14;//std::numeric_limits<double>::epsilon();
-  double rot[3][3];
+void Particule::solve(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   if(fixe==1){
     Dx = Vector_3(0.,0.,0.);
     Dxprev = Vector_3(0.,0.,0.);
     u = Vector_3(0.,0.,0.);
-    u_half = u;
-    e = Vector_3(0.,0.,0.);
-    eref = Vector_3(0.,0.,0.);
-    rot[0][0] = rot[1][1]= rot[2][2] =1.;
-    rot[0][1]=rot[0][2]=rot[1][0]=rot[1][2]=rot[2][0]=rot[2][1]=0.;
-    eprev = Vector_3(0.,0.,0.);
-    omega = Vector_3(0.,0.,0.);
-    omega_half = omega;
+    du = Vector_3(0.,0.,0.);
   } else {
-    if(fixe==0){ //fixe=0: particule mobile
+    if(fixe==0){
       Dxprev = Dx;
-      u = u+(Fi+Ff)/2.*(dt/m);
-      u_half = u;
       Dx = Dx+u*dt;
+      du = -du + 2.*(Fi+Ff)*dt/m*Amort;
+      u = u + du; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
-    else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
-      //Dx = Vector_3(0.,0.,0.);
-      //Dxprev = Vector_3(0.,0.,0.);
-      //u = Vector_3(0.,0.,0.);
-      //u_half = u;
+    else if(fixe==2 || fixe==3){
       Dxprev = Dx;
-      //u = u+(Fi+Ff)/2.*(dt/m);
-      u_half = u;
       Dx = Dx+u*dt;
+      du = Vector_3(0.,0.,0.);
+      u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
     }
   }
-
-
-  //Dx = displacement_BC(x0, Dx, t, T);
-
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
   //Aff_transformation_3 rotation(rot[0][0],rot[1][0],rot[2][0],rot[0][1],rot[1][1],rot[2][1],rot[0][2],rot[1][2],rot[2][2]);
   Aff_transformation_3 translation(Vector_3(Point_3(0.,0.,0.),x0)+Dx);
   Aff_transformation_3 translation_inv(Vector_3(x0,Point_3(0.,0.,0.)));
   mvt_t = translation*(/*rotation*/translation_inv);
-	//cout<<"position du centre de la particule "<<x0+Dx<<endl;
-}
-
-void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  if(fixe==1){
-    u = Vector_3(0.,0.,0.);
-    //omega = Vector_3(0.,0.,0.);
-  } else {
-    if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-    }
-    else if(fixe==2 || fixe==3){
-      u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
-    }
-  }
-
-  /*if(x0.z() <= 4.)
-    u = Vector_3(0,0,-10.); //En m.s^-1
-  else if(x0.z() >= 14.)
-    u= Vector_3(0,0,0);
-  else
-  u = u+(Fi+Ff)/2.*(dt/m)*Amort;*/
-    
-    //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
-     double Q[3][3];
-    double eref0 = sqrt(abs(1.-(eref.squared_length())));
-    //Recuperation de la matrice de rotation
-    Q[0][0] = 1.-2.*(eref[1]*eref[1]+eref[2]*eref[2]);
-    Q[0][1] = 2.*(-eref0*eref[2]+eref[0]*eref[1]);
-    Q[0][2] = 2.*(eref0*eref[1]+eref[0]*eref[2]);
-    Q[1][0] = 2.*(eref0*eref[2]+eref[1]*eref[0]);
-    Q[1][1] = 1.-2.*(eref[0]*eref[0]+eref[2]*eref[2]);
-    Q[1][2] = 2.*(-eref0*eref[0]+eref[1]*eref[2]);
-    Q[2][0] = 2.*(-eref0*eref[1]+eref[2]*eref[0]);
-    Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
-    Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);
-    double e0 = sqrt(abs(1.-(e.squared_length())));
-    //Recuperation de Zn+1/2 a partir de omega
-    double Omega[3];
-    Omega[0] = Omega[1] = Omega[2] = 0.;
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Omega[j] += (omega[k]*Q[k][j]);
-      }
-    }
-    //cout << "debut " << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-    //getchar();
-    double norm2 = dt*dt*(Omega[0]*Omega[0]+Omega[1]*Omega[1]+Omega[2]*Omega[2]);
-    if(norm2>1.){
-      cout << "pas de temps trop grand (solve_vitesse) : dt=" << dt << " Omega=" << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-      getchar();
-    }
-    double eglob0 = sqrt((1.+sqrt(1.-norm2))/2.);
-    double eglob[3];
-    for(int j=0;j<3;j++){
-      eglob[j] = dt*Omega[j]/2./eglob0;
-    }
-    //Recuperation de la matrice Zn+1/2
-    //double eglob0 = sqrt(1.-eglob[0]*eglob[0]-eglob[1]*eglob[1]-eglob[2]*eglob[2]);
-    double z[3][3];
-    z[0][0] = (-2.*(eglob[1]*eglob[1]+eglob[2]*eglob[2]))/dt;
-    z[0][1] = (-2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[0][2] = (2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[1][0] = (2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[1][1] = (-2.*(eglob[0]*eglob[0]+eglob[2]*eglob[2]))/dt;
-    z[1][2] = (-2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][0] = (-2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[2][1] = (2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][2] = (-2.*(eglob[0]*eglob[0]+eglob[1]*eglob[1]))/dt;
-    //Calcul de la matrice A
-    double a[3];
-    double d1 = (I[0]+I[1]+I[2])/2.-I[0];
-    double d2 = (I[0]+I[1]+I[2])/2.-I[1];
-    double d3 = (I[0]+I[1]+I[2])/2.-I[2];
-    //Calcul du moment dans le repere inertiel
-    double Mx = (Q[0][0]*((Mi+Mf)[0])+Q[1][0]*((Mi+Mf)[1])+Q[2][0]*((Mi+Mf)[2]));
-    double My = (Q[0][1]*((Mi+Mf)[0])+Q[1][1]*((Mi+Mf)[1])+Q[2][1]*((Mi+Mf)[2]));
-    double Mz = (Q[0][2]*((Mi+Mf)[0])+Q[1][2]*((Mi+Mf)[1])+Q[2][2]*((Mi+Mf)[2]));
-    a[0] = -(d2*z[1][2]-d3*z[2][1]-dt/2.*Mx);
-    a[1] = (d1*z[0][2]-d3*z[2][0]+dt/2.*My);
-    a[2] = -(d1*z[0][1]-d2*z[1][0]-dt/2.*Mz);
-    //Resolution du probleme lineaire sur Zn+1
-    z[0][0] = 0.;
-    z[0][1] = -a[2]/I[2];
-    z[0][2] = a[1]/I[1];
-    z[1][0] = -z[0][1];
-    z[1][1] = 0.;
-    z[1][2] = -a[0]/I[0];
-    z[2][0] = -z[0][2];
-    z[2][1] = -z[1][2];
-    z[2][2]= 0.;
-    //Calcul de Omega^n+1
-    double omega1 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega1 -= Q[1][i]*z[i][j]*Q[2][j];
-      }
-    }
-    double omega2 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega2 += Q[0][i]*z[i][j]*Q[2][j];
-      }
-    }
-    double omega3 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega3 -= Q[0][i]*z[i][j]*Q[1][j];
-      }
-    }
-//     //Test pour fixer les composantes x et y de la rotation
-			if(flag_2d){
-			 		omega1 = 0.;
-			 		omega2 = 0.;
-			}
-			if(fixe==3){
-			  omega1=0.;
-			  omega3=0.;
-			}
-			
-// 		//fin test 
-    omega = Vector_3(omega1,omega2,omega3);
-  //}Fin du calcul dans le cas d'une particule libre
 }
 
 Vector_3 Particule::vitesse_parois(const Point_3& X_f){
 		
-  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
+  Vector_3 V_f = u + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
 
   return V_f;
 }	
 
 Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
 	
-  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
+  Vector_3 V_f = u + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
 	
   return V_f;
 }	
@@ -955,9 +716,11 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   std::ifstream maillage_1(s1,ios::in);
   std::ifstream maillage_2(s2,ios::in);
   std::ifstream maillage_3(s3,ios::in);
-  if(not(maillage_1 && maillage_2 && maillage_3))
-    cout <<"ouverture du maillage ratee" << endl;
-
+  if(not(maillage_1 && maillage_2 && maillage_3)){
+    //cout <<"ouverture du maillage ratee" << endl;
+    throw std::invalid_argument("ouverture du maillage ratee");
+  }
+  
   //Importation des particules et des vertex
   string s;
   char aux;
@@ -1073,24 +836,9 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 }
 
-void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
+void Solide::Solve(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (P->second).solve_position(dt, flag_2d, t, T);
-  }
-  //breaking_criterion();
-  /*update_triangles();
-  for(int i=0;i<size();i++){
-    for(std::vector<Triangle_3>::iterator it=solide[i].triangles.begin();it!=solide[i].triangles.end();it++){
-      for(int k=0;k<3;k++){
-	solide[i].bbox = Bbox(min(solide[i].bbox.xmin(),((*it).vertex(k).x())),min(solide[i].bbox.ymin(),((*it).vertex(k).y())),min(solide[i].bbox.zmin(),((*it).vertex(k).z())),max(solide[i].bbox.xmax(),((*it).vertex(k).x())),max(solide[i].bbox.ymax(),((*it).vertex(k).y())),max(solide[i].bbox.zmax(),((*it).vertex(k).z())));
-      }
-    }
-    }*/	
-}
-
-void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (P->second).solve_vitesse(dt, flag_2d, Amort, t , T);
+    (P->second).solve(dt, flag_2d, Amort, t , T);
   }
 }
 
