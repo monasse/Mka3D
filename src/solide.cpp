@@ -1101,10 +1101,29 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
 
   //Integrale des forces sur le pas de temps
-  const int nb_pts = 1;
+  const int nb_pts = 5;
   double int_time[nb_pts], weight[nb_pts];
-  int_time[0] = 0.5*dt;
-  weight[0] = 1.;
+  //Midpoint integration
+  if(nb_pts==1){
+    int_time[0] = 0.5*dt;
+    weight[0] = 1.;
+  }
+  //5 point Gauss-Lobatto integration
+  if(nb_pts==5){
+    double xal = sqrt(3./7.)/2.;
+    int_time[0] = 0.;
+    weight[0] = 0.05;
+    int_time[1] = (0.5-xal)*dt;
+    weight[1] = 49./180.;
+    int_time[2] = 0.5*dt;
+    weight[2] = 16./45.;
+    int_time[3] = (0.5+xal)*dt;
+    weight[3] = 49./180.;
+    int_time[4] = 1.;
+    weight[4] = 0.05;
+  }
+  
+  
   
   //Mise a zero des forces pour chaque particule
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
