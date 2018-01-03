@@ -94,6 +94,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       p.vertices.push_back(v3);
       p.vertices.push_back(v4);
 
+      //Calcul des quantités volumiques (liées particule)
+      p.barycentre(); //Calcul du barycentre
+      p.volume(); //calcul du volume
+      p.m = rho * p.V;
+      //Comment fixer BC ?
+
       //Création des faces
       //face 1
       Face face1();
@@ -104,12 +110,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(it == faces.end()) { //Face pas encore dans le set
 	face1.comp_normal(v1); //Calcul de la normale sortante
 	face1.surf(); //Calcul surface face
-	face1.parts.push_back(this); //Ajout de la particule dans la face
+	face1.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face1);
       }
       else {
-        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
 	p.faces.push_back(it);
+	Vector_3 aux(solide[(it->parts)[0]], x0);
+	it->D0 = sqrt(aux.squared_length());
       }
 
       //face 2
@@ -121,12 +129,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(it == faces.end()) { //Face pas encore dans le set
 	face2.comp_normal(v2); //Calcul de la normale sortante
 	face2.surf(); //Calcul surface face
-	face2.parts.push_back(this); //Ajout de la particule dans la face
+	face2.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face2); //Ajout de la face dans la particule
       }
       else {
-        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
 	p.faces.push_back(it);
+	Vector_3 aux(solide[(it->parts)[0]], x0);
+	it->D0 = sqrt(aux.squared_length());
       }
 
       //face 3
@@ -138,12 +148,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(it == faces.end()) { //Face pas encore dans le set
 	face3.comp_normal(v3); //Calcul de la normale sortante
 	face3.surf(); //Calcul surface face
-	face3.parts.push_back(this); //Ajout de la particule dans la face
+	face3.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face3);
       }
       else {
-        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
 	p.faces.push_back(it);
+	Vector_3 aux(solide[(it->parts)[0]], x0);
+	it->D0 = sqrt(aux.squared_length());
       }
 
       //face 4
@@ -155,19 +167,15 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(it == faces.end()) { //Face pas encore dans le set
 	face4.comp_normal(v4); //Calcul de la normale sortante
 	face4.surf(); //Calcul surface face
-	face4.parts.push_back(this); //Ajout de la particule dans la face
+	face4.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face4);
       }
       else {
-        (it->parts).push_back(this); //Ajout de cette particule aux côtés de l'autre
+        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
 	p.faces.push_back(it);
+	Vector_3 aux(solide[(it->parts)[0]], x0);
+	it->D0 = sqrt(aux.squared_length());
       }   
-
-      //Reste à def masse, volume etc.....
-      p.barycentre(); //Calcul du barycentre
-      p.volume(); //calcul du volume
-      p.m = rho * p.V;
-      //Comment fixer BC ?
 
       //Ajout de la particule dans le solide
       solide[id] = p;

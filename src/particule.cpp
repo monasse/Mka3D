@@ -642,7 +642,7 @@ void Particule::barycentre() {
 }
 
 void volume() {
-  //TODO !!!!
+  return cross_product(Vector_3(vertices[0],vertices[1]),Vector_3(vertices[0],vertices[2]))*Vector_3(vertices[0],vertices[3])/6.;
 }
 
 /*void Particule::Inertie(const double &rho){

@@ -56,7 +56,7 @@ public:
   std::vector<int> vertex; //!< Les sommets de la face
   //int voisin; //!< Le numéro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance à l'équilibre avec la particule voisine
-  std::vector<Particule *> parts; //contient les deux particules dans le lien. La normale est dans le sens de la première vers la seconde
+  std::vector<int> parts; //contient les deux particules (indexée par leur palce dans solide) dans le lien. La normale est dans le sens de la première vers la seconde
 
 };
 
