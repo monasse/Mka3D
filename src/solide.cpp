@@ -106,18 +106,21 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face1.vertex.push_back(v2);
       face1.vertex.push_back(v3);
       face1.vertex.push_back(v4);
+      face1.id = id; //Ajout du numéro de la particule dans la face
       std::set<Face>::iterator it = faces.find(face1);
       if(it == faces.end()) { //Face pas encore dans le set
 	face1.comp_quantities(vertex[v2].pos, vertex[v3].pos, vertex[v4].pos, vertex[v1].pos); //Calcul de la normale sortante, surface et barycentre face
-	face1.parts.push_back(id); //Ajout de la particule dans la face
-	p.faces.push_back(&face1);
+	faces.insert(face1); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
       }
-      else {
-        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
+      else { //Face déja dans l'ensemble. On va sortir le voisin
+	solide[it->id].voisin = id;
+	face1.voisin = it->id; //Connectivité nn !
 	p.faces.push_back(it);
 	Vector_3 aux(solide[(it->parts)[0]], x0);
-	it->D0 = sqrt(aux.squared_length());
+	double D0 = sqrt(aux.squared_length()); //Distance en config initiale entre particuels voisines
+	//Calculer la suite !
       }
+      p.faces.push_back(face1); //Ajout de la face dans la particule
 
       //face 2
       Face face2();
@@ -183,15 +186,6 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (P->second).solve_position(dt, flag_2d, t, T);
   }
-  //breaking_criterion();
-  /*update_triangles();
-  for(int i=0;i<size();i++){
-    for(std::vector<Triangle_3>::iterator it=solide[i].triangles.begin();it!=solide[i].triangles.end();it++){
-      for(int k=0;k<3;k++){
-	solide[i].bbox = Bbox(min(solide[i].bbox.xmin(),((*it).vertex(k).x())),min(solide[i].bbox.ymin(),((*it).vertex(k).y())),min(solide[i].bbox.zmin(),((*it).vertex(k).z())),max(solide[i].bbox.xmax(),((*it).vertex(k).x())),max(solide[i].bbox.ymax(),((*it).vertex(k).y())),max(solide[i].bbox.zmax(),((*it).vertex(k).z())));
-      }
-    }
-    }*/	
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
@@ -200,7 +194,7 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   }
 }
 
-void Solide::Forces(const int& N_dim, const double& nu, const double& E, const double& dt, const double& t, const double& T){
+void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   Forces_internes(N_dim,nu,E, dt);
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
@@ -208,16 +202,12 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
   }
 }
 
-void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
-  bool plastifie = false;
-  
-  //Calcul de la contrainte dans chaque particule
+void Solide::stresses(const double& dt){ //Calcul de la contrainte dans chaque particule
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //(P->second).Volume_libre();
     (P->second).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
     (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
     (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
       if(F->voisin>=0){
 	int part = F->voisin;
 	Vector_3 nIJ = (*F).normale;
@@ -230,6 +220,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
     (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
     //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
 
+    bool plastifie = false;
     //Mettre ces valeurs dans le param.dat !!!!!
     double B = 292000000.; //En Pa. JC.
     double n = .31; //JC.
@@ -249,7 +240,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
       double delta_p = (((P->second).contrainte - H * (P->second).epsilon_p).VM() - A) / (2*mu + H);
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      (*P).def_plas_cumulee += delta_p;
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (P->second).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
@@ -262,12 +253,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 
   if(plastifie)
     cout << "Plastification dans ce pas de temps !" << endl;
+}
 
-  
-  //Calcul des forces pour chaque particule
+
+void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
-    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	Vector_3 nIJ = (*F).normale;
@@ -451,259 +443,125 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
   }
   }*/
 
-void Solide::Impression(const int &n, const bool &reconstruction){ //Sortie au format vtk
+void Solide::Impression(const int &n){ //Sortie au format vtk
   int nb_part = solide.size();
-//Version avec reconstruction
-  /*if(reconstruction){
-    int nb_triangles = 0.;
-    for(int it=0; it<nb_part; it++){
-      nb_triangles += solide[it].triangles.size();
+  std::ostringstream oss;
+  oss << "solide" << n << ".vtk";
+  string s = oss.str();
+  const char* const solidevtk = s.c_str();
+    
+  //Ouverture des flux en donne en ecriture
+  std::ofstream vtk;
+  vtk.open(solidevtk,ios::out);
+  if(not(vtk.is_open()))
+    cout <<"ouverture de solide" << n << ".vtk rate" << endl;
+  //vtk << setprecision(15);
+  
+  //Pour tetras !
+  int nb_points = 4 * nb_part;
+  int nb_faces = 4 * nb_part;
+  int size = 4 * nb_faces;
+  /*for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+      size += F->nb_vertex; //Egale à nb_points au final ?
+  }*/
+  size += nb_faces;
+    
+  //Initialisation du fichier vtk
+  vtk << "# vtk DataFile Version 3.0" << endl;
+  vtk << "#Simulation Euler" << endl;
+  vtk << "ASCII" << endl;
+  vtk<< "\n";
+  vtk << "DATASET UNSTRUCTURED_GRID" << endl;
+  vtk << "POINTS " << nb_points << " DOUBLE" << endl;
+    
+  //Sortie des points
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Point_3>::iterator V=(P->second).vertices.begin();V!=(P->second).vertices.end();V++) {
+      vtk << (P->second).mvt_t(*V) << endl;
     }
-
-//const char* solidevtk;
-//{
-    std::ostringstream oss;
-    oss << "solide" << n << ".vtk";
-    string s = oss.str();
-    //cout << s << endl;
-    const char* const solidevtk = s.c_str();
-    //}
-	
-    //Ouverture des flux en donne en ecriture
-    std::ofstream vtk;
-    vtk.open(solidevtk,ios::out);
-    if(vtk.is_open())
-    {
-      // cout <<"ouverture de xt.vtk reussie" << endl;
-    } else {
-      cout <<"ouverture de solide" << n << ".vtk rate" << endl;
-    }
-    vtk << setprecision(15);
-    //Initialisation du fichier vtk
-    vtk << "# vtk DataFile Version 3.0" << endl;
-    vtk << "#Simulation Euler" << endl;
-    vtk << "ASCII" << endl;
-    vtk<<"\n";
-    vtk << "DATASET UNSTRUCTURED_GRID" << endl;
-    vtk << "POINTS " << 3*nb_triangles << " DOUBLE" << endl;
-	
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++){
-	vtk << solide[it].triangles[l][0][0] << " " << solide[it].triangles[l][0][1] << " " << solide[it].triangles[l][0][2] << endl;
-	vtk << solide[it].triangles[l][1][0] << " " << solide[it].triangles[l][1][1] << " " << solide[it].triangles[l][1][2] << endl;
-	vtk << solide[it].triangles[l][2][0] << " " << solide[it].triangles[l][2][1] << " " << solide[it].triangles[l][2][2] << endl;
-      }
-    }
-    vtk<<"\n";
-    vtk << "CELLS " << nb_triangles << " " << 4*nb_triangles<< endl;
-    int num=0;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++){
-	vtk << 3 << " " << 3*num << " " << 3*num+1 << " " << 3*num+2 << endl;
-	num++;
-      }
-    }
-    vtk << "\n";
-    vtk << "CELL_TYPES " << nb_triangles << endl;
-    for(int l= 0; l<nb_triangles; l++)
-    {
-      vtk << 5 << endl;
-    }
-    vtk << "\n";
-    vtk << "CELL_DATA " << nb_triangles << endl;
-    //Deplacement
-    vtk << "VECTORS deplacement double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].Dx[0] << " " << solide[it].Dx[1] << " " << solide[it].Dx[2] << endl;
-      }
-    }
-    vtk << "\n";
-    //Vitesse
-    vtk << "VECTORS vitesse double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].u[0] << " " << solide[it].u[1] << " " << solide[it].u[2] << endl;
-      }
-    }
-    vtk << "\n";
-    //Contrainte
-    vtk << "TENSORS contraintes double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].contrainte.col1[0] << " " << solide[it].contrainte.col1[1] << " " << solide[it].contrainte.col1[2] << endl;
-	vtk << solide[it].contrainte.col2[0] << " " << solide[it].contrainte.col2[1] << " " << solide[it].contrainte.col2[2] << endl;
-	vtk << solide[it].contrainte.col3[0] << " " << solide[it].contrainte.col3[1] << " " << solide[it].contrainte.col3[2] << endl;
-      }
-    }
-    vtk << "\n";
-    //Déformations
-    vtk << "TENSORS deformations double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].discrete_gradient.col1[0] << " " << solide[it].discrete_gradient.col1[1] << " " << solide[it].discrete_gradient.col1[2] << endl;
-	vtk << solide[it].discrete_gradient.col2[0] << " " << solide[it].discrete_gradient.col2[1] << " " << solide[it].discrete_gradient.col2[2] << endl;
-	vtk << solide[it].discrete_gradient.col3[0] << " " << solide[it].discrete_gradient.col3[1] << " " << solide[it].discrete_gradient.col3[2] << endl;
-      }
-    }
-    vtk << "\n";
-    //Epsilon_p
-    vtk << "TENSORS epsilon_p double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].epsilon_p.col1[0] << " " << solide[it].epsilon_p.col1[1] << " " << solide[it].epsilon_p.col1[2] << endl;
-	vtk << solide[it].epsilon_p.col2[0] << " " << solide[it].epsilon_p.col2[1] << " " << solide[it].epsilon_p.col2[2] << endl;
-	vtk << solide[it].epsilon_p.col3[0] << " " << solide[it].epsilon_p.col3[1] << " " << solide[it].epsilon_p.col3[2] << endl;
-      }
-    }
-    vtk << "\n";
-    //Deformation plastique cumulée
-    vtk << "SCALARS p double 1" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(int it=0; it<nb_part; it++){
-      for(int l= 0; l<solide[it].triangles.size(); l++)
-      {
-	vtk << solide[it].def_plas_cumulee << endl;
-      }
-    }
-    vtk << "\n";
-    vtk.close();
   }
-  //Sortie sans reconstruction
-  else{*/
-    std::ostringstream oss;
-    oss << "solide" << n << ".vtk";
-    string s = oss.str();
-    //cout << s << endl;
-    const char* const solidevtk = s.c_str();
-    //}
+  vtk << "\n";
     
-    //Ouverture des flux en donne en ecriture
-    std::ofstream vtk;
-    vtk.open(solidevtk,ios::out);
-    if(vtk.is_open())
-    {
-      // cout <<"ouverture de xt.vtk reussie" << endl;
-    } else {
-      cout <<"ouverture de solide" << n << ".vtk rate" << endl;
+  //Sortie des faces
+  int point_tmp=0;
+  vtk << "CELLS " << nb_faces << " " << size << endl;
+  int compteur_vertex = 0;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face*>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
+      vtk << F->nb_vertex;
+      for(int k=0 ; k<F->nb_vertex ; k++)
+	vtk << " " << compteur_vertex + (F->vertex)[k];
+      vtk << endl;
     }
-    //vtk << setprecision(15);
-    int nb_points = 0;
-    int nb_faces = 0;
-    int size = 0;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      nb_faces += (P->second).faces.size();
-      nb_points += (P->second).vertices.size();
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
-	size += F->nb_vertex; //Egale à nb_points au final ?
-    }
-    size += nb_faces;
-    
-    //Initialisation du fichier vtk
-    vtk << "# vtk DataFile Version 3.0" << endl;
-    vtk << "#Simulation Euler" << endl;
-    vtk << "ASCII" << endl;
-    vtk<< "\n";
-    vtk << "DATASET UNSTRUCTURED_GRID" << endl;
-    vtk << "POINTS " << nb_points << " DOUBLE" << endl;
-    
-    //Sortie des points
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Point_3>::iterator V=(P->second).vertices.begin();V!=(P->second).vertices.end();V++) {
-	vtk << (P->second).mvt_t(*V) << endl;
-      }
-    }
-    vtk << "\n";
-    
-    //Sortie des faces
-    int point_tmp=0;
-    vtk << "CELLS " << nb_faces << " " << size << endl;
-    int compteur_vertex = 0;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
-	vtk << F->nb_vertex;
-	for(int k=0 ; k<F->nb_vertex ; k++)
-	  vtk << " " << compteur_vertex + (F->vertex)[k];
-	vtk << endl;
-      }
-      compteur_vertex += (P->second).vertices.size();
-      //vtk << endl;
-    }
-    vtk << "\n";
-    vtk << "CELL_TYPES " << nb_faces << endl;
-    for(int i=0;i<nb_faces;i++){
-      vtk << 7 << endl;
-    }
-    vtk << "\n";
-    vtk << "CELL_DATA " << nb_faces << endl;
-    //Deplacement
-    vtk << "VECTORS deplacement double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
-	vtk << (P->second).Dx << endl;
-    }
-    vtk << "\n";
-    //Vitesse
-    vtk << "VECTORS vitesse double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
-	vtk << (P->second).u << endl;
-    }
-    vtk << "\n";
-    //Contrainte
-    vtk << "TENSORS contraintes double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
+    compteur_vertex += (P->second).vertices.size();
+    //vtk << endl;
+  }
+  vtk << "\n";
+  vtk << "CELL_TYPES " << nb_faces << endl;
+  for(int i=0;i<nb_faces;i++){
+    vtk << 7 << endl;
+  }
+  vtk << "\n";
+  vtk << "CELL_DATA " << nb_faces << endl;
+  //Deplacement
+  vtk << "VECTORS deplacement double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+      vtk << (P->second).Dx << endl;
+  }
+  vtk << "\n";
+  //Vitesse
+  vtk << "VECTORS vitesse double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+      vtk << (P->second).u << endl;
+  }
+  vtk << "\n";
+  //Contrainte
+  vtk << "TENSORS contraintes double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
       vtk << (P->second).contrainte.col1[0] << " " << (P->second).contrainte.col1[1] << " " << (P->second).contrainte.col1[2] << endl;
       vtk << (P->second).contrainte.col2[0] << " " << (P->second).contrainte.col2[1] << " " << (P->second).contrainte.col2[2] << endl;
       vtk << (P->second).contrainte.col3[0] << " " << (P->second).contrainte.col3[1] << " " << (P->second).contrainte.col3[2] << endl;
-      }
     }
-    vtk << "\n";
-    //Déformations
-    vtk << "TENSORS deformations double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
+  }
+  vtk << "\n";
+  //Déformations
+  vtk << "TENSORS deformations double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
       vtk << (P->second).discrete_gradient.col1[0] << " " << (P->second).discrete_gradient.col1[1] << " " << (P->second).discrete_gradient.col1[2] << endl;
       vtk << (P->second).discrete_gradient.col2[0] << " " << (P->second).discrete_gradient.col2[1] << " " << (P->second).discrete_gradient.col2[2] << endl;
       vtk << (P->second).discrete_gradient.col3[0] << " " << (P->second).discrete_gradient.col3[1] << " " << (P->second).discrete_gradient.col3[2] << endl;
-      }
     }
-    vtk << "\n";
-    //Epsilon_p
-    vtk << "TENSORS epsilon_p double" << endl;
-    //vtk << "LOOKUP_TABLE default" << endl;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
+  }
+  vtk << "\n";
+  //Epsilon_p
+  vtk << "TENSORS epsilon_p double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
       vtk << (P->second).epsilon_p.col1[0] << " " << (P->second).epsilon_p.col1[1] << " " << (P->second).epsilon_p.col1[2] << endl;
       vtk << (P->second).epsilon_p.col2[0] << " " << (P->second).epsilon_p.col2[1] << " " << (P->second).epsilon_p.col2[2] << endl;
       vtk << (P->second).epsilon_p.col3[0] << " " << (P->second).epsilon_p.col3[1] << " " << (P->second).epsilon_p.col3[2] << endl;
-      }
     }
-    vtk << "\n";
-    //Deformation plastique cumulée
-    vtk << "SCALARS p double 1" << endl;
-    vtk << "LOOKUP_TABLE default" << endl;
-    for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-      for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
-	vtk << (P->second).def_plas_cumulee << endl;
-    }
-    vtk << "\n";
-    vtk.close();
+  }
+  vtk << "\n";
+  //Deformation plastique cumulée
+  vtk << "SCALARS p double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
+      vtk << (P->second).def_plas_cumulee << endl;
+  }
+  vtk << "\n";
+  vtk.close();
 }
 
 #endif

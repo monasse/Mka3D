@@ -48,16 +48,16 @@ public:
   Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante &agrave; la face
   double S; //Surface de la face
-  double Is; //!< Premier moment d'inertie de la face
-  double It; //!< Second moment d'inertie de la face
-  Vector_3 s; //!< Vecteur selon le premier axe principal d'inertie de la face
-  Vector_3 t; //!< Vecteur selon le second axe principal d'inertie de la face
   int nb_vertex;
   std::vector<int> vertex; //!< Les sommets de la face
-  //int voisin; //!< Le numéro de la particule voisine. -1 si le voisin est le fluide
-  double D0; //!< Distance à l'équilibre avec la particule voisine
-  std::vector<int> parts; //contient les deux particules (indexée par leur palce dans solide) dans le lien. La normale est dans le sens de la première vers la seconde
-  std::vector<int> voisin_gradient; //Contient le numéro de la particule à aller chercher hors du lien pour calculer le gradient de la première particule de parts
+  int id; //Numéro de la particule qui détient la face
+  int voisin; //!< Le numéro de la particule voisine.
+  int voisin_bis; //Nécessaire pour le calcul du gradient avec tetras !
+  double c_bary_voisin; //Utile pour calcul de valeur déplacement sur face
+  double c_bary_voisin_bis; //Utile pour calcul de valeur déplacement sur face
+  //double D0; //!< Distance à l'équilibre avec la particule voisine
+  //std::vector<int> parts; //contient les deux particules (indexée par leur palce dans solide) dans le lien. La normale est dans le sens de la première vers la seconde
+  //std::vector<int> voisin_gradient; //Contient le numéro de la particule à aller chercher hors du lien pour calculer le gradient de la première particule de parts
 
 };
 

@@ -150,8 +150,8 @@ int main(){
   string s;
   int numrep1, N_dim1, nimp1, Nmax1;
   double rho1,nu1,E1,T1,cfl1,Amort;
-  bool rep1, flag2d1, rec1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> rec1 >> s >> Amort;
+  bool rep1, flag2d1;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> Amort;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -164,7 +164,6 @@ int main(){
   const int nimp = nimp1; //Number of outputs
   const double dtimp = T/nimp;        //Time-step between two consecutive outputs
   const int Nmax = Nmax1;           //Maximal number of time-steps
-  const bool rec = rec1;   //Flag pour décider si la sortie se fait avec reconstruction de l'interface ou particule par particule
   const double Amortissement = Amort; //Ajoute une force de frottement entre 0 et 1 pour amortir la solution
   
   char temps_it[]="temps.dat";
@@ -254,7 +253,7 @@ int main(){
     kimp = numrep;
     next_timp = t+dtimp;
   } else {
-    S.Impression(kimp,rec);
+    S.Impression(kimp);
     sorties_reprise << t << endl;
   }
   kimp++;
@@ -271,7 +270,7 @@ int main(){
     cout<<"iteration="<<n<< " dt="<<dt<<" t="<<t<<endl;
     //Output at prescribed times
     if(t>next_timp){
-      S.Impression(kimp,rec);
+      S.Impression(kimp);
       sorties_reprise << t << endl;
       kimp++;
       next_timp += dtimp;
@@ -299,7 +298,7 @@ int main(){
   }
 
   //Output of the final solid state
-  S.Impression(kimp,rec);
+  S.Impression(kimp);
 
   //Final output
   cout << "Final time of the simulation: " << t<<endl;

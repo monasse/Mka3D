@@ -33,15 +33,21 @@ Face::Face()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
-  D0 = 1.;
+  voisin = 0;
+  voisin_bis = 0;
+  c_bary_voisin = 0.;
+  c_bary_voisin_bis = 0.;
 }
 
 Face::Face(const double& surface)
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
-  D0 = 1.;
   S = surface;
+  voisin = 0;
+  voisin_bis = 0;
+  c_bary_voisin = 0.;
+  c_bary_voisin_bis = 0.;
 }
 
 /*Face::Face(const std::vector<Vertex> & v, const int& part)
@@ -78,23 +84,14 @@ Face & Face:: operator=(const Face &F){
   assert(this != &F);
   centre = F.centre;
   normale = F.normale;
-  D0  = F.D0; 
-  Is = F.Is; 
-  It = F.It; 
-  s = F.s; 
-  t = F.t;
   vertex.resize(F.vertex.size());
   for(int i= 0; i<F.vertex.size(); i++){
     vertex[i] = F.vertex[i];
   }
-  parts.resize(F.parts.size());
-  for(int i= 0; i<F.parts.size(); i++){
-    vertex[i] = F.parts[i];
-  }
-  voisin_gradient.resize(F.voisin_gradient.size());
-  for(int i= 0; i<F.voisin_gradient.size(); i++){
-    voisin_gradient[i] = F.voisin_gradient[i];
-  }
+  voisin = F.voisin;
+  voisin_bis = F.voisin_bis;
+  c_bary_voisin = F.c_bary_voisin;
+  c_bary_voisin_bis = F.c_bary_voisin_bis;
 }
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces

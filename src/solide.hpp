@@ -47,22 +47,25 @@ public:
   int size(){
 	return solide.size();
   }
-  void Impression(const int &n, const bool &reconstruction);
-  void Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho);
+  void Impression(const int &n);
+  void Init(const char* s1, const bool& rep, const int& numrep, const double& rho);
   void Solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
-  void Forces(const int &N_dim, const double &nu, const double &E, const double& dt, const double& t, const double& T);
-  void Forces_internes(const int &N_dim, const double &nu, const double &E, const double& dt);
+  void Forces(const int &N_dim, const double& dt, const double& t, const double& T);
+  void Forces_internes(const double& dt);
+  void stresses(const double& dt);
   void update_triangles();
   //void breaking_criterion();
   double Energie(const int &N_dim, const double &nu, const double &E);
   double Energie_potentielle(const int &N_dim, const double &nu, const double &E);
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
+
+  
   // private :
   std::vector<Vertex> vertex;
-  std::set<Face> faces;
+  std::set<Face> faces; //Nécessaire pour recalculer connectivité
   std::map<int, Particule> solide; //Particules du maillage
 
   double lambda; //Premier coeff de lamé
