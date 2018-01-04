@@ -109,7 +109,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       std::set<Face>::iterator it = faces.find(face1);
       if(it == faces.end()) { //Face pas encore dans le set
 	face1.comp_normal(v1); //Calcul de la normale sortante
-	face1.surf(); //Calcul surface face
+	face1.surf(vertex[v2], vertex[v3], vertex[v4]); //Calcul surface face et centre
 	face1.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face1);
       }

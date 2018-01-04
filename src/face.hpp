@@ -27,6 +27,7 @@
 #define FACE_HPP
 
 #include "geometry.hpp"
+#include "vertex.hpp"
 #include <vector>
 
 class Face
@@ -37,15 +38,16 @@ public:
   Face(const double& surface);
   //Face(const std::vector<Vertex> & v, const int &part);
   //Face(const std::vector<Vertex> & v, const int &part, const double &dist);
-  Face & operator=(const  Face &F); //opérateur d'affectation
+  Face & operator=(const Face &F); //opérateur d'affectation
   int size(){
 	return vertex.size();
   }
   void comp_normal(const Point_3& ext); //Calcul une normale à la face
   bool& operator==(const Face &F); //Compare les faces
+  void surf(const Vertex &v1, const Vertex &v2, const Vertex &v3); //Calcule la valeur de la surface de la face et le centre
 
   //Attributs
-  //Point_3 centre; //!< Centre de la face
+  Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante &agrave; la face
   double S; //Surface de la face
   double Is; //!< Premier moment d'inertie de la face

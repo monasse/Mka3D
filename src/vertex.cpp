@@ -40,7 +40,7 @@ Vertex::Vertex()
   num = 0;
 }
 
-Vertex(const Point_3 &p) {
+Vertex::Vertex(const Point_3 &p) {
   pos = p;
 }
 

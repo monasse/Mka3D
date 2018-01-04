@@ -24,13 +24,14 @@
  * Procedures specific to coupling are preceded by a "warning".
  */
 #include "face.hpp"
+#include "vertex.hpp"
 #include "geometry.hpp"
 #ifndef FACE_CPP
 #define FACE_CPP
 
 Face::Face()
 {
-  //centre = Point_3(0.,0.,0.);
+  centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
   voisin = -1;
   D0 = 1.;
@@ -38,7 +39,7 @@ Face::Face()
 
 Face::Face(const double& surface)
 {
-  //centre = Point_3(0.,0.,0.);
+  centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
   voisin = -1;
   D0 = 1.;
@@ -77,7 +78,7 @@ Face::Face(const double& surface)
 
 Face & Face:: operator=(const Face &F){
   assert(this != &F);
-  //centre = F.centre;
+  centre = F.centre;
   normale = F.normale;
   voisin = F.voisin;
   D0  = F.D0; 
@@ -113,6 +114,16 @@ void Face::comp_normal(const Point_3& ext) {
 
   if(Vector_3(vertex[0], ext) * normale < 0.)
     normale = -1. * normale;
+}
+
+void Face::surf(const Vertex &v1, const Vertex &v2, const Vertex &v3) {
+  std::vector<Vertex> aux;
+  aux.push_back(v1);
+  aux.push_back(v2);
+  aux.push_back(v3);
+  centre = centroid(aux.begin(),aux.end());
+  S = 1./2.* sqrt(cross_product(Vector_3(v1.pos,v2.pos),Vector_3(v1.pos,v3.pos)).squared_length());
+
 }
 
 #endif
