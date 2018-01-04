@@ -28,12 +28,6 @@
 #ifndef VERTEX_CPP
 #define VERTEX_CPP
 
-//const double eps_relat = numeric_limits<double>::epsilon();
-const double eps_relat =0.000001;
-/*!
-* \fn Vertex::Vertex()
-* \brief Default constructor 
-*/
 Vertex::Vertex()
 {
   pos = Point_3(0.,0.,0.);

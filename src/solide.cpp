@@ -108,8 +108,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face1.vertex.push_back(v4);
       std::set<Face>::iterator it = faces.find(face1);
       if(it == faces.end()) { //Face pas encore dans le set
-	face1.comp_normal(v1); //Calcul de la normale sortante
-	face1.surf(vertex[v2], vertex[v3], vertex[v4]); //Calcul surface face et centre
+	face1.comp_quantities(vertex[v2].pos, vertex[v3].pos, vertex[v4].pos, vertex[v1].pos); //Calcul de la normale sortante, surface et barycentre face
 	face1.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face1);
       }
@@ -127,8 +126,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face2.vertex.push_back(v4);
       std::set<Face>::iterator it = faces.find(face2);
       if(it == faces.end()) { //Face pas encore dans le set
-	face2.comp_normal(v2); //Calcul de la normale sortante
-	face2.surf(); //Calcul surface face
+	face1.comp_quantities(vertex[v1].pos, vertex[v3].pos, vertex[v4].pos, vertex[v2].pos); //Calcul de la normale sortante, surface et barycentre face
 	face2.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face2); //Ajout de la face dans la particule
       }
@@ -146,8 +144,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face3.vertex.push_back(v4);
       std::set<Face>::iterator it = faces.find(face3);
       if(it == faces.end()) { //Face pas encore dans le set
-	face3.comp_normal(v3); //Calcul de la normale sortante
-	face3.surf(); //Calcul surface face
+	face1.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v4].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
 	face3.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face3);
       }
@@ -165,8 +162,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face4.vertex.push_back(v3);
       std::set<Face>::iterator it = faces.find(face4);
       if(it == faces.end()) { //Face pas encore dans le set
-	face4.comp_normal(v4); //Calcul de la normale sortante
-	face4.surf(); //Calcul surface face
+	face1.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos, vertex[v4].pos); //Calcul de la normale sortante, surface et barycentre face
 	face4.parts.push_back(id); //Ajout de la particule dans la face
 	p.faces.push_back(&face4);
       }

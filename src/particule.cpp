@@ -76,7 +76,6 @@ Particule & Particule:: operator=(const Particule &P){
   fixe = P.fixe;
   m  = P.m; 
   V = P.V; 
-  epsilon = P.epsilon; 
   /*for(int i=0; i<3;i++){
     I[i] = P.I[i];
     for(int j=0; j<3;j++){
@@ -88,17 +87,8 @@ Particule & Particule:: operator=(const Particule &P){
   Dx = P.Dx;
   Dxprev = P.Dxprev;
   Fi = P.Fi;
-  Ff = P.Ff;
-  Ffprev = P.Ffprev;
-  Mi = P.Mi;
-  Mf = P.Mf;
-  Mfprev = P.Mfprev;
   u = P.u;
   u_half = P.u_half;
-  omega = P.omega;
-  omega_half = P.omega_half;
-  e = P.e;
-  eprev = P.eprev;
   mvt_t = P.mvt_t;
   mvt_tprev = P.mvt_tprev;
 }
@@ -211,17 +201,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     Dxprev = Vector_3(0.,0.,0.);
     u = Vector_3(0.,0.,0.);
     u_half = u;
-    e = Vector_3(0.,0.,0.);
-    eref = Vector_3(0.,0.,0.);
-    rot[0][0] = rot[1][1]= rot[2][2] =1.;
-    rot[0][1]=rot[0][2]=rot[1][0]=rot[1][2]=rot[2][0]=rot[2][1]=0.;
-    eprev = Vector_3(0.,0.,0.);
-    omega = Vector_3(0.,0.,0.);
-    omega_half = omega;
   } else {
     if(fixe==0){ //fixe=0: particule mobile
       Dxprev = Dx;
-      u = u+(Fi+Ff)/2.*(dt/m);
+      u = u + Fi/2.* (dt/m);
       u_half = u;
       Dx = Dx+u*dt;
     }
@@ -231,7 +214,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
       //u = Vector_3(0.,0.,0.);
       //u_half = u;
       Dxprev = Dx;
-      //u = u+(Fi+Ff)/2.*(dt/m);
+      //u = u + Fi/2.*(dt/m);
       u_half = u;
       Dx = Dx+u*dt;
     }
@@ -255,135 +238,13 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
     //omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+      u = u + Fi /2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
     }
   }
-
-  /*if(x0.z() <= 4.)
-    u = Vector_3(0,0,-10.); //En m.s^-1
-  else if(x0.z() >= 14.)
-    u= Vector_3(0,0,0);
-  else
-  u = u+(Fi+Ff)/2.*(dt/m)*Amort;*/
-    
-    //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
-     double Q[3][3];
-    double eref0 = sqrt(abs(1.-(eref.squared_length())));
-    //Recuperation de la matrice de rotation
-    Q[0][0] = 1.-2.*(eref[1]*eref[1]+eref[2]*eref[2]);
-    Q[0][1] = 2.*(-eref0*eref[2]+eref[0]*eref[1]);
-    Q[0][2] = 2.*(eref0*eref[1]+eref[0]*eref[2]);
-    Q[1][0] = 2.*(eref0*eref[2]+eref[1]*eref[0]);
-    Q[1][1] = 1.-2.*(eref[0]*eref[0]+eref[2]*eref[2]);
-    Q[1][2] = 2.*(-eref0*eref[0]+eref[1]*eref[2]);
-    Q[2][0] = 2.*(-eref0*eref[1]+eref[2]*eref[0]);
-    Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
-    Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);
-    double e0 = sqrt(abs(1.-(e.squared_length())));
-    //Recuperation de Zn+1/2 a partir de omega
-    double Omega[3];
-    Omega[0] = Omega[1] = Omega[2] = 0.;
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Omega[j] += (omega[k]*Q[k][j]);
-      }
-    }
-    //cout << "debut " << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-    //getchar();
-    double norm2 = dt*dt*(Omega[0]*Omega[0]+Omega[1]*Omega[1]+Omega[2]*Omega[2]);
-    if(norm2>1.){
-      cout << "pas de temps trop grand (solve_vitesse) : dt=" << dt << " Omega=" << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-      getchar();
-    }
-    double eglob0 = sqrt((1.+sqrt(1.-norm2))/2.);
-    double eglob[3];
-    for(int j=0;j<3;j++){
-      eglob[j] = dt*Omega[j]/2./eglob0;
-    }
-    //Recuperation de la matrice Zn+1/2
-    //double eglob0 = sqrt(1.-eglob[0]*eglob[0]-eglob[1]*eglob[1]-eglob[2]*eglob[2]);
-    double z[3][3];
-    z[0][0] = (-2.*(eglob[1]*eglob[1]+eglob[2]*eglob[2]))/dt;
-    z[0][1] = (-2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[0][2] = (2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[1][0] = (2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[1][1] = (-2.*(eglob[0]*eglob[0]+eglob[2]*eglob[2]))/dt;
-    z[1][2] = (-2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][0] = (-2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[2][1] = (2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][2] = (-2.*(eglob[0]*eglob[0]+eglob[1]*eglob[1]))/dt;
-    //Calcul de la matrice A
-    double a[3];
-    double d1 = (I[0]+I[1]+I[2])/2.-I[0];
-    double d2 = (I[0]+I[1]+I[2])/2.-I[1];
-    double d3 = (I[0]+I[1]+I[2])/2.-I[2];
-    //Calcul du moment dans le repere inertiel
-    double Mx = (Q[0][0]*((Mi+Mf)[0])+Q[1][0]*((Mi+Mf)[1])+Q[2][0]*((Mi+Mf)[2]));
-    double My = (Q[0][1]*((Mi+Mf)[0])+Q[1][1]*((Mi+Mf)[1])+Q[2][1]*((Mi+Mf)[2]));
-    double Mz = (Q[0][2]*((Mi+Mf)[0])+Q[1][2]*((Mi+Mf)[1])+Q[2][2]*((Mi+Mf)[2]));
-    a[0] = -(d2*z[1][2]-d3*z[2][1]-dt/2.*Mx);
-    a[1] = (d1*z[0][2]-d3*z[2][0]+dt/2.*My);
-    a[2] = -(d1*z[0][1]-d2*z[1][0]-dt/2.*Mz);
-    //Resolution du probleme lineaire sur Zn+1
-    z[0][0] = 0.;
-    z[0][1] = -a[2]/I[2];
-    z[0][2] = a[1]/I[1];
-    z[1][0] = -z[0][1];
-    z[1][1] = 0.;
-    z[1][2] = -a[0]/I[0];
-    z[2][0] = -z[0][2];
-    z[2][1] = -z[1][2];
-    z[2][2]= 0.;
-    //Calcul de Omega^n+1
-    double omega1 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega1 -= Q[1][i]*z[i][j]*Q[2][j];
-      }
-    }
-    double omega2 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega2 += Q[0][i]*z[i][j]*Q[2][j];
-      }
-    }
-    double omega3 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega3 -= Q[0][i]*z[i][j]*Q[1][j];
-      }
-    }
-//     //Test pour fixer les composantes x et y de la rotation
-			if(flag_2d){
-			 		omega1 = 0.;
-			 		omega2 = 0.;
-			}
-			if(fixe==3){
-			  omega1=0.;
-			  omega3=0.;
-			}
-			
-// 		//fin test 
-    omega = Vector_3(omega1,omega2,omega3);
-  //}Fin du calcul dans le cas d'une particule libre
 }
-
-Vector_3 Particule::vitesse_parois(const Point_3& X_f){
-		
-  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
-
-  return V_f;
-}	
-
-Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
-	
-  Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
-	
-  return V_f;
-}	
 
 /*void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, const int& a, const int& b, const int& c){
   //Utilisation de la fonction decrite par Brian Mirtich 1996 (cf www.cs.berkeley.edu/~jfc/mirtich/code/volumeIntegration.tar)
@@ -641,8 +502,8 @@ void Particule::barycentre() {
   x0 = centroid(vertices.begin(), vertices.end());
 }
 
-void volume() {
-  return cross_product(Vector_3(vertices[0],vertices[1]),Vector_3(vertices[0],vertices[2]))*Vector_3(vertices[0],vertices[3])/6.;
+void Particule::volume() {
+  V = cross_product(Vector_3(vertices[0],vertices[1]),Vector_3(vertices[0],vertices[2]))*Vector_3(vertices[0],vertices[3])/6.;
 }
 
 /*void Particule::Inertie(const double &rho){

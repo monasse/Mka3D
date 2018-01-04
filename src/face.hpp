@@ -42,9 +42,7 @@ public:
   int size(){
 	return vertex.size();
   }
-  void comp_normal(const Point_3& ext); //Calcul une normale à la face
-  bool& operator==(const Face &F); //Compare les faces
-  void surf(const Vertex &v1, const Vertex &v2, const Vertex &v3); //Calcule la valeur de la surface de la face et le centre
+  void comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3, const Point_3& ext); //Computes the outward normal, the surface and the barycentre of the face
 
   //Attributs
   Point_3 centre; //!< Centre de la face
@@ -59,7 +57,10 @@ public:
   //int voisin; //!< Le numéro de la particule voisine. -1 si le voisin est le fluide
   double D0; //!< Distance à l'équilibre avec la particule voisine
   std::vector<int> parts; //contient les deux particules (indexée par leur palce dans solide) dans le lien. La normale est dans le sens de la première vers la seconde
+  std::vector<int> voisin_gradient; //Contient le numéro de la particule à aller chercher hors du lien pour calculer le gradient de la première particule de parts
 
 };
+
+bool operator==(const Face &F1, const Face &F2); //Compare les faces
 
 #endif

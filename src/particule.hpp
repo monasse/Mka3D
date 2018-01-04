@@ -72,11 +72,6 @@ Bbox bbox;
   Vector_3 u; //!< Vitesse de la particule au temps t
   //Vector_3 u_plas; //Vitesse palstique
   Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
-  Vector_3 omega; //!< Vecteur rotation au temps t
-  Vector_3 omega_half;//!< Vecteur rotation au temps t-dt/2
-  Vector_3 e; //!<Vecteur de rotation de la particule au temps t
-  Vector_3 eref;
-  Vector_3 eprev; //!<Vecteur de rotation de la particule au temps t-dt
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
 

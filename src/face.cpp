@@ -33,7 +33,6 @@ Face::Face()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
-  voisin = -1;
   D0 = 1.;
 }
 
@@ -41,7 +40,6 @@ Face::Face(const double& surface)
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
-  voisin = -1;
   D0 = 1.;
   S = surface;
 }
@@ -80,7 +78,6 @@ Face & Face:: operator=(const Face &F){
   assert(this != &F);
   centre = F.centre;
   normale = F.normale;
-  voisin = F.voisin;
   D0  = F.D0; 
   Is = F.Is; 
   It = F.It; 
@@ -90,16 +87,24 @@ Face & Face:: operator=(const Face &F){
   for(int i= 0; i<F.vertex.size(); i++){
     vertex[i] = F.vertex[i];
   }
+  parts.resize(F.parts.size());
+  for(int i= 0; i<F.parts.size(); i++){
+    vertex[i] = F.parts[i];
+  }
+  voisin_gradient.resize(F.voisin_gradient.size());
+  for(int i= 0; i<F.voisin_gradient.size(); i++){
+    voisin_gradient[i] = F.voisin_gradient[i];
+  }
 }
 
-bool& operator==(const Face &F) { //Compare les faces
-  if(vertex[0] != F.vertex[0] && vertex[0] != F.vertex[1] && vertex[0] != F.vertex[2])
+bool operator==(const Face &F1, const Face &F2) { //Compare les faces
+  if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2])
     return false;
   else {
-    if(vertex[1] != F.vertex[0] && vertex[1] != F.vertex[1] && vertex[1] != F.vertex[2])
+    if(F1.vertex[1] != F2.vertex[0] && F1.vertex[1] != F2.vertex[1] && F1.vertex[1] != F2.vertex[2])
       return false;
     else {
-      if(vertex[2] != F.vertex[0] && vertex[2] != F.vertex[1] && vertex[2] != F.vertex[2])
+      if(F1.vertex[2] != F2.vertex[0] && F1.vertex[2] != F2.vertex[1] && F1.vertex[2] != F2.vertex[2])
       return false;
       else
 	return true;
@@ -107,23 +112,18 @@ bool& operator==(const Face &F) { //Compare les faces
   }
 }
 
-void Face::comp_normal(const Point_3& ext) {
-  normale = orthogonal_vector(vertex[0],vertex[1],vertex[2]);
-  double norm = sqrt((normale.squared_length()));
-  normale = normale / norm;
-
-  if(Vector_3(vertex[0], ext) * normale < 0.)
-    normale = -1. * normale;
-}
-
-void Face::surf(const Vertex &v1, const Vertex &v2, const Vertex &v3) {
-  std::vector<Vertex> aux;
+void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3, const Point_3& ext) {
+  std::vector<Point_3> aux;
   aux.push_back(v1);
   aux.push_back(v2);
   aux.push_back(v3);
   centre = centroid(aux.begin(),aux.end());
-  S = 1./2.* sqrt(cross_product(Vector_3(v1.pos,v2.pos),Vector_3(v1.pos,v3.pos)).squared_length());
-
+  S = 1./2.* sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length());
+  normale = orthogonal_vector(aux[0], aux[1], aux[2]);
+  double norm = sqrt((normale.squared_length()));
+  normale = normale / norm;
+  if(Vector_3(aux[0], ext) * normale < 0.)
+    normale = -1. * normale;
 }
 
 #endif
