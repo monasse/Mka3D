@@ -180,6 +180,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
       if((F->voisins).size() != 0) {//Face pas au bord (car I_Dx = vec null dans ce cas...)
 	//Recherche des particules pour avoir le tetra !
+	//for(std::vector<Face>::iterator G=solide[(F->voisins)[0]].faces.begin();G!=solide[(F->voisins)[0]].faces.end();G++) {
+	Particule *part(&solide[(F->voisins)[0]]); //Pointeur sur la particule voisine
+
+	//Vérifier si on bien le tétra et ajouter les 2 valeurs nécessaires.
+	(F->voisins).push_back((part->faces)[0]
+	
       }
     }
   }
