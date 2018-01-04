@@ -1375,7 +1375,9 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
       u = u+(Fi+Ff)/2.*(dt/m)*Amort;// + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
     else if(fixe==2 || fixe==3){
-      u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
+      //u = velocity_BC(x0, t, T, Dx);
+      u = u+(Fi+Ff)/2.*(dt/m);
+      u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
     }
     
     //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t

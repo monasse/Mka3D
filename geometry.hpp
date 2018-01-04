@@ -78,7 +78,7 @@ double squared_distance(const Point_3 &p, const Point_3 &q);
 
 class Vector_3 
 {
-private :
+public :
   double vec[3];
 public:
   Vector_3();
