@@ -35,9 +35,6 @@ class Face
 public:
   //Méthodes
   Face();//:vertex(std::vector<Vertex>(1)){}
-  Face(const double& surface);
-  //Face(const std::vector<Vertex> & v, const int &part);
-  //Face(const std::vector<Vertex> & v, const int &part, const double &dist);
   Face & operator=(const Face &F); //opérateur d'affectation
   int size(){
 	return vertex.size();
@@ -51,13 +48,10 @@ public:
   int nb_vertex;
   std::vector<int> vertex; //!< Les sommets de la face
   int id; //Numéro de la particule qui détient la face
-  int voisin; //!< Le numéro de la particule voisine.
-  int voisin_bis; //Nécessaire pour le calcul du gradient avec tetras !
-  double c_bary_voisin; //Utile pour calcul de valeur déplacement sur face
-  double c_bary_voisin_bis; //Utile pour calcul de valeur déplacement sur face
-  //double D0; //!< Distance à l'équilibre avec la particule voisine
-  //std::vector<int> parts; //contient les deux particules (indexée par leur palce dans solide) dans le lien. La normale est dans le sens de la première vers la seconde
-  //std::vector<int> voisin_gradient; //Contient le numéro de la particule à aller chercher hors du lien pour calculer le gradient de la première particule de parts
+  Point_3 pt_face; //distance centre de la particule à la face
+  std::vector<int> voisins; //Donne le numéro du voisin puis celui des 2 autres particules pour avoir le tétra associé à la face et calculer le gradient
+  std::vector<double> c_voisins; //Coordonnées barycentriques des particules dans voisins pour calcul du gradient
+  Vector_3 I_Dx; //Dx calculé par interpolation avec valeurs des particules du tétra de la face
 
 };
 

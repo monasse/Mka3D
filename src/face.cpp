@@ -29,56 +29,13 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face()
+Face::Face() : pt_face(), I_Dx()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
-  voisin = 0;
-  voisin_bis = 0;
-  c_bary_voisin = 0.;
-  c_bary_voisin_bis = 0.;
+  D = 0.;
+  S = 0.;
 }
-
-Face::Face(const double& surface)
-{
-  centre = Point_3(0.,0.,0.);
-  normale = Vector_3(1.,0.,0.);
-  S = surface;
-  voisin = 0;
-  voisin_bis = 0;
-  c_bary_voisin = 0.;
-  c_bary_voisin_bis = 0.;
-}
-
-/*Face::Face(const std::vector<Vertex> & v, const int& part)
-{
-  std::vector<Point_3> points;
-  for(int i=0; i<v.size(); i++){
-    vertex.push_back(v[i]);
-    points.push_back(v[i].pos);
-  }
-  centre = centroid(points.begin(),points.end());
-  normale = orthogonal_vector(points[0],points[1],points[2]);
-  double norm = sqrt((normale.squared_length()));
-  normale = normale*1./norm;
-  voisin = part;
-  D0 = 1.;
-}*/
-
-/*Face::Face(const std::vector<Vertex> & v, const int& part, const double& dist)
-{
-  std::vector<Point_3> points;
-  for(int i=0; i<v.size(); i++){
-    vertex.push_back(v[i]);
-    points.push_back(v[i].pos);
-  }
-  centre = centroid(points.begin(),points.end());
-  normale = orthogonal_vector(points[0],points[1],points[2]);
-  double norm = sqrt((normale.squared_length()));
-  normale = normale*1./norm;
-  voisin = part;
-  D0 = dist;
-}*/
 
 Face & Face:: operator=(const Face &F){
   assert(this != &F);
@@ -88,10 +45,12 @@ Face & Face:: operator=(const Face &F){
   for(int i= 0; i<F.vertex.size(); i++){
     vertex[i] = F.vertex[i];
   }
-  voisin = F.voisin;
-  voisin_bis = F.voisin_bis;
-  c_bary_voisin = F.c_bary_voisin;
-  c_bary_voisin_bis = F.c_bary_voisin_bis;
+  for(int i= 0; i<F.voisins.size(); i++){
+    voisins[i] = F.voisins[i];
+  }
+  for(int i= 0; i<F.c_voisins.size(); i++){
+    c_voisins[i] = F.c_voisins[i];
+  }
 }
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
@@ -121,6 +80,8 @@ void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &
   normale = normale / norm;
   if(Vector_3(aux[0], ext) * normale < 0.)
     normale = -1. * normale;
+  double aux2 = Vector_3(centre, v1) * normale;
+  pt_face = centre + aux2 * normale;
 }
 
 #endif

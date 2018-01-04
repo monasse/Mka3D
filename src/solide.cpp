@@ -113,12 +113,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	faces.insert(face1); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
       }
       else { //Face déja dans l'ensemble. On va sortir le voisin
-	solide[it->id].voisin = id;
-	face1.voisin = it->id; //Connectivité nn !
+	solide[it->id].voisins.push_back(id); //Connectivité nn
+	face1.voisins.push_back(it->id); //Connectivité nn !
 	p.faces.push_back(it);
-	Vector_3 aux(solide[(it->parts)[0]], x0);
-	double D0 = sqrt(aux.squared_length()); //Distance en config initiale entre particuels voisines
-	//Calculer la suite !
       }
       p.faces.push_back(face1); //Ajout de la face dans la particule
 
@@ -129,16 +126,15 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face2.vertex.push_back(v4);
       std::set<Face>::iterator it = faces.find(face2);
       if(it == faces.end()) { //Face pas encore dans le set
-	face1.comp_quantities(vertex[v1].pos, vertex[v3].pos, vertex[v4].pos, vertex[v2].pos); //Calcul de la normale sortante, surface et barycentre face
-	face2.parts.push_back(id); //Ajout de la particule dans la face
-	p.faces.push_back(&face2); //Ajout de la face dans la particule
+	face2.comp_quantities(vertex[v1].pos, vertex[v3].pos, vertex[v4].pos, vertex[v2].pos); //Calcul de la normale sortante, surface et barycentre face
+	faces.insert(face2); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
       }
-      else {
-        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
+      else { //Face déja dans l'ensemble. On va sortir le voisin
+	solide[it->id].voisins.push_back(id); //Connectivité nn
+	face2.voisins.push_back(it->id); //Connectivité nn !
 	p.faces.push_back(it);
-	Vector_3 aux(solide[(it->parts)[0]], x0);
-	it->D0 = sqrt(aux.squared_length());
       }
+      p.faces.push_back(face2); //Ajout de la face dans la particule
 
       //face 3
       Face face3();
@@ -147,16 +143,15 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face3.vertex.push_back(v4);
       std::set<Face>::iterator it = faces.find(face3);
       if(it == faces.end()) { //Face pas encore dans le set
-	face1.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v4].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
-	face3.parts.push_back(id); //Ajout de la particule dans la face
-	p.faces.push_back(&face3);
+	face3.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v4].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
+	faces.insert(face3); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
       }
-      else {
-        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
+      else { //Face déja dans l'ensemble. On va sortir le voisin
+	solide[it->id].voisins.push_back(id); //Connectivité nn
+	face3.voisins.push_back(it->id); //Connectivité nn !
 	p.faces.push_back(it);
-	Vector_3 aux(solide[(it->parts)[0]], x0);
-	it->D0 = sqrt(aux.squared_length());
       }
+      p.faces.push_back(face3); //Ajout de la face dans la particule
 
       //face 4
       Face face4();
@@ -165,21 +160,34 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face4.vertex.push_back(v3);
       std::set<Face>::iterator it = faces.find(face4);
       if(it == faces.end()) { //Face pas encore dans le set
-	face1.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos, vertex[v4].pos); //Calcul de la normale sortante, surface et barycentre face
-	face4.parts.push_back(id); //Ajout de la particule dans la face
-	p.faces.push_back(&face4);
+	face4.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos, vertex[v4].pos); //Calcul de la normale sortante, surface et barycentre face
+	faces.insert(face4); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
       }
-      else {
-        (it->parts).push_back(id); //Ajout de cette particule aux côtés de l'autre
+      else { //Face déja dans l'ensemble. On va sortir le voisin
+	solide[it->id].voisins.push_back(id); //Connectivité nn
+	face4.voisins.push_back(it->id); //Connectivité nn !
 	p.faces.push_back(it);
-	Vector_3 aux(solide[(it->parts)[0]], x0);
-	it->D0 = sqrt(aux.squared_length());
-      }   
+      }
+      p.faces.push_back(face4); //Ajout de la face dans la particule
 
       //Ajout de la particule dans le solide
       solide[id] = p;
     }
   }
+  
+  //Calculer du tetrahèdre associé à chaque face pour le calcul du gradient
+  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
+      if((F->voisins).size() != 0) {//Face pas au bord (car I_Dx = vec null dans ce cas...)
+	//Recherche des particules pour avoir le tetra !
+      }
+    }
+  }
+  
+  Vector_3 aux(solide[(it->parts)[0]], x0);
+  double D0 = sqrt(aux.squared_length()); //Distance en config initiale entre particules voisines
+  double D_face = abs(Vector_3(x0, v2.pos) * face1.normale); //Distance centre particule-face
+  //Calculer la suite !
 }
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
@@ -207,7 +215,7 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans chaque p
     (P->second).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
     (P->second).discrete_gradient.col2 = Vector_3(0., 0., 0.);
     (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
+    for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
       if(F->voisin>=0){
 	int part = F->voisin;
 	Vector_3 nIJ = (*F).normale;
