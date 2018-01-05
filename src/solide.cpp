@@ -394,24 +394,24 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     eprev = Vector_3(0.,0.,0.);
     omega = Vector_3(0.,0.,0.);
     omega_half = omega;
-  } else {
-    if(fixe==0){ //fixe=0: particule mobile
-      Dxprev = Dx;
-      u = u+(Fi+Ff)/2.*(dt/m);
-      u_half = u;
-      Dx = Dx+u*dt;
-    }
-    else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
-      //Dx = Vector_3(0.,0.,0.);
-      //Dxprev = Vector_3(0.,0.,0.);
-      //u = Vector_3(0.,0.,0.);
-      //u_half = u;
-      Dxprev = Dx;
-      //u = u+(Fi+Ff)/2.*(dt/m);
-      u_half = u;
-      Dx = Dx+u*dt;
-    }
   }
+  else if(fixe==0 || fixe == 2 || fixe == 3){ //fixe=0: particule mobile
+    Dxprev = Dx;
+    u = u+Fi/2.*(dt/m);
+    u_half = u;
+    Dx = Dx+u*dt;
+  }
+
+  /*else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
+    //Dx = Vector_3(0.,0.,0.);
+    //Dxprev = Vector_3(0.,0.,0.);
+    //u = Vector_3(0.,0.,0.);
+    //u_half = u;
+    Dxprev = Dx;
+    //u = u+(Fi+Ff)/2.*(dt/m);
+    u_half = u;
+    Dx = Dx+u*dt;
+    }*/
 
 
   //Dx = displacement_BC(x0, Dx, t, T);
@@ -1063,10 +1063,18 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     for(int i=0 ; i < nbr_faces ; i++) {
       int id_voisin;
       stm >> id_voisin;
-      if(id_voisin == -5)
-	solide[id].fixe = 2; //signifie que particule est sur un des bords chargés en contrainte
-      else if(id_voisin == -6)
+      if(solide[id].fixe == 0 && id_voisin == -99) {
+	Point_3 pos_centre = f[i].centre;
+	double r = sqrt( pos_centre.x() * pos_centre.x() + pos_centre.y() * pos_centre.y());
+	if( (r - 3.) < 0.5)
+	  solide[id].fixe = 2; //Particule subit la pression
+	else if( (r - 6.) < 0.5)
+	  solide[id].fixe = 3;
+      }
+      /*else if(id_voisin == -6)
 	solide[id].fixe = 1; //signifie que particule est encastrée
+      else if(id_voisin == -99)
+      solide[id].fixe = */
       else
 	f[i].voisin = id_voisin;
     }
@@ -1099,7 +1107,7 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
   Forces_internes(N_dim,nu,E, dt);
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++)
-      (P->second).Fi = (P->second).Fi + Forces_externes(t,T, *F);
+      (P->second).Fi = (P->second).Fi + Forces_externes(t,T, *F, mu, (P->second).fixe);
   }
 }
 

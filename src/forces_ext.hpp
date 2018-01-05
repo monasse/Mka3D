@@ -21,7 +21,7 @@
 #ifndef FORCES_EXT_HPP
 #define FORCES_EXT_HPP
 
-Vector_3 Forces_externes(const double& t, const double& T, const Face& face);
+Vector_3 Forces_externes(const double& t, const double& T, const Face& face, const double& mu, const int& fixe);
 
 
 #endif
