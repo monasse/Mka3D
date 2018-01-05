@@ -33,16 +33,10 @@
 Vector_3 Forces_externes(const double& t, const double& T, const Face& face, const double& mu, const int& fixe)
 {
   double p_max = 5. * 90000000. * 0.75 * 2. * mu; //En Pa pression max, 5 fois seuil elas théorique...
-  //double p = p_max * t / T;
-  double p = p_max / 50.;
+  double p = p_max * t / T / 1000000000.;
 
-  Point_3 pos_centre = face.centre;
-  double r = sqrt( pos_centre.x() * pos_centre.x() + pos_centre.y() * pos_centre.y());
-
-  //Changer la face de reconnaitre les faces !!!
-  //Faire avec des BC de type fixe == 2 ou 3 et remplir ça en vérifiant que particules ont des voisins ou pas !
-  if(fixe == 2)
-    return p * (-face.normale);
+  if(fixe == 2) //Particule sur bord intérieur du tube
+    return p * (-face.normale) * face.S;
   else
     return Vector_3(0., 0., 0.);
 }

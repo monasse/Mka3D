@@ -382,7 +382,7 @@ Particule & Particule:: operator=(const Particule &P){
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double rot[3][3];
-  if(fixe==1){
+  //if(fixe==1){
     Dx = Vector_3(0.,0.,0.);
     Dxprev = Vector_3(0.,0.,0.);
     u = Vector_3(0.,0.,0.);
@@ -394,13 +394,13 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     eprev = Vector_3(0.,0.,0.);
     omega = Vector_3(0.,0.,0.);
     omega_half = omega;
-  }
+    /*}
   else if(fixe==0 || fixe == 2 || fixe == 3){ //fixe=0: particule mobile
     Dxprev = Dx;
     u = u+Fi/2.*(dt/m);
     u_half = u;
     Dx = Dx+u*dt;
-  }
+    }*/
 
   /*else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
     //Dx = Vector_3(0.,0.,0.);
@@ -429,13 +429,14 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   if(fixe==1){
     u = Vector_3(0.,0.,0.);
     //omega = Vector_3(0.,0.,0.);
-  } else {
-    if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-    }
+  }
+  else {
+    //if(fixe==0){
+    u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+      /*}
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
-    }
+      }*/
   }
 
   /*if(x0.z() <= 4.)
@@ -1063,18 +1064,10 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     for(int i=0 ; i < nbr_faces ; i++) {
       int id_voisin;
       stm >> id_voisin;
-      if(solide[id].fixe == 0 && id_voisin == -99) {
-	Point_3 pos_centre = f[i].centre;
-	double r = sqrt( pos_centre.x() * pos_centre.x() + pos_centre.y() * pos_centre.y());
-	if( (r - 3.) < 0.5)
-	  solide[id].fixe = 2; //Particule subit la pression
-	else if( (r - 6.) < 0.5)
-	  solide[id].fixe = 3;
-      }
-      /*else if(id_voisin == -6)
-	solide[id].fixe = 1; //signifie que particule est encastrée
-      else if(id_voisin == -99)
-      solide[id].fixe = */
+      if(solide[id].fixe == 0 && id_voisin == -100)
+	solide[id].fixe = 2; //Particule subit la pression
+      else if(solide[id].fixe == 0 && id_voisin == -99)
+	solide[id].fixe = 3;
       else
 	f[i].voisin = id_voisin;
     }
