@@ -32,8 +32,9 @@
 //Pression dans tube
 Vector_3 Forces_externes(const double& t, const double& T, const Face& face, const double& mu, const int& fixe)
 {
-  double p_max = 5. * 90000000. * 0.75 * 2. * mu; //En Pa pression max, 5 fois seuil elas théorique...
-  double p = p_max * t / T / 1000000000.;
+  double p_max = 5. * 90000000. * 0.75; //En Pa pression max, 5 fois seuil elas théorique...
+  double p = p_max / /*t / T  /*/ 100000000000.;
+  p = 0.0001;
 
   if(fixe == 2) //Particule sur bord intérieur du tube
     return p * (-face.normale) * face.S;
