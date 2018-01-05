@@ -5,7 +5,6 @@ ENABLE_LANGUAGE(CXX)
 
 set(SRC ${CMAKE_SOURCE_DIR}/src)
 set(SOURCES
-  ${SRC}/vitesse.cpp
   ${SRC}/forces_ext.cpp
   ${SRC}/geometry.cpp
   ${SRC}/solide.cpp
