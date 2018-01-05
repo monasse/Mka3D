@@ -33,7 +33,8 @@
 Vector_3 Forces_externes(const double& t, const double& T, const Face& face, const double& mu, const int& fixe)
 {
   double p_max = 5. * 90000000. * 0.75 * 2. * mu; //En Pa pression max, 5 fois seuil elas théorique...
-  double p = p_max * t / T;
+  //double p = p_max * t / T;
+  double p = p_max / 50.;
 
   Point_3 pos_centre = face.centre;
   double r = sqrt( pos_centre.x() * pos_centre.x() + pos_centre.y() * pos_centre.y());
