@@ -52,7 +52,7 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
   if(p.z() <= 0.2)
     return Vector_3(0,0,-1); // * t / T; //En m.s^-1
   else if(p.z() >= 2.8)
-  return Vector_3(0,0,0);
+    return Vector_3(0,0,0);
 
   /*if(pos_z <= 0.1) { //Vitesse en BC...
     double alpha_pt = 3.1416 / 180. * 20. / T_p; //Rotation de 20° sur [0, T]
@@ -116,5 +116,5 @@ double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const
   if(p.z() <= 0.2)
     return -0.05; // * t / T; //En m.s^-1
   else if(p.z() >= 2.8)
-  return 0.;
+    return 0.;
 }

@@ -1367,18 +1367,21 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 * \return void
  */
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  if(fixe==1){
+  u = u+(Fi+Ff)/2.*(dt/m);
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
+  {
+  /*if(fixe==1){
     u = Vector_3(0.,0.,0.);
     omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
       u = u+(Fi+Ff)/2.*(dt/m)*Amort;// + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
     }
-    else if(fixe==2 || fixe==3){
+    else if(fixe==2 || fixe==3 || fixe == 1){
       //u = velocity_BC(x0, t, T, Dx);
-      u = u+(Fi+Ff)/2.*(dt/m);
-      u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
-    }
+  u = u+(Fi+Ff)/2.*(dt/m);
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
+  }*/
     
     //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
     double Q[3][3];
@@ -1394,24 +1397,6 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
     Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
     Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);//*/
     double e0 = sqrt(abs(1.-(e.squared_length())));
-    /*Recuperation de la matrice de rotation
-    double rot[3][3];
-    rot[0][0] = 1.-2.*(e[1]*e[1]+e[2]*e[2]);
-    rot[0][1] = 2.*(-e0*e[2]+e[0]*e[1]);
-    rot[0][2] = 2.*(e0*e[1]+e[0]*e[2]);
-    rot[1][0] = 2.*(e0*e[2]+e[1]*e[0]);
-    rot[1][1] = 1.-2.*(e[0]*e[0]+e[2]*e[2]);
-    rot[1][2] = 2.*(-e0*e[0]+e[1]*e[2]);
-    rot[2][0] = 2.*(-e0*e[1]+e[2]*e[0]);
-    rot[2][1] = 2.*(e0*e[0]+e[2]*e[1]);
-    rot[2][2] = 1.-2.*(e[0]*e[0]+e[1]*e[1]);
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	Q[i][j] = rot[i][0]*rotref[0][j];
-	Q[i][j] += rot[i][1]*rotref[1][j];
-	Q[i][j] += rot[i][2]*rotref[2][j];
-      }
-    } //*/
     //Recuperation de Zn+1/2 a partir de omega
     double Omega[3];
     Omega[0] = Omega[1] = Omega[2] = 0.;
