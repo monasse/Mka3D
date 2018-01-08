@@ -1049,7 +1049,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dxprev = Dx;
   u = u+(Fi+Ff)/2.*(dt/m);
   u_half = u;
-  u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
   Dx = Dx+u*dt;
       
     //Tests pour verifier qu'on a toujours une matrice de rotation
@@ -2475,7 +2475,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	
     (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
 
-    if((P->contrainte - H * P->epsilon_p).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+    //if((P->contrainte - H * P->epsilon_p).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+    if((P->contrainte).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+
       plastifie = true;
       //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
@@ -2485,7 +2487,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Trace n_elas : " << n_elas.tr() << endl;
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
-      double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
+      //double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
+      double delta_p = ((P->contrainte).VM() - A) / (2*mu);
       (*P).def_plas_cumulee += delta_p; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (*P).epsilon_p += delta_p * n_elas;
