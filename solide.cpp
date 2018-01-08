@@ -1015,7 +1015,7 @@ void Particule::Affiche(){
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double rot[3][3];
-  if(fixe==1){
+  /*if(fixe==1){
     Dx = Vector_3(0.,0.,0.);
     Dxprev = Vector_3(0.,0.,0.);
     u = Vector_3(0.,0.,0.);
@@ -1045,7 +1045,12 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
       Dx = Dx+u*dt;
     }
 
-    Dx = displacement_BC(x0, Dx, t, T);
+    Dx = displacement_BC(x0, Dx, t, T);*/
+  Dxprev = Dx;
+  u = u+(Fi+Ff)/2.*(dt/m);
+  u_half = u;
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
+  Dx = Dx+u*dt;
       
     //Tests pour verifier qu'on a toujours une matrice de rotation
     for(int i=0;i<3;i++){
@@ -1337,7 +1342,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 			omega = Vector_3(0.,0.,omega3);
 			omega_half = omega;
 		}
-  }//Fin du calcul dans le cas d'une particule libre
+		//}//Fin du calcul dans le cas d'une particule libre
   /*Test de fixer la rotation
   rot[0][0]= rot[1][1] = rot[2][2] =1.;
   rot[0][1] = rot[0][2] =rot[1][0] = rot[1][2] = rot[2][0] = rot[2][1] = 0.;
@@ -2481,7 +2486,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       //cout << "Norme n_elas : " << n_elas.norme() << endl;
       //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      //(*P).def_plas_cumulee = pow(((*P).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+      (*P).def_plas_cumulee += delta_p; //Nouvelle déformation plastique.
       //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (*P).epsilon_p += delta_p * n_elas;
       //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
