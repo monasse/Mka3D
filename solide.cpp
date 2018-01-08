@@ -1373,7 +1373,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
  */
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   u = u+(Fi+Ff)/2.*(dt/m);
-  u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
   {
   /*if(fixe==1){
     u = Vector_3(0.,0.,0.);
