@@ -129,6 +129,7 @@ class Matrix {
 };
 
 bool operator==(const Matrix& vec1, const Matrix& vec2);
+ostream& operator<<(ostream &os, const Matrix &M);
 Matrix operator+(const Matrix& vec1, const Matrix& vec2);
 Matrix operator-(const Matrix& vec1, Matrix const& vec2);
 Matrix operator-(const Matrix& vec);

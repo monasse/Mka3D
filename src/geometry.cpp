@@ -307,6 +307,14 @@ Matrix::Matrix() : col1(), col2(), col3() {
 Matrix::Matrix(const Vector_3& colonne_1, const Vector_3& colonne_2, const Vector_3& colonne_3) : col1(colonne_1), col2(colonne_2), col3(colonne_3) {
 }
 
+ostream& operator<<(ostream &os, const Matrix &M)
+{
+  os << M.c1().x() << " " << M.c2().x() << " " << M.c3().x() << endl;
+  os << M.c1().y() << " " << M.c2().y() << " " << M.c3().y() << endl;
+  os << M.c1().z() << " " << M.c2().z() << " " << M.c3().z();
+  return os;
+}
+
 Vector_3 Matrix::c1() const
 {
   return col1;

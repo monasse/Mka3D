@@ -40,54 +40,44 @@ Vector_3 omega(const Point_3 &p)
 }
 
 //Boundary velocities of the solid particles
-Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx) {
+/*Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx) {
   return Vector_3(0,0,-1.); // * t / T; //En m.s^-1
-}
+  }*/
 
   
-/*Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx)
+Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx)
 {
-  double T_p = 0.1;
+  double T_p = 10.;
   double pos_x = p.x() + Dx.x();
   double pos_y = p.y() + Dx.y();
   double pos_z = p.z() + Dx.z();
   //return Vector_3(0,0,0);
 
-  //Chargement linéaire en traction
-  if(p.z() <= 4.)
-    return Vector_3(0,0,-10.); // * t / T; //En m.s^-1
-  else if(p.z() >= 14.)
-    return Vector_3(0,0,0);
+  double alpha_pt = 3.1416 / 180. * 20. / T_p; //Rotation de 20° sur [0, T]
+  double r = sqrt((pos_y)*(pos_y) + (pos_x)*(pos_x));
+  double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
 
-  if(pos_z <= 0.1) { //Vitesse en BC...
-    double alpha_pt = 3.1416 / 180. * 20. / T_p; //Rotation de 20° sur [0, T]
-    double r = sqrt((pos_y-0.5)*(pos_y-0.5) + (pos_x-0.5)*(pos_x-0.5));
-    double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
-
-    //Il faut écrire le vecteur e_theta avec la position actuelle (et pas initiale) de la particule !!!!
-    if(pos_x <= 0.5 && pos_y < 0.5) {
-      theta = atan((0.5 - pos_y) / (0.5 - pos_x)) ;
-      return r * Vector_3(sin(theta), -cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
-    }
-    else if(pos_x <= 0.5 && pos_y > 0.5) {
-      theta = atan((pos_y - 0.5) / (0.5 - pos_x));
-      return r * Vector_3(-sin(theta), -cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
-    }
-    else if(pos_x >= 0.5 && pos_y < 0.5) {
-      theta = atan((0.5 - pos_y) / (pos_x - 0.5)) ;
-      return r * Vector_3(sin(theta), cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
-    }
-    else if(pos_x >= 0.5 && pos_y > 0.5) {
-      theta = atan((pos_y - 0.5) / (pos_x - 0.5));
-      return r * Vector_3(-sin(theta), cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
-    }
-    else
-      return Vector_3(0,0,0); //Point milieu du cylindre donc bouge pas.
-      
+  //Il faut écrire le vecteur e_theta avec la position actuelle (et pas initiale) de la particule !!!!
+  if(pos_x <= 0. && pos_y < 0.) {
+    theta = atan((-pos_y) / (-pos_x)) ;
+    return r * Vector_3(sin(theta), -cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
   }
-  else if(pos_z >= 2.9)
-  return Vector_3(0,0,0);
-  }*/
+  else if(pos_x <= 0. && pos_y > 0.) {
+    theta = atan((pos_y) / (-pos_x));
+    return r * Vector_3(-sin(theta), -cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x >= 0. && pos_y < 0.) {
+    theta = atan((-pos_y) / (pos_x)) ;
+    return r * Vector_3(sin(theta), cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x >= 0. && pos_y > 0.) {
+    theta = atan((pos_y) / (pos_x));
+    return r * Vector_3(-sin(theta), cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else
+    return Vector_3(0,0,0); //Point milieu du cylindre donc bouge pas.
+      
+}
 
 //Boundary velocities of the solid particles
 Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)

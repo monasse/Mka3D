@@ -900,6 +900,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       }
       //cout << "Trace dev Def : " << (((P->second).discrete_gradient).dev()).tr() << endl;
       (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
+      cout << "epsilon:" << endl;
+      cout << ((P->second).discrete_gradient - (P->second).epsilon_p) << endl;
+      cout << "contrainte:" << endl;
+      cout << (P->second).contrainte << endl;
+      cout << "lambda=" << lambda << endl;
+      cout << "mu=" << mu << endl;
+      getchar();
       //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
       
       //Mettre ces valeurs dans le param.dat !!!!!
