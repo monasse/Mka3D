@@ -398,7 +398,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   else if(fixe==0 || fixe == 2 || fixe == 3){ //fixe=0: particule mobile
     Dxprev = Dx;
     u = u+Fi/2.*(dt/m);
-    u.vec[2] = velocity_BC_bis(x0, t, T, u);
+    //u.vec[2] = velocity_BC_bis(x0, t, T, u);
     u_half = u;
     Dx = Dx+u*dt;
     }
@@ -434,7 +434,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   else {
     //if(fixe==0){
     u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-    u.vec[2] = velocity_BC_bis(x0, t, T, u);
+    //u.vec[2] = velocity_BC_bis(x0, t, T, u);
       /*}
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
@@ -1197,7 +1197,7 @@ double Solide::Energie_cinetique(){
 double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
   double Ep = 0.;
 
-  double B = 292000000.; //En Pa. JC.
+  double B = 0.; //292000000.; //En Pa. JC.
   double n = .31; //JC.
   double A = 90000000.; //En Pa. Vient de JC
 
