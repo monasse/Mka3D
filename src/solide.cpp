@@ -398,6 +398,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   else if(fixe==0 || fixe == 2 || fixe == 3){ //fixe=0: particule mobile
     Dxprev = Dx;
     u = u+Fi/2.*(dt/m);
+    u.vec[2] = velocity_BC_bis(x0, t, T, u);
     u_half = u;
     Dx = Dx+u*dt;
     }
@@ -433,6 +434,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   else {
     //if(fixe==0){
     u = u+(Fi+Ff)/2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+    u.vec[2] = velocity_BC_bis(x0, t, T, u);
       /*}
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
@@ -1167,7 +1169,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	Vector_3 nIJ = (*F).normale;
-        Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
+        Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
 	//cout << "Force : " << Fij_elas << endl;
 
 	(P->second).Fi = (P->second).Fi + Fij_elas; // * nIJ; //Force sur particule

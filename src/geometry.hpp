@@ -81,8 +81,7 @@ Point_3 operator+(const Point_3 &p, const Point_3 &v);
 
 class Vector_3 
 {
-private :
-  double vec[3];
+  //private :
 public:
   Vector_3();
   Vector_3(const double &x0, const double &y0, const double &z0);
@@ -98,6 +97,7 @@ public:
   Vector_3 operator*(const double &s) const;
   Vector_3 operator+(const Vector_3 &v2) const;
   Vector_3 operator-(const Vector_3 &v2) const;
+  double vec[3];
 };
 
 ostream& operator<<(ostream &os, const Vector_3 &v);
