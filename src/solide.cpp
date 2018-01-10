@@ -935,9 +935,9 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	//cout << "Trace n_elas : " << n_elas.tr() << endl;
 	//cout << "Norme n_elas : " << n_elas.norme() << endl;
 	double delta_p = pow(((P->second).contrainte.VM() - A) / B, 1./n) - (P->second).def_plas_cumulee;
-	(P->second).def_plas_cumulee = pow(((P->second).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
+	//(P->second).def_plas_cumulee = pow(((P->second).contrainte.VM() - A) / B, 1./n); //Nouvelle déformation plastique.
 	//cout << "Def plastique cumulee : " << (P->second).def_plas_cumulee << endl;
-	(P->second).epsilon_p += (delta_p / (((P->second).contrainte).dev()).norme() * (P->second).contrainte).dev();
+	//(P->second).epsilon_p += (delta_p / (((P->second).contrainte).dev()).norme() * (P->second).contrainte).dev();
 	//cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
 	//cout << "Norme def plas : " << ((P->second).epsilon_p).norme() << endl;
 	
@@ -946,8 +946,8 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       }
     }
     
-    if(plastifie)
-      cout << "Plastification dans ce pas de temps !" << endl;
+    /*if(plastifie)
+      cout << "Plastification dans ce pas de temps !" << endl;*/
     
     
     //Calcul des forces pour chaque particule
@@ -957,7 +957,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	if((*F).voisin>=0){
 	  int part = (*F).voisin;
 	  Vector_3 nIJ = (*F).normale;
-	  Vector_3 Fij_elas( ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ  ); //Force du lien IJ !
+	  Vector_3 Fij_elas( (*F).S /2. * ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ  ); //Force du lien IJ !
 	  //cout << "Force : " << Fij_elas << endl;
 	  
 	  (P->second).Fi = (P->second).Fi + weight[int_pt]*Fij_elas; // * nIJ; //Force sur particule
@@ -986,7 +986,7 @@ double Solide::Energie_cinetique(){
 double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
   double Ep = 0.;
 
-  double B = 292000000.; //En Pa. JC.
+  double B = 0.; //292000000.; //En Pa. JC.
   double n = .31; //JC.
   double A = 90000000.; //En Pa. Vient de JC
 
