@@ -143,7 +143,7 @@ using namespace std;
 int main(){
 
   //Recover the parameters of the simulation from param.dat
-  std::ifstream param("param.dat");
+  std::ifstream param("build/param.dat");
   if(!param){
     cout << "opening of param.dat failed" << endl;
   }

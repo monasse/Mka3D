@@ -80,8 +80,9 @@ bool operator==(const Point_3 &vec1, const Point_3 &vec2);
 class Vector_3 
 {
 private :
-  double vec[3];
+  
 public:
+  double vec[3];
   Vector_3();
   Vector_3(const double &x0, const double &y0, const double &z0);
   Vector_3(const Point_3 &p1, const Point_3 &p2);

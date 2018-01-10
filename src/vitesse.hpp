@@ -32,5 +32,7 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
 
 Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T);
 
+double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& u);
+
 
 #endif

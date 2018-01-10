@@ -280,7 +280,7 @@ Particule & Particule:: operator=(const Particule &P){
 	
 
 void Particule::solve(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  if(fixe==1){
+  /*if(fixe==1){
     Dx = Vector_3(0.,0.,0.);
     Dxprev = Vector_3(0.,0.,0.);
     u = Vector_3(0.,0.,0.);
@@ -298,7 +298,13 @@ void Particule::solve(const double& dt, const bool& flag_2d, const double& Amort
       du = Vector_3(0.,0.,0.);
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
     }
-  }
+    }*/
+  Dxprev = Dx;
+  Dx = Dx+u*dt;
+  du = -du + 2.*(Fi+Ff)*dt/m*Amort;
+  u = u + du; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+  //BC Frederic
+  u.vec[2] = velocity_BC_bis(x0, t, T, u);
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
   //Aff_transformation_3 rotation(rot[0][0],rot[1][0],rot[2][0],rot[0][1],rot[1][1],rot[2][1],rot[0][2],rot[1][2],rot[2][2]);
@@ -900,13 +906,13 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
       }
       //cout << "Trace dev Def : " << (((P->second).discrete_gradient).dev()).tr() << endl;
       (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
-      cout << "epsilon:" << endl;
-      cout << ((P->second).discrete_gradient - (P->second).epsilon_p) << endl;
-      cout << "contrainte:" << endl;
-      cout << (P->second).contrainte << endl;
-      cout << "lambda=" << lambda << endl;
-      cout << "mu=" << mu << endl;
-      getchar();
+      // cout << "epsilon:" << endl;
+      // cout << ((P->second).discrete_gradient - (P->second).epsilon_p) << endl;
+      // cout << "contrainte:" << endl;
+      // cout << (P->second).contrainte << endl;
+      // cout << "lambda=" << lambda << endl;
+      // cout << "mu=" << mu << endl;
+      // getchar();
       //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
       
       //Mettre ces valeurs dans le param.dat !!!!!
@@ -951,7 +957,7 @@ void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E
 	if((*F).voisin>=0){
 	  int part = (*F).voisin;
 	  Vector_3 nIJ = (*F).normale;
-	  Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
+	  Vector_3 Fij_elas( ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ  ); //Force du lien IJ !
 	  //cout << "Force : " << Fij_elas << endl;
 	  
 	  (P->second).Fi = (P->second).Fi + weight[int_pt]*Fij_elas; // * nIJ; //Force sur particule
