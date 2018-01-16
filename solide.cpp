@@ -893,7 +893,7 @@ Particule & Particule:: operator=(const Particule &P){
 	Mf = P.Mf;
 	Mfprev = P.Mfprev;
 	u = P.u;
-	u_half = P.u_half;
+	du = P.du;
 	omega = P.omega;
 	omega_half = P.omega_half;
 	e = P.e;
@@ -1013,354 +1013,12 @@ void Particule::Affiche(){
 * \return void
  */
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  double eps = 1e-14;//std::numeric_limits<double>::epsilon();
-  double rot[3][3];
-  /*if(fixe==1){
-    Dx = Vector_3(0.,0.,0.);
-    Dxprev = Vector_3(0.,0.,0.);
-    u = Vector_3(0.,0.,0.);
-    u_half = u;
-    e = Vector_3(0.,0.,0.);
-    eref = Vector_3(0.,0.,0.);
-    rot[0][0] = rot[1][1]= rot[2][2] =1.;
-    rot[0][1]=rot[0][2]=rot[1][0]=rot[1][2]=rot[2][0]=rot[2][1]=0.;
-    eprev = Vector_3(0.,0.,0.);
-    omega = Vector_3(0.,0.,0.);
-    omega_half = omega;
-  } else {
-    if(fixe==0){ //fixe=0: particule mobile
-      Dxprev = Dx;
-      u = u+(Fi+Ff)/2.*(dt/m);
-      u_half = u;
-      Dx = Dx+u*dt;
-    }
-    else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
-      //Dx = Vector_3(0.,0.,0.);
-      //Dxprev = Vector_3(0.,0.,0.);
-      //u = Vector_3(0.,0.,0.);
-      //u_half = u;
-      Dxprev = Dx;
-      //u = u+(Fi+Ff)/2.*(dt/m);
-      u_half = u;
-      Dx = Dx+u*dt;
-    }
-
-    Dx = displacement_BC(x0, Dx, t, T);*/
   Dxprev = Dx;
-  u = u+(Fi+Ff)/2.*(dt/m);
-  u_half = u;
-  u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
   Dx = Dx+u*dt;
-      
-    //Tests pour verifier qu'on a toujours une matrice de rotation
-    for(int i=0;i<3;i++){
-      double norm = rotref[i][0]*rotref[i][0]+rotref[i][1]*rotref[i][1]+rotref[i][2]*rotref[i][2];
-      if(abs(norm-1.)>eps){
-	cout << "Matrice de rotation rotref renomalisee" <<endl;
-	cout << "Ligne " << i << " norme=" << norm << endl;
-	getchar();
-      }
-    }
-    double vectrot1 = rotref[0][2]-(rotref[1][0]*rotref[2][1]-rotref[2][0]*rotref[1][1]);
-    double vectrot2 = rotref[1][2]-(rotref[2][0]*rotref[0][1]-rotref[0][0]*rotref[2][1]);
-    double vectrot3 = rotref[2][2]-(rotref[0][0]*rotref[1][1]-rotref[1][0]*rotref[0][1]);
-    if(vectrot1*vectrot1+vectrot2*vectrot2+vectrot3*vectrot3>eps){
-      cout << "Erreur rotation rotref " << vectrot1 << " " << vectrot2 << " " << vectrot3 << endl;
-      //getchar();
-    }
-    //Calcul de la matrice de rotation totale depuis le repere inertiel jusqu'au temps t et stockage de eprev
-    double Q[3][3];
-    double eref0 = sqrt(abs(1.-(eref.squared_length())));
-    //Recuperation de la matrice de rotation
-    Q[0][0] = 1.-2.*(eref[1]*eref[1]+eref[2]*eref[2]);
-    Q[0][1] = 2.*(-eref0*eref[2]+eref[0]*eref[1]);
-    Q[0][2] = 2.*(eref0*eref[1]+eref[0]*eref[2]);
-    Q[1][0] = 2.*(eref0*eref[2]+eref[1]*eref[0]);
-    Q[1][1] = 1.-2.*(eref[0]*eref[0]+eref[2]*eref[2]);
-    Q[1][2] = 2.*(-eref0*eref[0]+eref[1]*eref[2]);
-    Q[2][0] = 2.*(-eref0*eref[1]+eref[2]*eref[0]);
-    Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
-    Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);//*/
-    double e0 = sqrt(abs(1.-(e.squared_length())));
-    /*Recuperation de la matrice de rotation
-    rot[0][0] = 1.-2.*(e[1]*e[1]+e[2]*e[2]);
-    rot[0][1] = 2.*(-e0*e[2]+e[0]*e[1]);
-    rot[0][2] = 2.*(e0*e[1]+e[0]*e[2]);
-    rot[1][0] = 2.*(e0*e[2]+e[1]*e[0]);
-    rot[1][1] = 1.-2.*(e[0]*e[0]+e[2]*e[2]);
-    rot[1][2] = 2.*(-e0*e[0]+e[1]*e[2]);
-    rot[2][0] = 2.*(-e0*e[1]+e[2]*e[0]);
-    rot[2][1] = 2.*(e0*e[0]+e[2]*e[1]);
-    rot[2][2] = 1.-2.*(e[0]*e[0]+e[1]*e[1]);
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	Q[i][j] = rot[i][0]*rotref[0][j];
-	Q[i][j] += rot[i][1]*rotref[1][j];
-	Q[i][j] += rot[i][2]*rotref[2][j];
-      }
-    }//*/
-    /*Impression de la matrice rotref
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	cout << rotref[i][j] << " " ;
-      }
-      cout << endl;
-    }
-    getchar();*/
-    
-    eprev = e;
-    //Recuperation du e global a partir de omega
-    double Omega[3];
-    Omega[0] = Omega[1] = Omega[2] = 0.;
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	       Omega[j] += (omega[k]*Q[k][j]);
-      }
-    }
-    //cout << "debut " << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-    //getchar();
-    double norm = dt*(abs(Omega[0])+abs(Omega[1])+abs(Omega[2]));
-    if(norm>0.25){
-      cout << "pas de temps trop grand (solve_position avant moments) : dt=" << dt << " Omega=" << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-      getchar();
-    }
-    double eglob0 = 1.;//sqrt((1+sqrt(1-norm2))/2.);
-    double eglob[3];
-    for(int j=0;j<3;j++){
-      eglob[j] = 0.;//dt*Omega[j]/2./eglob0;
-    }
-    //Recuperation de la matrice Zn
-    double z[3][3];
-    z[0][0] = 0.;
-    z[0][1] = -Omega[2];
-    z[0][2] = Omega[1];
-    z[1][0] = Omega[2];
-    z[1][1] = 0.;
-    z[1][2] = -Omega[0];
-    z[2][0] = -Omega[1];
-    z[2][1] = Omega[0];
-    z[2][2] = 0.;
-    //Calcul de la matrice A
-    double a[3];
-    double d1 = (I[0]+I[1]+I[2])/2.-I[0];
-    double d2 = (I[0]+I[1]+I[2])/2.-I[1];
-    double d3 = (I[0]+I[1]+I[2])/2.-I[2];
-    //Calcul du moment dans le repere inertiel
-    double Mx = (Q[0][0]*((Mi+Mf)[0])+Q[1][0]*((Mi+Mf)[1])+Q[2][0]*((Mi+Mf)[2]));
-    double My = (Q[0][1]*((Mi+Mf)[0])+Q[1][1]*((Mi+Mf)[1])+Q[2][1]*((Mi+Mf)[2]));
-    double Mz = (Q[0][2]*((Mi+Mf)[0])+Q[1][2]*((Mi+Mf)[1])+Q[2][2]*((Mi+Mf)[2]));
-    norm = dt*dt/2.*(abs(Mx)/I[0]+abs(My)/I[1]+abs(Mz)/I[2]);
-    if(norm>0.25){
-      cout << "pas de temps trop grand (solve_position apres moments) : dt=" << dt << " M=" << Mx << " " << My << " " << Mz << " I=" << I[0] << " " << I[1] << " " << I[2] << endl;
-      getchar();
-    }
-    a[0] = -(I[0]*z[1][2]-dt/2.*Mx);
-    a[1] = (I[1]*z[0][2]+dt/2.*My);
-    a[2] = -(I[2]*z[0][1]-dt/2.*Mz);
-    //Resolution du probleme non lineaire
-    double etemp0 = 1.;
-    double etemp1 = 0.;
-    double etemp2 = 0.;
-    double etemp3 = 0.;
-    double err1 = 1.;
-    double err2 = 1.;
-    double err3 = 1.;
-    double epsilon = 1.e-15;
-    int k=0;
-    for(k=0; k<1000 && (err1>epsilon*etemp1 || err2>epsilon*etemp2 || err3>epsilon*etemp3); k++){
-      if(d2+d3<eps){
-	cout << "d2+d3=" << d2+d3 << " I[0]=" << I[0] << endl;
-      }
-      if(d3+d1<eps){
-	cout << "d3+d1=" << d3+d1 << " I[1]=" << I[1] << endl;
-      }
-      if(d1+d2<eps){
-	cout << "d1+d2=" << d1+d2 << " I[2]=" << I[2] << endl;
-      }
-      double x1 = (dt*a[0]-2.*(d2-d3)*etemp2*etemp3)/(2.*(d2+d3)*etemp0);
-      double x2 = (dt*a[1]-2.*(d3-d1)*etemp1*etemp3)/(2.*(d1+d3)*etemp0);
-      double x3 = (dt*a[2]-2.*(d1-d2)*etemp1*etemp2)/(2.*(d1+d2)*etemp0);
-      if(abs(d2-d3)<epsilon){
-	x1 = dt*a[0]/(2.*(d2+d3)*etemp0);
-	//cout << "k=" << k << " d2-d3=" << d2-d3 << " I[0]=" << I[0] << endl;
-	//getchar();
-      }
-      if(abs(d3-d1)<epsilon){
-	x2 = dt*a[1]/(2.*(d1+d3)*etemp0);
-	//cout << "k=" << k << " d3-d1=" << d3-d1 << " I[1]=" << I[1] << endl;
-	//getchar();
-      }
-      if(abs(d1-d2)<epsilon){
-	x3 = dt*a[2]/(2.*(d1+d2)*etemp0);
-	//cout << "k=" << k << " d1-d2=" << d1-d2 << " I[2]=" << I[2] << endl;
-	//getchar();
-      }
-      etemp1 = x1;
-      etemp2 = x2;
-      etemp3 = x3;
-      if(fixe==3){//fixe=3: on fixe la rotation en x et en z
-	etemp1=0.;
-	etemp3=0.;
-      }
-      
-// // 	  //Test : on fixe la rotation 
-//  			etemp1 = 0.;
-//  			etemp2 = 0.;
-// 			etemp3 = 0.;
-// 			// 			//fin test 
-      if(etemp1*etemp1+etemp2*etemp2+etemp3*etemp3>0.5){
-	etemp1 /=2.;
-	etemp2 /=2.;
-	etemp3 /=2.;
-	etemp0 = sqrt(1.-etemp1*etemp1-etemp2*etemp2-etemp3*etemp3);
-      }
-      else{etemp0 = sqrt(1.-etemp1*etemp1-etemp2*etemp2-etemp3*etemp3);}
-      err1 = fabs((dt*a[0]-2.*(d2-d3)*etemp2*etemp3)/(2.*(d2+d3)*etemp0)-etemp1);
-      err2 = fabs((dt*a[1]-2.*(d3-d1)*etemp1*etemp3)/(2.*(d1+d3)*etemp0)-etemp2);
-      err3 = fabs((dt*a[2]-2.*(d1-d2)*etemp1*etemp2)/(2.*(d1+d2)*etemp0)-etemp3);
-      if(fixe==3){
-	err1 = 0.;
-	err3 = 0.;
-      }
-      
-    }//Fin de la boucle de resolution non-lineaire
-    if(err1>epsilon || err2>epsilon || err3>epsilon){
-      cout << "Probleme de resolution de la rotation, e1=" << etemp1 << " e2=" << etemp2 << " e3=" << etemp3 << endl;
-      cout << "erreur=" << err1 << " " << err2 << " " << err3 << endl;
-    }
-    //cout << k << endl;
-    eglob[0] = etemp1;
-    eglob[1] = etemp2;
-    eglob[2] = etemp3;
-    eglob0 = etemp0;
-    //Reconstruction de Z^n+1/2
-    z[0][0] = (-2.*(eglob[1]*eglob[1]+eglob[2]*eglob[2]))/dt;
-    z[0][1] = (-2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[0][2] = (2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[1][0] = (2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[1][1] = (-2.*(eglob[0]*eglob[0]+eglob[2]*eglob[2]))/dt;
-    z[1][2] = (-2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][0] = (-2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[2][1] = (2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][2] = (-2.*(eglob[0]*eglob[0]+eglob[1]*eglob[1]))/dt;
-    //Update de la matrice Q
-    double Qprev[3][3];
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	       Qprev[i][j] = Q[i][j];
-      }
-    }
-    Q[0][0] = Qprev[0][0]*(1.+dt*z[0][0])+Qprev[0][1]*dt*z[1][0]+Qprev[0][2]*dt*z[2][0];
-    Q[0][1] = Qprev[0][0]*dt*z[0][1]+Qprev[0][1]*(1.+dt*z[1][1])+Qprev[0][2]*dt*z[2][1];
-    Q[0][2] = Qprev[0][0]*dt*z[0][2]+Qprev[0][1]*dt*z[1][2]+Qprev[0][2]*(1.+dt*z[2][2]);
-    Q[1][0] = Qprev[1][0]*(1.+dt*z[0][0])+Qprev[1][1]*dt*z[1][0]+Qprev[1][2]*dt*z[2][0];
-    Q[1][1] = Qprev[1][0]*dt*z[0][1]+Qprev[1][1]*(1.+dt*z[1][1])+Qprev[1][2]*dt*z[2][1];
-    Q[1][2] = Qprev[1][0]*dt*z[0][2]+Qprev[1][1]*dt*z[1][2]+Qprev[1][2]*(1.+dt*z[2][2]);
-    Q[2][0] = Qprev[2][0]*(1.+dt*z[0][0])+Qprev[2][1]*dt*z[1][0]+Qprev[2][2]*dt*z[2][0];
-    Q[2][1] = Qprev[2][0]*dt*z[0][1]+Qprev[2][1]*(1.+dt*z[1][1])+Qprev[2][2]*dt*z[2][1];
-    Q[2][2] = Qprev[2][0]*dt*z[0][2]+Qprev[2][1]*dt*z[1][2]+Qprev[2][2]*(1.+dt*z[2][2]);
-    //Tests pour verifier qu'on a toujours une matrice de rotation
-    for(int i=0;i<3;i++){
-      double norm = Q[i][0]*Q[i][0]+Q[i][1]*Q[i][1]+Q[i][2]*Q[i][2];
-      Q[i][0] /= norm;
-      Q[i][1] /= norm;
-      Q[i][2] /= norm;
-      if(abs(norm-1.)>eps){
-	cout << "Matrice de rotation renomalisee" <<endl;
-	cout << "Ligne " << i << " norme=" << norm << endl;
-	getchar();
-      }
-    }
-    double vect1 = Q[0][2]-(Q[1][0]*Q[2][1]-Q[2][0]*Q[1][1]);
-    double vect2 = Q[1][2]-(Q[2][0]*Q[0][1]-Q[0][0]*Q[2][1]);
-    double vect3 = Q[2][2]-(Q[0][0]*Q[1][1]-Q[1][0]*Q[0][1]);
-    if(vect1*vect1+vect2*vect2+vect3*vect3>eps){
-      cout << "Erreur rotation " << vect1 << " " << vect2 << " " << vect3 << endl;
-      //getchar();
-    }
-    //Calcul de eref a partir de Q
-    double qref1 = Q[2][1]-Q[1][2];
-    double qref2 = Q[0][2]-Q[2][0];
-    double qref3 = Q[1][0]-Q[0][1];
-    double eref1,eref2,eref3;
-    eref1 = signe(qref1)*sqrt(max((1.+Q[0][0]-Q[1][1]-Q[2][2])/4.,0.));
-    eref2 = signe(qref2)*sqrt(max((1.+Q[1][1]-Q[0][0]-Q[2][2])/4.,0.));
-    eref3 = signe(qref3)*sqrt(max((1.+Q[2][2]-Q[0][0]-Q[1][1])/4.,0.));
-    eref = Vector_3(eref1,eref2,eref3);
-    /*Version alternative
-    Vector_3 qref = Vector_3(Q[2][1]-Q[1][2], Q[0][2]-Q[2][0], Q[1][0]-Q[0][1])/4.;
-    eref0 = sqrt((1+sqrt(1-4.*qref.squared_length()))/2.);
-    eref = qref/eref0;//*/
-    //Recuperation de la matrice de rotation de la particule
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	rot[i][j] = Q[i][0]*rotref[j][0];
-	rot[i][j] += Q[i][1]*rotref[j][1];
-	rot[i][j] += Q[i][2]*rotref[j][2];
-      }
-    }
-    //Calcul de e a partir de rot
-    double q1 = rot[2][1]-rot[1][2];
-    double q2 = rot[0][2]-rot[2][0];
-    double q3 = rot[1][0]-rot[0][1];
-    double e1,e2,e3;
-    e1 = signe(q1)*sqrt(max((1.+rot[0][0]-rot[1][1]-rot[2][2])/4.,0.));
-    e2 = signe(q2)*sqrt(max((1.+rot[1][1]-rot[0][0]-rot[2][2])/4.,0.));
-    e3 = signe(q3)*sqrt(max((1.+rot[2][2]-rot[0][0]-rot[1][1])/4.,0.));
-    e = Vector_3(e1,e2,e3);
-    //*/
-    /*Version alternative
-    Vector_3 q = Vector_3(rot[2][1]-rot[1][2], rot[0][2]-rot[2][0], rot[1][0]-rot[0][1])/4.;
-    e0 = sqrt((1+sqrt(1-4.*q.squared_length()))/2.);
-    e = q/e0;//*/
-    
-    //Calcul de Omega^n+1/2
-    double omega1 = 0.;
-    for(int i=0;i<3;i++){
-      //for(int j=0;j<3;j++){
-      //omega1 -= 1./2.*Qprev[1][i]*z[i][j]*(Qprev[2][j]+Q[2][j]);
-      omega1 += 1./2./dt*(Q[2][i]*Qprev[1][i]-Qprev[2][i]*Q[1][i]);
-      //}
-    }
-    double omega2 = 0.;
-    for(int i=0;i<3;i++){
-      //for(int j=0;j<3;j++){
-      //omega2 += 1./2.*Qprev[0][i]*z[i][j]*(Qprev[2][j]+Q[2][j]);
-      omega2 += 1./2./dt*(Q[0][i]*Qprev[2][i]-Qprev[0][i]*Q[2][i]);
-      //}
-    }
-    double omega3 = 0.;
-    for(int i=0;i<3;i++){
-      //for(int j=0;j<3;j++){
-      //omega3 -= 1./2.*Qprev[0][i]*z[i][j]*(Qprev[1][j]+Q[1][j]);
-      omega3 += 1./2./dt*(Q[1][i]*Qprev[0][i]-Qprev[1][i]*Q[0][i]);
-      //}
-    }
-    omega = Vector_3(omega1,omega2,omega3);
-    omega_half = omega;
-		if(flag_2d){
-			omega = Vector_3(0.,0.,omega3);
-			omega_half = omega;
-		}
-		//}//Fin du calcul dans le cas d'une particule libre
-  /*Test de fixer la rotation
-  rot[0][0]= rot[1][1] = rot[2][2] =1.;
-  rot[0][1] = rot[0][2] =rot[1][0] = rot[1][2] = rot[2][0] = rot[2][1] = 0.;
-  e = Vector_3(0,0,0);
-  //rotprev[0][0]= rotprev[1][1] = rotprev[2][2] =1.;
-  //rotprev[0][1] = rotprev[0][2] =rotprev[1][0] = rotprev[1][2] = rotprev[2][0] = rotprev[2][1] = 0.;
-
-  omega = Vector_3(0.,0.,0.);
-  omega_half = omega;
-  //fin test */
-
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
-  Aff_transformation_3 rotation(rot[0][0],rot[1][0],rot[2][0],rot[0][1],rot[1][1],rot[2][1],rot[0][2],rot[1][2],rot[2][2]);
-  Aff_transformation_3 translation(Vector_3(Point_3(0.,0.,0.),x0)+Dx);
-  Aff_transformation_3 translation_inv(Vector_3(x0,Point_3(0.,0.,0.)));
-  mvt_t = translation*(rotation*translation_inv);
-	//cout<<"position du centre de la particule "<<x0+Dx<<endl;
+  Aff_transformation_3 translation(Dx);
+  mvt_t = translation;
 }
 
 /*!
@@ -1372,131 +1030,9 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 * \return void
  */
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  u = u+(Fi+Ff)/2.*(dt/m);
+  du = -du + 2.*(Fi+Ff*dt/m)*Amort;
+  u = u+du;
   u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
-  {
-  /*if(fixe==1){
-    u = Vector_3(0.,0.,0.);
-    omega = Vector_3(0.,0.,0.);
-  } else {
-    if(fixe==0){
-      u = u+(Fi+Ff)/2.*(dt/m)*Amort;// + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-    }
-    else if(fixe==2 || fixe==3 || fixe == 1){
-      //u = velocity_BC(x0, t, T, Dx);
-  u = u+(Fi+Ff)/2.*(dt/m);
-  u.vec[2] = velocity_BC_bis(x0, t, T, Dx);
-  }*/
-    
-    //Calcul de la matrice de rotation totale depuis le repï¿½re inertiel jusqu'au temps t
-    double Q[3][3];
-    double eref0 = sqrt(abs(1.-(eref.squared_length())));
-    //Recuperation de la matrice de rotation
-    Q[0][0] = 1.-2.*(eref[1]*eref[1]+eref[2]*eref[2]);
-    Q[0][1] = 2.*(-eref0*eref[2]+eref[0]*eref[1]);
-    Q[0][2] = 2.*(eref0*eref[1]+eref[0]*eref[2]);
-    Q[1][0] = 2.*(eref0*eref[2]+eref[1]*eref[0]);
-    Q[1][1] = 1.-2.*(eref[0]*eref[0]+eref[2]*eref[2]);
-    Q[1][2] = 2.*(-eref0*eref[0]+eref[1]*eref[2]);
-    Q[2][0] = 2.*(-eref0*eref[1]+eref[2]*eref[0]);
-    Q[2][1] = 2.*(eref0*eref[0]+eref[2]*eref[1]);
-    Q[2][2] = 1.-2.*(eref[0]*eref[0]+eref[1]*eref[1]);//*/
-    double e0 = sqrt(abs(1.-(e.squared_length())));
-    //Recuperation de Zn+1/2 a partir de omega
-    double Omega[3];
-    Omega[0] = Omega[1] = Omega[2] = 0.;
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Omega[j] += (omega[k]*Q[k][j]);
-      }
-    }
-    //cout << "debut " << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-    //getchar();
-    double norm2 = dt*dt*(Omega[0]*Omega[0]+Omega[1]*Omega[1]+Omega[2]*Omega[2]);
-    if(norm2>1.){
-      cout << "pas de temps trop grand (solve_vitesse) : dt=" << dt << " Omega=" << Omega[0] << " " << Omega[1] << " " << Omega[2] << endl;
-      getchar();
-    }
-    double eglob0 = sqrt((1.+sqrt(1.-norm2))/2.);
-    double eglob[3];
-    for(int j=0;j<3;j++){
-      eglob[j] = dt*Omega[j]/2./eglob0;
-    }
-    //Recuperation de la matrice Zn+1/2
-    //double eglob0 = sqrt(1.-eglob[0]*eglob[0]-eglob[1]*eglob[1]-eglob[2]*eglob[2]);
-    double z[3][3];
-    z[0][0] = (-2.*(eglob[1]*eglob[1]+eglob[2]*eglob[2]))/dt;
-    z[0][1] = (-2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[0][2] = (2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[1][0] = (2.*eglob0*eglob[2]+2.*eglob[0]*eglob[1])/dt;
-    z[1][1] = (-2.*(eglob[0]*eglob[0]+eglob[2]*eglob[2]))/dt;
-    z[1][2] = (-2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][0] = (-2.*eglob0*eglob[1]+2.*eglob[0]*eglob[2])/dt;
-    z[2][1] = (2.*eglob0*eglob[0]+2.*eglob[1]*eglob[2])/dt;
-    z[2][2] = (-2.*(eglob[0]*eglob[0]+eglob[1]*eglob[1]))/dt;
-    //Calcul de la matrice A
-    double a[3];
-    double d1 = (I[0]+I[1]+I[2])/2.-I[0];
-    double d2 = (I[0]+I[1]+I[2])/2.-I[1];
-    double d3 = (I[0]+I[1]+I[2])/2.-I[2];
-    //Calcul du moment dans le repere inertiel
-    double Mx = (Q[0][0]*((Mi+Mf)[0])+Q[1][0]*((Mi+Mf)[1])+Q[2][0]*((Mi+Mf)[2]));
-    double My = (Q[0][1]*((Mi+Mf)[0])+Q[1][1]*((Mi+Mf)[1])+Q[2][1]*((Mi+Mf)[2]));
-    double Mz = (Q[0][2]*((Mi+Mf)[0])+Q[1][2]*((Mi+Mf)[1])+Q[2][2]*((Mi+Mf)[2]));
-    a[0] = -(d2*z[1][2]-d3*z[2][1]-dt/2.*Mx);
-    a[1] = (d1*z[0][2]-d3*z[2][0]+dt/2.*My);
-    a[2] = -(d1*z[0][1]-d2*z[1][0]-dt/2.*Mz);
-    //Resolution du probleme lineaire sur Zn+1
-    z[0][0] = 0.;
-    z[0][1] = -a[2]/I[2];
-    z[0][2] = a[1]/I[1];
-    z[1][0] = -z[0][1];
-    z[1][1] = 0.;
-    z[1][2] = -a[0]/I[0];
-    z[2][0] = -z[0][2];
-    z[2][1] = -z[1][2];
-    z[2][2]= 0.;
-    //Calcul de Omega^n+1
-    double omega1 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega1 -= Q[1][i]*z[i][j]*Q[2][j];
-      }
-    }
-    double omega2 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega2 += Q[0][i]*z[i][j]*Q[2][j];
-      }
-    }
-    double omega3 = 0.;
-    for(int i=0;i<3;i++){
-      for(int j=0;j<3;j++){
-	omega3 -= Q[0][i]*z[i][j]*Q[1][j];
-      }
-    }
-//     //Test pour fixer les composantes x et y de la rotation
-			if(flag_2d){
-			 		omega1 = 0.;
-			 		omega2 = 0.;
-			}
-			if(fixe==3){
-			  omega1=0.;
-			  omega3=0.;
-			}
-			
-// 		//fin test 
-    omega = Vector_3(omega1,omega2,omega3);
-    /*Test de fixer la rotation
-		rot[0][0]= rot[1][1] = rot[2][2] =1.;
-		rot[0][1] = rot[0][2] =rot[1][0] = rot[1][2] = rot[2][0] = rot[2][1] = 0.;
-		e = Vector_3(0,0,0);
-		//rotprev[0][0]= rotprev[1][1] = rotprev[2][2] =1.;
-		//rotprev[0][1] = rotprev[0][2] =rotprev[1][0] = rotprev[1][2] = rotprev[2][0] = rotprev[2][1] = 0.;
-		omega = Vector_3(0.,0.,0.);
-		omega_half = omega;
-		//fin test */
-  }//Fin du calcul dans le cas d'une particule libre
 }
 
 /*void Particule::solve_vitesse_plas(const double& dt, const bool& flag_2d){
@@ -1571,12 +1107,12 @@ double Particule::volume(){
 * \warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
 * \return Vector_3
 */
-Vector_3 Particule::vitesse_parois(const Point_3& X_f){
+/*Vector_3 Particule::vitesse_parois(const Point_3& X_f){
 		
   Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dx,X_f));
 
 	return V_f;
-}	
+	}*/	
 /*!
 * \fn Particule::vitesse_parois_prev(Point_3& X_f)
 * \brief Vitesse au centre de la parois au temps t-dt.
@@ -1586,12 +1122,12 @@ Vector_3 Particule::vitesse_parois(const Point_3& X_f){
 * \warning <b> Proc&eacute;dure sp&eacute;cifique au couplage! </b>
 * \return Vector_3
  */
-Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
+/*Vector_3 Particule::vitesse_parois_prev(const Point_3& X_f){
 	
   Vector_3 V_f = u_half + cross_product(omega_half, Vector_3(x0 + Dxprev,X_f));
 	
 	return V_f;
-}	
+	}*/	
 
 /*!
 * \fn void Face::compProjectionIntegrals(double &P1, double &Pa, double &Pb, double &Paa, double &Pab, double &Pbb, double &Paaa, double &Paab, double &Pabb, double &Pbbb, int a, int b, int c)
@@ -2177,8 +1713,7 @@ void Solide::Init(const char* s, const bool& rep, const int& numrep, const doubl
 		P[i].fixe = fixe;
     P[i].u = Vector_3(u,v,w);
     P[i].omega = Vector_3(theta,phi,psi);
-		P[i].u_half = Vector_3(u,v,w);
-		P[i].omega_half = Vector_3(theta,phi,psi);
+    P[i].omega_half = Vector_3(theta,phi,psi);
   }
   //Boucle de mise a jour des particules sur les sommets du maillage
   //Mise a jour des distances a l'equilibre entre particules en meme temps
@@ -2440,113 +1975,146 @@ void Solide::Forces(const int& N_dim, const double& nu, const double& E, const d
 // }
 
 void Solide::Forces_internes(const int& N_dim, const double& nu, const double& E, const double& dt){
-
-  bool plastifie = false;
-  
-  //Calcul de la contrainte dans chaque particule
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //(*P).Volume_libre();
-    (*P).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
-    (*P).discrete_gradient.col2 = Vector_3(0., 0., 0.);
-    (*P).discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-      if((*F).voisin>=0){
-	int part = (*F).voisin;
-	/*Point_3 xi((*P).x0); //Position particule i en config initiale
-        Point_3 xj(solide[part].x0); //Position particule j en config initiale
-	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;*/
-	Vector_3 nIJ = (*F).normale;
-	//double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
-	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (*P).Dx - (*P).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
-	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).volume();
-
-      }
-    }
-    //cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
-    (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
-    //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
-
-    //Mettre ces valeurs dans le param.dat !!!!!
-    double B = 292000000.; //En Pa. JC.
-    double n = .31; //JC.
-    double A = 90000000.; //En Pa. Vient de JC
-    double H = 0.; //60000000000.; //En Pa. Moitié du module de Young
-	
-    (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
-
-    //if((P->contrainte - H * P->epsilon_p).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
-    if((P->contrainte).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
-
-      plastifie = true;
-      //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
-      Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      /*if((*P).n_elas_prev == -n_elas)
-	cout << "Chargement dans sens oppose !" << endl;
-      (*P).n_elas_prev = n_elas;*/
-      //cout << "Trace n_elas : " << n_elas.tr() << endl;
-      //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
-      //double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      double delta_p = ((P->contrainte).VM() - A) / (2*mu);
-      (*P).def_plas_cumulee += delta_p; //Nouvelle déformation plastique.
-      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
-      (*P).epsilon_p += delta_p * n_elas;
-      //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
-      //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
-      
-      //((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
-      //(*P).contrainte = A * signe( (*P).contrainte );
-    }
+  //Integrale des forces sur le pas de temps
+  const int nb_pts = 1;
+  double int_time[nb_pts], weight[nb_pts];
+  //Midpoint integration
+  if(nb_pts==1){
+    int_time[0] = 0.5*dt;
+    weight[0] = 1.;
+  }
+  //5 point Gauss-Lobatto integration
+  if(nb_pts==5){
+    double xal = sqrt(3./7.)/2.;
+    int_time[0] = 0.;
+    weight[0] = 0.05;
+    int_time[1] = (0.5-xal)*dt;
+    weight[1] = 49./180.;
+    int_time[2] = 0.5*dt;
+    weight[2] = 16./45.;
+    int_time[3] = (0.5+xal)*dt;
+    weight[3] = 49./180.;
+    int_time[4] = dt;
+    weight[4] = 0.05;
   }
 
-  if(plastifie)
-    cout << "Plastification dans ce pas de temps !" << endl;
-
-  
-  //Calcul des forces pour chaque particule
+  //Mise a zero des forces pour chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     (*P).Fi = Vector_3(0.,0.,0.);
-    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
-      if((*F).voisin>=0){
-	int part = (*F).voisin;
-	/*Point_3 xi((*P).x0); //Position particule i en config initiale
-        Point_3 xj(solide[part].x0); //Position particule j en config initiale
-	Vector_3 lij(xi, xj);
-	Vector_3 nIJ = lij / (*F).D0;*/
-	Vector_3 nIJ = (*F).normale;
+  }
+   
+  for(int int_pt=0;int_pt<nb_pts;int_pt++){
+    double t = int_time[int_pt];
 
-	//Il faut passer les contraintes dans le repère local de chaque face (nIJ, sIJ, tIJ) ????
-        Vector_3 Fij_elas( (*F).S / 2. * ( ((*P).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
-	//cout << "Force : " << Fij_elas << endl;
+    bool plastifie = false;
+  
+    //Calcul de la contrainte dans chaque particule
+    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      //(*P).Volume_libre();
+      (*P).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+      (*P).discrete_gradient.col2 = Vector_3(0., 0., 0.);
+      (*P).discrete_gradient.col3 = Vector_3(0., 0., 0.);
+      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+	if((*F).voisin>=0){
+	  int part = (*F).voisin;
+	  /*Point_3 xi((*P).x0); //Position particule i en config initiale
+	    Point_3 xj(solide[part].x0); //Position particule j en config initiale
+	    Vector_3 lij(xi, xj);
+	    Vector_3 nIJ = lij / (*F).D0;*/
+	  Vector_3 nIJ = (*F).normale;
+	  //double Dij_n = (solide[part].Dx - (*P).Dx ) * nIJ; //Quadrature au point gauche
+	  Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * t - (*P).Dx - (*P).u * t,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
+	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).V;
 
-	(*P).Fi = (*P).Fi + Fij_elas; // * nIJ; //Force sur particule
+	}
+      }
+      //cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
+      (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
+      //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
+
+      //Mettre ces valeurs dans le param.dat !!!!!
+      double B = 292000000.; //En Pa. JC.
+      double n = .31; //JC.
+      double A = 90000000.; //En Pa. Vient de JC
+      double H = 0.; //60000000000.; //En Pa. Moitié du module de Young
+      
+      (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
+
+      //if((P->contrainte - H * P->epsilon_p).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+      if((P->contrainte).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
 	
+	plastifie = true;
+	//Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
+	Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
+	/*if((*P).n_elas_prev == -n_elas)
+	  cout << "Chargement dans sens oppose !" << endl;
+	  (*P).n_elas_prev = n_elas;*/
+	//cout << "Trace n_elas : " << n_elas.tr() << endl;
+	//cout << "Norme n_elas : " << n_elas.norme() << endl;
+	//double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
+	//double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
+	double delta_p = ((P->contrainte).VM() - A) / (2*mu);
+	(*P).def_plas_cumulee += delta_p; //Nouvelle déformation plastique.
+	//cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+	(*P).epsilon_p += delta_p * n_elas;
+	//cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
+	//cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
+	
+	//((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
+	//(*P).contrainte = A * signe( (*P).contrainte );
+      }
+    }
+    
+    if(plastifie){
+      cout << "Plastification dans ce pas de temps !" << endl;
+    }
+    
+    
+    //Calcul des forces pour chaque particule
+    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      (*P).Fi = Vector_3(0.,0.,0.);
+      for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+	if((*F).voisin>=0){
+	  int part = (*F).voisin;
+	  /*Point_3 xi((*P).x0); //Position particule i en config initiale
+	    Point_3 xj(solide[part].x0); //Position particule j en config initiale
+	    Vector_3 lij(xi, xj);
+	    Vector_3 nIJ = lij / (*F).D0;*/
+	  Vector_3 nIJ = (*F).normale;
 	  
-	
-	//Force de rappel elastique
-	//(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
-	//Force de deformation volumique
-	//(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
-	//(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
-	//Moment des forces appliquees
-	/*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
-	  (*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
-	  //Moments de flexion/torsion
-	  double kappa = 1.;
-	  double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
-	  double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
-	  double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
-	  (*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
-	// cout << alphan << " " << alphas << " " << alphat  << endl;
-	// cout << S/(*F).D0*alphan << endl;
-	// cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
-	// cout << "DT=" << sqrt(min(min((*P).I[0],(*P).I[1]),(*P).I[2])*(*F).D0/S/alphan) << endl;
-	// getchar();
+	  //Il faut passer les contraintes dans le repère local de chaque face (nIJ, sIJ, tIJ) ????
+	  Vector_3 Fij_elas( (*F).S * ( ((*P).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
+	  //cout << "Force : " << Fij_elas << endl;
+	  
+	  (*P).Fi = (*P).Fi + weight[int_pt]*Fij_elas; // * nIJ; //Force sur particule
+	  
+	  
+	  
+	  //Force de rappel elastique
+	  //(*P).Fi = (*P).Fi + S/(*F).D0*E/(1.+nu)*Delta_u;
+	  //Force de deformation volumique
+	  //(*P).Fi = (*P).Fi + S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ); //Changer cette expression aussi ? Surement...
+	  //(*P).Fi = (*P).Fi + S*E/(1.-2.*nu)*epsilonIJ*nIJ;
+	  //Moment des forces appliquees
+	  /*(*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S/(*F).D0*E/(1.+nu)*Delta_u);
+	    (*P).Mi = (*P).Mi + cross_product((*P).mvt_t(XC1),S*E*nu/(1.+nu)/(1.-2.*nu)*epsilonIJ*(nIJ+Delta_u/DIJ-(Delta_u*nIJ)/DIJ*nIJ));
+	    //Moments de flexion/torsion
+	    double kappa = 1.;
+	    double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((*F).Is+(*F).It);
+	    double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).Is-(2.+2.*nu-kappa)*(*F).It);
+	    double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(*F).It-(2.+2.*nu-kappa)*(*F).Is);
+	    (*P).Mi = (*P).Mi + S/(*F).D0*(alphan*cross_product((*P).mvt_t((*F).normale),solide[part].mvt_t((*F).normale))+alphas*cross_product((*P).mvt_t((*F).s),solide[part].mvt_t((*F).s))+alphat*cross_product((*P).mvt_t((*F).t),solide[part].mvt_t((*F).t))); */
+	  // cout << alphan << " " << alphas << " " << alphat  << endl;
+	  // cout << S/(*F).D0*alphan << endl;
+	  // cout << "D=" << (*F).D0 << " I=" << (*P).I[0] << " " << (*P).I[1] << " " << (*P).I[2] << " S=" << S << endl;
+	  // cout << "DT=" << sqrt(min(min((*P).I[0],(*P).I[1]),(*P).I[2])*(*F).D0/S/alphan) << endl;
+	  // getchar();
+	}
       }
     }
   }
 }
+
 
 /*!
 *\fn double Solide::Energie(int N_dim, double nu, double E)
@@ -2566,37 +2134,8 @@ double Solide::Energie(const int& N_dim, const double& nu, const double& E){
 double Solide::Energie_cinetique(){
   double E = 0.;
   for(int i=0;i<size();i++){
-    double u2 = (solide[i].u.squared_length());
+    double u2 = solide[i].u*(solide[i].u - solide[i].du);
     E += 1./2.*solide[i].m*u2;
-    //Calcul de -1/2*tr(D j(Q^T omega)) = 1/2*(I1*Omega1^2+I2*Omega2^2+I3*Omega3^2)
-    double Q[3][3];
-    double rot[3][3];
-    double e0 = sqrt(abs(1.-(solide[i].e.squared_length())));
-    //Recuperation de la matrice de rotation
-    rot[0][0] = 1.-2.*(solide[i].e[1]*solide[i].e[1]+solide[i].e[2]*solide[i].e[2]);
-    rot[0][1] = 2.*(-e0*solide[i].e[2]+solide[i].e[0]*solide[i].e[1]);
-    rot[0][2] = 2.*(e0*solide[i].e[1]+solide[i].e[0]*solide[i].e[2]);
-    rot[1][0] = 2.*(e0*solide[i].e[2]+solide[i].e[1]*solide[i].e[0]);
-    rot[1][1] = 1.-2.*(solide[i].e[0]*solide[i].e[0]+solide[i].e[2]*solide[i].e[2]);
-    rot[1][2] = 2.*(-e0*solide[i].e[0]+solide[i].e[1]*solide[i].e[2]);
-    rot[2][0] = 2.*(-e0*solide[i].e[1]+solide[i].e[2]*solide[i].e[0]);
-    rot[2][1] = 2.*(e0*solide[i].e[0]+solide[i].e[2]*solide[i].e[1]);
-    rot[2][2] = 1.-2.*(solide[i].e[0]*solide[i].e[0]+solide[i].e[1]*solide[i].e[1]);
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Q[j][k] = rot[j][0]*solide[i].rotref[0][k];
-	Q[j][k] += rot[j][1]*solide[i].rotref[1][k];
-	Q[j][k] += rot[j][2]*solide[i].rotref[2][k];
-      }
-    }  
-    double Omega[3];
-    Omega[0] = Omega[1] = Omega[2] = 0.;
-    for(int j=0;j<3;j++){
-      for(int k=0;k<3;k++){
-	Omega[j] += (solide[i].omega[k]*Q[k][j]);
-      }
-    }
-    E += 1./2.*(solide[i].I[0]*Omega[0]*Omega[0]+solide[i].I[1]*Omega[1]*Omega[1]+solide[i].I[2]*Omega[2]*Omega[2]);
   }
   return E;
 }
@@ -2608,8 +2147,55 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   double n = .31; //JC.
   double A = 90000000.; //En Pa. Vient de JC
 
+  bool plastifie = false;
+  //Calcul de la contrainte dans chaque particule
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += ( 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p)  + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee ) * (*P).volume();
+    //(*P).Volume_libre();
+    (*P).discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    (*P).discrete_gradient.col2 = Vector_3(0., 0., 0.);
+    (*P).discrete_gradient.col3 = Vector_3(0., 0., 0.);
+    for(std::vector<Face>::iterator F=(*P).faces.begin();F!=(*P).faces.end();F++){
+      if((*F).voisin>=0){
+	int part = (*F).voisin;
+	Vector_3 nIJ = (*F).normale;
+	Matrix Dij_n(tens_sym(solide[part].Dx - (*P).Dx,  nIJ) ); //Quadrature au point gauche pour calcul des forces !
+	(*P).discrete_gradient += (*F).S / 2. * Dij_n / (*P).V;
+	
+      }
+    }
+    //cout << "Trace dev Def : " << (((*P).discrete_gradient).dev()).tr() << endl;
+    (*P).contrainte = lambda * ((*P).discrete_gradient - (*P).epsilon_p).tr() * unit() + 2*mu * ((*P).discrete_gradient - (*P).epsilon_p);
+    //cout << "Trace dev Contrainte : " << (((*P).contrainte).dev()).tr() << endl;
+    
+    (*P).seuil_elas = A; // + B * pow((*P).def_plas_cumulee, n);
+    
+    //if((P->contrainte - H * P->epsilon_p).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+    if((P->contrainte).VM() > (*P).seuil_elas) { //On sort du domaine élastique.
+      
+      plastifie = true;
+      //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
+      Matrix n_elas( 1. / (((*P).contrainte).dev()).norme() * ((*P).contrainte).dev() ); //Normale au domaine élastique de Von Mises
+      /*if((*P).n_elas_prev == -n_elas)
+	cout << "Chargement dans sens oppose !" << endl;
+	(*P).n_elas_prev = n_elas;*/
+      //cout << "Trace n_elas : " << n_elas.tr() << endl;
+      //cout << "Norme n_elas : " << n_elas.norme() << endl;
+      //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
+      //double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
+      double delta_p = ((P->contrainte).VM() - A) / (2*mu);
+      (*P).def_plas_cumulee += delta_p; //Nouvelle déformation plastique.
+      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
+      (*P).epsilon_p += delta_p * n_elas;
+      //cout << "Trace def plas : " << ((*P).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
+      //cout << "Norme def plas : " << ((*P).epsilon_p).norme() << endl;
+      
+      //((*P).contrainte.VM() - A) / E * n_elas;  //* signe( (*P).contrainte ); //Plasticité parfaite
+      //(*P).contrainte = A * signe( (*P).contrainte );
+    }
+  }
+  
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    Ep += ( 0.5 * contraction_double((*P).contrainte, (*P).discrete_gradient - (*P).epsilon_p)  + B * pow((*P).def_plas_cumulee, 1. + n) / (n + 1.) + A * (*P).def_plas_cumulee ) * (*P).V;
   }
   return Ep;
 }

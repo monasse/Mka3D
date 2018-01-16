@@ -282,11 +282,11 @@ int main(){
     cout<<"Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
     dt = S.pas_temps(t,T,cfl, E, nu, rho);
-    //First half-step of the Verlet+RATTLE Scheme
-    S.Solve_position(dt,flag_2d, t, T);
     //Computation of forces
     S.Forces(N_dim, nu, E, dt, t , T);
-    //Second half-step of the Verlet+RATTLE Scheme
+    //Position update with MEMM scheme
+    S.Solve_position(dt,flag_2d, t, T);
+    //Velocity update with MEMM scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
     //Update of time
     t+= dt;
