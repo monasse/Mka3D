@@ -58,18 +58,24 @@ Solide & Solide::operator=(const Solide &S){
   }
 }
 
-void Solide::Init(const char* s1, const bool& rep, const int& numrep, const double& rho){
-  std::ifstream maillage(s1,ios::in);
-  if(not(maillage))
+void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
+  std::ifstream noeuds(s1,ios::in);
+  std::ifstream elements(s2,ios::in);
+  std::ifstream voisins(s3,ios::in);
+  if(not(noeuds) || not(elements) || not(voisins))
     cout <<"ouverture du maillage ratee" << endl;
 
   //Importation des vertex
   string s;
   char aux;
   string ligne;
-  while(getline(maillage, ligne) && ligne != "$Nodes") {} //On fait rien...
-  getline(maillage, ligne); //Nombre de vertex. Pas utile.
-  while(getline(maillage, ligne) && ligne != "$EndNodes") {
+  int nbr_vertex;
+  getline(noeuds, ligne); //Lecture de la première ligne du fichier des vertex
+  istringstream  stdd(ligne);
+  stdd >> nbr_vertex; //Nombre de vertex
+
+  for(int i=0; i < nbr_vertex ; i++) {
+    getline(noeuds, ligne);
     istringstream  stm(ligne);
     int id;
     double x,y,z;
@@ -78,7 +84,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 
   //Importation des Particules
-  getline(maillage, ligne); //$Elements
+  getline(elements, ligne); //$Elements
   getline(maillage, ligne); //Nbr Elements
   while(getline(maillage, ligne) && ligne != "$EndElements") {
     istringstream  stm(ligne);

@@ -46,9 +46,9 @@ public:
   Vector_3 normale; //!< Normale sortante &agrave; la face
   double S; //Surface de la face
   int nb_vertex;
-  std::vector<int> vertex; //!< Les sommets de la face
+  std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la particule qui détient la face
-  Point_3 pt_face; //distance centre de la particule à la face
+  Point_3 pt_face; //distance centre de la particule à la face. Utile ???
   std::vector<int> voisins; //Donne le numéro du voisin puis celui des 2 autres particules pour avoir le tétra associé à la face et calculer le gradient
   std::vector<double> c_voisins; //Coordonnées barycentriques des particules dans voisins pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé par interpolation avec valeurs des particules du tétra de la face

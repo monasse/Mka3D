@@ -234,7 +234,7 @@ int main(){
   }
   Solide S(E, nu);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
-  S.Init("packing.custom1", "packing.custom2", "packing.custom3", rep, numrep, rho);
+  S.Init("poutre.node", "poutre.ele", "poutre.neigh", rep, numrep, rho);
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
