@@ -55,7 +55,7 @@ class Particule
 
   //Attributs
   std::vector<Face *> faces; //!< liste de faces de la particule
-  std::vector<Point_3> vertices; //Toujours Utile ???
+  //std::vector<Point_3> vertices; //Toujours Utile ???
   int fixe; //!< =true si la particule est fixe, false sinon
   double m; //!< Masse de la particule
   double V; //!< Volume de la particule

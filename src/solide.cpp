@@ -84,101 +84,161 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 
   //Importation des Particules
-  getline(elements, ligne); //$Elements
-  getline(maillage, ligne); //Nbr Elements
-  while(getline(maillage, ligne) && ligne != "$EndElements") {
+  getline(elements, ligne);
+  istringstream stde(ligne);
+  int nbr_elements;
+  stde >> nbr_elements; //On stocke le nombre d'éléments
+  for(int i=0; i < nbr_elements ; i++) {
+    getline(elements, ligne);
     istringstream  stm(ligne);
-    int id,type,nbr_tag,tag_1,tag_2;
-    stm >> id >> type;
-    if(type == 4) {
-      int v1,v2,v3,v4;
-      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3 >> v4;
-      //Ajout des vertex de la particule
-      Particule p(id);
-      p.vertices.push_back(v1);
-      p.vertices.push_back(v2);
-      p.vertices.push_back(v3);
-      p.vertices.push_back(v4);
+    int id;
+    stm >> id;
+    int v1,v2,v3,v4;
+    stm >> v1 >> v2 >> v3 >> v4;
+    //Ajout des vertex de la particule
+    Particule p(id);
+    p.vertices.push_back(v1);
+    p.vertices.push_back(v2);
+    p.vertices.push_back(v3);
+    p.vertices.push_back(v4);
 
-      //Calcul des quantités volumiques (liées particule)
-      p.barycentre(); //Calcul du barycentre
-      p.volume(); //calcul du volume
-      p.m = rho * p.V;
-      //Comment fixer BC ?
+    //Calcul des quantités volumiques (liées particule)
+    p.barycentre(); //Calcul du barycentre
+    p.volume(); //calcul du volume
+    p.m = rho * p.V;
 
-      //Création des faces
-      //face 1
-      Face face1();
-      face1.vertex.push_back(v2);
-      face1.vertex.push_back(v3);
-      face1.vertex.push_back(v4);
-      face1.id = id; //Ajout du numéro de la particule dans la face
-      std::set<Face>::iterator it = faces.find(face1);
-      if(it == faces.end()) { //Face pas encore dans le set
-	face1.comp_quantities(vertex[v2].pos, vertex[v3].pos, vertex[v4].pos, vertex[v1].pos); //Calcul de la normale sortante, surface et barycentre face
-	faces.insert(face1); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
-      }
-      else { //Face déja dans l'ensemble. On va sortir le voisin
-	solide[it->id].voisins.push_back(id); //Connectivité nn
-	face1.voisins.push_back(it->id); //Connectivité nn !
-	p.faces.push_back(it);
-      }
-      p.faces.push_back(face1); //Ajout de la face dans la particule
+    //Ajout de la particule dans le solide
+    solide[id] = p;
+  }
+  
+  //Comment fixer BC ? Voir comment les gérer en tetgen ! Fichier en plus surement
 
-      //face 2
-      Face face2();
-      face2.vertex.push_back(v1);
-      face2.vertex.push_back(v3);
-      face2.vertex.push_back(v4);
-      std::set<Face>::iterator it = faces.find(face2);
-      if(it == faces.end()) { //Face pas encore dans le set
-	face2.comp_quantities(vertex[v1].pos, vertex[v3].pos, vertex[v4].pos, vertex[v2].pos); //Calcul de la normale sortante, surface et barycentre face
-	faces.insert(face2); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
-      }
-      else { //Face déja dans l'ensemble. On va sortir le voisin
-	solide[it->id].voisins.push_back(id); //Connectivité nn
-	face2.voisins.push_back(it->id); //Connectivité nn !
-	p.faces.push_back(it);
-      }
-      p.faces.push_back(face2); //Ajout de la face dans la particule
+  //Importation des faces
 
-      //face 3
-      Face face3();
-      face3.vertex.push_back(v1);
-      face3.vertex.push_back(v2);
-      face3.vertex.push_back(v4);
-      std::set<Face>::iterator it = faces.find(face3);
-      if(it == faces.end()) { //Face pas encore dans le set
-	face3.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v4].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
-	faces.insert(face3); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
-      }
-      else { //Face déja dans l'ensemble. On va sortir le voisin
-	solide[it->id].voisins.push_back(id); //Connectivité nn
-	face3.voisins.push_back(it->id); //Connectivité nn !
-	p.faces.push_back(it);
-      }
-      p.faces.push_back(face3); //Ajout de la face dans la particule
+  //Importation des voisins et création des faces
+  getline(voisins, ligne);
+  istringstream stdv(ligne);
+  int nbr_elements_bis;
+  stdv >> nbr_elements_bis; //On stocke le nombre d'éléments
+  if(nbr_elements != nb_elements_bis)
+    cout << "Problème avec la connectivité du maillage !" << endl;
+  for(i=0 ; i<nbr_elements ; i++) {
+    getline(voisins, ligne);
+    istringstream  stm(ligne);
+    int id;
+    stm >> id;
+    int v1,v2,v3,v4;
+    stm >> v1 >> v2 >> v3 >> v4; //Id des voisins dans solide. -1 indique une particule sans voisins donc sur le bord
 
-      //face 4
-      Face face4();
-      face4.vertex.push_back(v1);
-      face4.vertex.push_back(v2);
-      face4.vertex.push_back(v3);
-      std::set<Face>::iterator it = faces.find(face4);
-      if(it == faces.end()) { //Face pas encore dans le set
-	face4.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos, vertex[v4].pos); //Calcul de la normale sortante, surface et barycentre face
-	faces.insert(face4); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
+    //Création des faces
+    //face 1
+    //Test existence face
+    bool existence = false; //Booléen exitence de la face
+    int id_face = 0; //Donner la valeur si face existe déjà
+    for(int voi=0; voi<solide[v1].faces.size ; voi++) { //Regarder si dans les faces liées à la particule voisine, la particule apparaît comme voisine
+      if(((solide[v1].faces[voi])->voisins)[0] == id) {
+	existence = true;
+	id_face = (solide[v1].faces[voi])->id;
       }
-      else { //Face déja dans l'ensemble. On va sortir le voisin
-	solide[it->id].voisins.push_back(id); //Connectivité nn
-	face4.voisins.push_back(it->id); //Connectivité nn !
-	p.faces.push_back(it);
+      else if(((solide[v1].faces[voi])->voisins)[1] == id) {
+	existence = true;
+	id_face = (solide[v1].faces[voi])->id;
       }
-      p.faces.push_back(face4); //Ajout de la face dans la particule
-
-      //Ajout de la particule dans le solide
-      solide[id] = p;
     }
+    
+    if(not(existence)) {
+    Face face1();
+    face1.vertex.push_back(v2); //Problème !!! Comment ajouter les bons vertex à chaque face ????
+    face1.vertex.push_back(v3);
+    face1.vertex.push_back(v4);
+    face1.id = faces.size; //Ajout du numéro de son numéro à la face
+    face1.voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
+    face1.voisins.push_ack(v1); //Ajout de la particule voisine dans la liste des voisins de la particule
+
+    face1.comp_quantities(vertex[v2].pos, vertex[v3].pos, vertex[v4].pos, vertex[v1].pos); //Calcul de la normale sortante, surface et barycentre face
+    faces.push_back(face1); //Ajout de la face dans l'ensemble des faces
+    solide[id].faces.push_back(&(faces[face1.id])); //Ajout du pointeur vers la face dans la particule
+    solide[v1].faces.push_back(&(faces[face1.id])); //Ajout du pointeur vers la face dans la particule voisine
+    }
+    //Pas besoin de faire ds trucs voisins déjà fait à la création de la face
+
+    //face 2
+    existence = false; //Booléen exitence de la face
+    id_face = 0; //Donner la valeur si face existe déjà
+    for(int voi=0; voi<solide[v2].faces.size ; voi++) { //Regarder si dans les faces liées à la particule voisine, la particule apparaît comme voisine
+      if(((solide[v2].faces[voi])->voisins)[0] == id) {
+	existence = true;
+	id_face = (solide[v2].faces[voi])->id;
+      }
+      else if(((solide[v2].faces[voi])->voisins)[1] == id) {
+	existence = true;
+	id_face = (solide[v2].faces[voi])->id;
+      }
+    }
+    
+    if(not(existence)) {
+    Face face2();
+    face2.vertex.push_back(v1);
+    face2.vertex.push_back(v3);
+    face2.vertex.push_back(v4);
+    face2.id = faces.size; //Ajout du numéro de son numéro à la face
+    face2.voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
+    face2.voisins.push_ack(v1); //Ajout de la particule voisine dans la liste des voisins de la particule
+
+    face1.comp_quantities(vertex[v2].pos, vertex[v3].pos, vertex[v4].pos, vertex[v1].pos); //Calcul de la normale sortante, surface et barycentre face
+    faces.push_back(face1); //Ajout de la face dans l'ensemble des faces
+    solide[id].faces.push_back(&(faces[face1.id])); //Ajout du pointeur vers la face dans la particule
+    solide[v1].faces.push_back(&(faces[face1.id])); //Ajout du pointeur vers la face dans la particule voisine
+    }
+    Face face2();
+    face2.vertex.push_back(v1);
+    face2.vertex.push_back(v3);
+    face2.vertex.push_back(v4);
+    std::set<Face>::iterator it = faces.find(face2);
+    if(it == faces.end()) { //Face pas encore dans le set
+      face2.comp_quantities(vertex[v1].pos, vertex[v3].pos, vertex[v4].pos, vertex[v2].pos); //Calcul de la normale sortante, surface et barycentre face
+      faces.insert(face2); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
+    }
+    else { //Face déja dans l'ensemble. On va sortir le voisin
+      solide[it->id].voisins.push_back(id); //Connectivité nn
+      face2.voisins.push_back(it->id); //Connectivité nn !
+      p.faces.push_back(it);
+    }
+    p.faces.push_back(face2); //Ajout de la face dans la particule
+
+    //face 3
+    Face face3();
+    face3.vertex.push_back(v1);
+    face3.vertex.push_back(v2);
+    face3.vertex.push_back(v4);
+    std::set<Face>::iterator it = faces.find(face3);
+    if(it == faces.end()) { //Face pas encore dans le set
+      face3.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v4].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
+      faces.insert(face3); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
+    }
+    else { //Face déja dans l'ensemble. On va sortir le voisin
+      solide[it->id].voisins.push_back(id); //Connectivité nn
+      face3.voisins.push_back(it->id); //Connectivité nn !
+      p.faces.push_back(it);
+    }
+    p.faces.push_back(face3); //Ajout de la face dans la particule
+
+    //face 4
+    Face face4();
+    face4.vertex.push_back(v1);
+    face4.vertex.push_back(v2);
+    face4.vertex.push_back(v3);
+    std::set<Face>::iterator it = faces.find(face4);
+    if(it == faces.end()) { //Face pas encore dans le set
+      face4.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos, vertex[v4].pos); //Calcul de la normale sortante, surface et barycentre face
+      faces.insert(face4); //Ajout de la face dans l'ensemble des faces pour recréer connectivité
+    }
+    else { //Face déja dans l'ensemble. On va sortir le voisin
+      solide[it->id].voisins.push_back(id); //Connectivité nn
+      face4.voisins.push_back(it->id); //Connectivité nn !
+      p.faces.push_back(it);
+    }
+    p.faces.push_back(face4); //Ajout de la face dans la particule
   }
   
   //Calculer du tetrahèdre associé à chaque face pour le calcul du gradient
