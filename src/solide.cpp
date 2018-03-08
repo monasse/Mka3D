@@ -58,11 +58,12 @@ Solide & Solide::operator=(const Solide &S){
   }
 }
 
-void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
+void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4, const bool& rep, const int& numrep, const double& rho){
   std::ifstream noeuds(s1,ios::in);
   std::ifstream elements(s2,ios::in);
   std::ifstream voisins(s3,ios::in);
-  if(not(noeuds) || not(elements) || not(voisins))
+  std::ifstream import_faces(s4,ios::in);
+  if(not(noeuds) || not(elements) || not(voisins) || not(import_faces))
     cout <<"ouverture du maillage ratee" << endl;
 
   //Importation des vertex
@@ -77,7 +78,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   for(int i=0; i < nbr_vertex ; i++) {
     getline(noeuds, ligne);
     istringstream  stm(ligne);
-    int id;
+    int id; //Numéro du vertex + 1
     double x,y,z;
     stm >> id >> x >> y >> z;
     vertex.push_back(Vertex(Point_3(x,y,z))); //Vertex sont donnés dans l'ordre
@@ -97,10 +98,10 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     stm >> v1 >> v2 >> v3 >> v4;
     //Ajout des vertex de la particule
     Particule p(id);
-    p.vertices.push_back(v1);
-    p.vertices.push_back(v2);
-    p.vertices.push_back(v3);
-    p.vertices.push_back(v4);
+    p.vertices.push_back(v1 - 1);
+    p.vertices.push_back(v2 - 1);
+    p.vertices.push_back(v3 - 1);
+    p.vertices.push_back(v4 - 1);
 
     //Calcul des quantités volumiques (liées particule)
     p.barycentre(); //Calcul du barycentre
@@ -114,15 +115,33 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   //Comment fixer BC ? Voir comment les gérer en tetgen ! Fichier en plus surement
 
   //Importation des faces
+  getline(import_faces, ligne);
+  istringstream stdf(ligne);
+  int nbr_faces;
+  stdf >> nbr_faces;
+  for(int i=0; i<nbr_faces ; i++) {
+    getline(elements, ligne);
+    istringstream  stm(ligne);
+    int id;
+    int v1,v2,v3;
+    stm >> id >> v1 >> v2 >> v3; //Numéro de la face et des vertex + 1
+    Face f();
+    f.id = id - 1;
+    f.nb_vertex = 3;
+    f.vertex.pus_back(v1 - 1); //Ajout du numéro des vertex
+    f.vertex.pus_back(v2 - 1);
+    f.vertex.pus_back(v3 - 1);
+    faces.push_back(f);
+  }
 
-  //Importation des voisins et création des faces
+  //Importation des voisins
   getline(voisins, ligne);
   istringstream stdv(ligne);
   int nbr_elements_bis;
   stdv >> nbr_elements_bis; //On stocke le nombre d'éléments
   if(nbr_elements != nb_elements_bis)
     cout << "Problème avec la connectivité du maillage !" << endl;
-  for(i=0 ; i<nbr_elements ; i++) {
+  for(int i=0 ; i<nbr_elements ; i++) {
     getline(voisins, ligne);
     istringstream  stm(ligne);
     int id;

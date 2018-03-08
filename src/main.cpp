@@ -234,7 +234,7 @@ int main(){
   }
   Solide S(E, nu);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
-  S.Init("poutre.node", "poutre.ele", "poutre.neigh", rep, numrep, rho);
+  S.Init("poutre.node", "poutre.ele", "poutre.neigh", "poutre.face", rep, numrep, rho);
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
