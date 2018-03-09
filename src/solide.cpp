@@ -151,119 +151,127 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
 
     //Ajout des voisins
     //face 1
-    bool existence = false; //Test si face et voisins déjà liés
-    for(int voi=0; voi<solide[v1].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
-      if(((solide[v1].faces[voi])->voisins)[1] == id)
-	existence = true; //Dans ce cas face déjà liée et voisins ok
-      else if(((solide[v1].faces[voi])->voisins)[0] == id)
-	existence = true; //idem
-    }
-
-    if(not(existence)) {
-      int id_face = 0; //Trouver le numéro de la face
-      std::vector<int> vert_face(vertex_face(id, v1)); //Trouve quels sont les vertex de la face
-      for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
-	Face f();
-	f.vertex.push_back(solide[id].vertices[vert_face[0]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[1]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[2]]);
-	if(f == faces[j])
-	  id_face = j;
+    if(v1 >= 0) { //Sinon particule sur le bord et pas de voisin
+      bool existence = false; //Test si face et voisins déjà liés
+      for(int voi=0; voi<solide[v1].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
+	if(((solide[v1].faces[voi])->voisins)[1] == id)
+	  existence = true; //Dans ce cas face déjà liée et voisins ok
+	else if(((solide[v1].faces[voi])->voisins)[0] == id)
+	  existence = true; //idem
       }
 
-      solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
-      solide[v1].faces.push_back(id_face); //idem pour la particule voisine
-      faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
-      faces[id_face].voisins.push_back(v1); //Ajout de la particule voisine dans la liste des voisins de la particule     
-      faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      if(not(existence)) {
+	int id_face = 0; //Trouver le numéro de la face
+	std::vector<int> vert_face(vertex_face(id, v1)); //Trouve quels sont les vertex de la face
+	for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
+	  Face f();
+	  f.vertex.push_back(solide[id].vertices[vert_face[0]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[1]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[2]]);
+	  if(f == faces[j])
+	    id_face = j;
+	}
+
+	solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
+	solide[v1].faces.push_back(id_face); //idem pour la particule voisine
+	faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
+	faces[id_face].voisins.push_back(v1); //Ajout de la particule voisine dans la liste des voisins de la particule     
+	faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      }
     }
 
     //face 2
-    existence = false; //Test si face et voisins déjà liés
-    for(int voi=0; voi<solide[v2].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
-      if(((solide[v2].faces[voi])->voisins)[1] == id)
-	existence = true; //Dans ce cas face déjà liée et voisins ok
-      else if(((solide[v2].faces[voi])->voisins)[0] == id)
-	existence = true; //idem
-    }
-
-    if(not(existence)) {
-      int id_face = 0; //Trouver le numéro de la face
-      std::vector<int> vert_face(vertex_face(id, v2)); //Trouve quels sont les vertex de la face
-      for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
-	Face f();
-	f.vertex.push_back(solide[id].vertices[vert_face[0]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[1]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[2]]);
-	if(f == faces[j])
-	  id_face = j;
+    if(v2 >= 0) { //Sinon particule sur le bord et pas de voisin
+      existence = false; //Test si face et voisins déjà liés
+      for(int voi=0; voi<solide[v2].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
+	if(((solide[v2].faces[voi])->voisins)[1] == id)
+	  existence = true; //Dans ce cas face déjà liée et voisins ok
+	else if(((solide[v2].faces[voi])->voisins)[0] == id)
+	  existence = true; //idem
       }
 
-      solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
-      solide[v2].faces.push_back(id_face); //idem pour la particule voisine
-      faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
-      faces[id_face].voisins.push_back(v2); //Ajout de la particule voisine dans la liste des voisins de la particule     
-      faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      if(not(existence)) {
+	int id_face = 0; //Trouver le numéro de la face
+	std::vector<int> vert_face(vertex_face(id, v2)); //Trouve quels sont les vertex de la face
+	for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
+	  Face f();
+	  f.vertex.push_back(solide[id].vertices[vert_face[0]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[1]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[2]]);
+	  if(f == faces[j])
+	    id_face = j;
+	}
+
+	solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
+	solide[v2].faces.push_back(id_face); //idem pour la particule voisine
+	faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
+	faces[id_face].voisins.push_back(v2); //Ajout de la particule voisine dans la liste des voisins de la particule     
+	faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      }
     }
 
     //face 3
-    existence = false; //Test si face et voisins déjà liés
-    for(int voi=0; voi<solide[v3].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
-      if(((solide[v3].faces[voi])->voisins)[1] == id)
-	existence = true; //Dans ce cas face déjà liée et voisins ok
-      else if(((solide[v3].faces[voi])->voisins)[0] == id)
-	existence = true; //idem
-    }
-
-    if(not(existence)) {
-      int id_face = 0; //Trouver le numéro de la face
-      std::vector<int> vert_face(vertex_face(id, v3)); //Trouve quels sont les vertex de la face
-      for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
-	Face f();
-	f.vertex.push_back(solide[id].vertices[vert_face[0]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[1]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[2]]);
-	if(f == faces[j])
-	  id_face = j;
+    if(v3 >= 0) { //Sinon particule sur le bord et pas de voisin
+      existence = false; //Test si face et voisins déjà liés
+      for(int voi=0; voi<solide[v3].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
+	if(((solide[v3].faces[voi])->voisins)[1] == id)
+	  existence = true; //Dans ce cas face déjà liée et voisins ok
+	else if(((solide[v3].faces[voi])->voisins)[0] == id)
+	  existence = true; //idem
       }
 
-      solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
-      solide[v3].faces.push_back(id_face); //idem pour la particule voisine
-      faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
-      faces[id_face].voisins.push_back(v3); //Ajout de la particule voisine dans la liste des voisins de la particule     
-      faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      if(not(existence)) {
+	int id_face = 0; //Trouver le numéro de la face
+	std::vector<int> vert_face(vertex_face(id, v3)); //Trouve quels sont les vertex de la face
+	for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
+	  Face f();
+	  f.vertex.push_back(solide[id].vertices[vert_face[0]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[1]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[2]]);
+	  if(f == faces[j])
+	    id_face = j;
+	}
+
+	solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
+	solide[v3].faces.push_back(id_face); //idem pour la particule voisine
+	faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
+	faces[id_face].voisins.push_back(v3); //Ajout de la particule voisine dans la liste des voisins de la particule     
+	faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      }
     }
 
     //face 4
-    existence = false; //Test si face et voisins déjà liés
-    for(int voi=0; voi<solide[v4].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
-      if(((solide[v4].faces[voi])->voisins)[1] == id)
-	existence = true; //Dans ce cas face déjà liée et voisins ok
-      else if(((solide[v4].faces[voi])->voisins)[0] == id)
-	existence = true; //idem
-    }
-
-    if(not(existence)) {
-      int id_face = 0; //Trouver le numéro de la face
-      std::vector<int> vert_face(vertex_face(id, v1)); //Trouve quels sont les vertex de la face
-      for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
-	Face f();
-	f.vertex.push_back(solide[id].vertices[vert_face[0]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[1]]);
-	f.vertex.push_back(solide[id].vertices[vert_face[2]]);
-	if(f == faces[j])
-	  id_face = j;
+    if(v4 >= 0) { //Sinon particule sur le bord et pas de voisin
+      existence = false; //Test si face et voisins déjà liés
+      for(int voi=0; voi<solide[v4].faces.size ; voi++) { //Regarde si dans les faces liées à la particule voisine, la particule apparaît comme voisine
+	if(((solide[v4].faces[voi])->voisins)[1] == id)
+	  existence = true; //Dans ce cas face déjà liée et voisins ok
+	else if(((solide[v4].faces[voi])->voisins)[0] == id)
+	  existence = true; //idem
       }
 
-      solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
-      solide[v4].faces.push_back(id_face); //idem pour la particule voisine
-      faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
-      faces[id_face].voisins.push_back(v4); //Ajout de la particule voisine dans la liste des voisins de la particule     
-      faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      if(not(existence)) {
+	int id_face = 0; //Trouver le numéro de la face
+	std::vector<int> vert_face(vertex_face(id, v1)); //Trouve quels sont les vertex de la face
+	for(int j=0; j <faces.size ; j++) { //Trouve la face dans l'ensemble des faces
+	  Face f();
+	  f.vertex.push_back(solide[id].vertices[vert_face[0]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[1]]);
+	  f.vertex.push_back(solide[id].vertices[vert_face[2]]);
+	  if(f == faces[j])
+	    id_face = j;
+	}
+
+	solide[id].faces.push_back(id_face); //On ajoute la face dans la liste pour la particule
+	solide[v4].faces.push_back(id_face); //idem pour la particule voisine
+	faces[id_face].voisins.push_back(id); //Ajout de la particule dans la liste des voisins de la particule
+	faces[id_face].voisins.push_back(v4); //Ajout de la particule voisine dans la liste des voisins de la particule     
+	faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
+      }
     }
-  }
+  } //fin boucle importation des connectivités
   
-  //Calculer du tetrahèdre associé à chaque face pour le calcul du gradient
+  //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
       if((F->voisins).size() != 0) {//Face pas au bord (car I_Dx = vec null dans ce cas...)
@@ -281,7 +289,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
   Vector_3 aux(solide[(it->parts)[0]], x0);
   double D0 = sqrt(aux.squared_length()); //Distance en config initiale entre particules voisines
   double D_face = abs(Vector_3(x0, v2.pos) * face1.normale); //Distance centre particule-face
-  //Calculer la suite !
+  //Calculer la suite ! Mettre plus haut ?
   }
 }
 
