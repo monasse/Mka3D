@@ -43,12 +43,10 @@ public:
 
   //Attributs
   Point_3 centre; //!< Centre de la face
-  Vector_3 normale; //!< Normale sortante &agrave; la face
+  Vector_3 normale; //!< Normale sortante à la face
   double S; //Surface de la face
-  int nb_vertex;
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
-  Point_3 pt_face; //distance centre de la particule à la face. Utile ???
   std::vector<int> voisins; //Donne le numéro des 2 voisins de la face puis celui des 2 autres particules pour avoir le tétra associé à la face et calculer le gradient
   std::vector<double> c_voisins; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra

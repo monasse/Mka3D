@@ -60,9 +60,9 @@ class Particule
   double m; //!< Masse de la particule
   double V; //!< Volume de la particule
   Point_3 x0; //!<Position du centre de la particule &agrave; t=0
-  Vector_3 Dx; //!<D&eacute;placement du centre de la particule en t
+  Vector_3 Dx; //!<Depleacement du centre de la particule en t
   //Vector_3 Dx_plas; //Déplacements plastiques...
-  Vector_3 Dxprev; //!<D&eacute;placement du centre de la particule en t-dt
+  Vector_3 Dxprev; //!<Deplacement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
   Vector_3 u; //!< Vitesse de la particule au temps t
   Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
