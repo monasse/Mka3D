@@ -48,7 +48,7 @@ public:
 	return solide.size();
   }
   void Impression(const int &n);
-  void Init(const char* s1, const char* s2, const char* s3, const char* s4, const bool& rep, const int& numrep, const double& rho);
+  void Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho);
   void Solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);

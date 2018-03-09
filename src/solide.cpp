@@ -58,12 +58,12 @@ Solide & Solide::operator=(const Solide &S){
   }
 }
 
-void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4, const bool& rep, const int& numrep, const double& rho){
+void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& rep, const int& numrep, const double& rho){
   std::ifstream noeuds(s1,ios::in);
   std::ifstream elements(s2,ios::in);
-  std::ifstream voisins(s3,ios::in);
-  std::ifstream import_faces(s4,ios::in);
-  if(not(noeuds) || not(elements) || not(voisins) || not(import_faces))
+  //std::ifstream voisins(s3,ios::in);
+  std::ifstream import_faces(s3,ios::in);
+  if(not(noeuds) || not(elements) /*|| not(voisins)*/ || not(import_faces))
     cout <<"ouverture du maillage ratee" << endl;
 
   //Importation des vertex
@@ -114,7 +114,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
   
   //Comment fixer BC ? Voir comment les gérer en tetgen ! Fichier en plus surement
 
-  //Importation des faces
+  //Importation des faces et des connectivités
   getline(import_faces, ligne);
   istringstream stdf(ligne);
   int nbr_faces;
@@ -134,15 +134,34 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
     f.vertex.push_back(v3 - 1);
     f.voisins.push_back(part_1); //Ajout du numéro des voisins dans la face
     f.voisins.push_back(part_2);
-    if(part_1 >= 0) //cad particule pas sur le bord
+    bool calcul_normales = false;
+    if(part_1 >= 0) { //cad particule pas sur le bord
       solide[part_1].faces(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
-    if(part_2 >= 0) //cad particule pas sur le bord
+      int id_vertex_hors_face;
+      for(int j=0; j<solide[part_1].vertices.size ; j++) { //on cherche le vertex de la particule pas dans la face pour le calcul de la normale
+	if(solide[part_1].vertices[j].pos !=  vertex[v1-1] && solide[part_1].vertices[j].pos !=  vertex[v1-1] && solide[part_1].vertices[j].pos !=  vertex[v1-1])
+	  id_vertex_hors_face = j;
+      }
+      f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos, solide[part_1].vertices[id_verte_hors_face].pos); //Calcul de la normale sortante, surface et barycentre face
+      calcul_normales = true;
+      
+    }
+    if(part_2 >= 0) { //cad particule pas sur le bord
       solide[part_2].faces(f.id);
+      if(not(calcul_normales)) {
+	int id_vertex_hors_face;
+	for(int j=0; j<solide[part_2].vertices.size ; j++) {
+	  if(solide[part_2].vertices[j].pos !=  vertex[v1-1] && solide[part_2].vertices[j].pos !=  vertex[v1-1] && solide[part_2].vertices[j].pos !=  vertex[v1-1])
+	    id_verte_hors_face = j;
+	}
+	f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos, solide[part_2].vertices[id_verte_hors_face].pos);; //Calcul de la normale sortante, surface et barycentre face
+      }
+    }
     faces.push_back(f);
   }
 
   //Importation des voisins
-  getline(voisins, ligne);
+  /*getline(voisins, ligne);
   istringstream stdv(ligne);
   int nbr_elements_bis;
   stdv >> nbr_elements_bis; //On stocke le nombre d'éléments
@@ -278,6 +297,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
       }
     }
   } //fin boucle importation des connectivités
+  */
   
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
