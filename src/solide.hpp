@@ -56,12 +56,12 @@ public:
   void Forces_internes(const double& dt);
   void stresses(const double& dt);
   void update_triangles();
-  //void breaking_criterion();
   double Energie(const int &N_dim, const double &nu, const double &E);
   double Energie_potentielle(const int &N_dim, const double &nu, const double &E);
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
 
+  std::vector<int> vertex_face(const int& particule, const int& voisin);
   
   // private :
   std::vector<Vertex> vertex;

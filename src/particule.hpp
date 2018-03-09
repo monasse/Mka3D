@@ -54,8 +54,8 @@ class Particule
   void volume(); //calcul le volume d'une particule
 
   //Attributs
-  std::vector<Face *> faces; //!< liste de faces de la particule
-  //std::vector<Point_3> vertices; //Toujours Utile ???
+  std::vector<int> faces; //!< liste de faces de la particule
+  std::vector<Point_3> vertices; //Utile pour retrouver les faces lors de l'imortation de la connectivité
   int fixe; //!< =true si la particule est fixe, false sinon
   double m; //!< Masse de la particule
   double V; //!< Volume de la particule
