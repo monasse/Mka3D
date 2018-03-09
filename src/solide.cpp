@@ -123,14 +123,21 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
     getline(elements, ligne);
     istringstream  stm(ligne);
     int id;
-    int v1,v2,v3;
-    stm >> id >> v1 >> v2 >> v3; //Numéro de la face et des vertex + 1
+    int v1,v2,v3; //Les vertex de la face
+    int part_1, part_2; //Le numéro des particules voisines
+    stm >> id >> v1 >> v2 >> v3 >> part_1 >> part_2; //Numéro de la face, des vertex + 1 et des voisins (bon numéro)
     Face f();
     f.id = id - 1;
     f.nb_vertex = 3;
     f.vertex.push_back(v1 - 1); //Ajout du numéro des vertex
     f.vertex.push_back(v2 - 1);
     f.vertex.push_back(v3 - 1);
+    f.voisins.push_back(part_1); //Ajout du numéro des voisins dans la face
+    f.voisins.push_back(part_2);
+    if(part_1 >= 0) //cad particule pas sur le bord
+      solide[part_1].faces(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
+    if(part_2 >= 0) //cad particule pas sur le bord
+      solide[part_2].faces(f.id);
     faces.push_back(f);
   }
 
