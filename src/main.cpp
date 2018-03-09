@@ -149,9 +149,9 @@ int main(){
   }
   string s;
   int numrep1, N_dim1, nimp1, Nmax1;
-  double rho1,nu1,E1,T1,cfl1,Amort;
+  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1;
   bool rep1, flag2d1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> Amort;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> Amort >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -164,7 +164,11 @@ int main(){
   const int nimp = nimp1; //Number of outputs
   const double dtimp = T/nimp;        //Time-step between two consecutive outputs
   const int Nmax = Nmax1;           //Maximal number of time-steps
-  const double Amortissement = Amort; //Ajoute une force de frottement entre 0 et 1 pour amortir la solution
+  const double Amortissement = Amort; //Ajoute une force de frottement fluide pour amortir la solution
+  const double B = B1; //Pour écrouissage isotrope de JC
+  const double n = n1; //Pour écrouissage isotrope de JC
+  const double A = A1; //Limite élastique initiale
+  const double H = H1; //Module d'écrouissage linéaire
   
   char temps_it[]="temps.dat";
   char temps_reprise[]="temps_reprise.dat";
@@ -232,7 +236,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S(E, nu);
+  Solide S(E, nu, B, n, A, H);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   S.Init("poutre.node", "poutre.ele", "poutre.face", rep, numrep, rho);
 

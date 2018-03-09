@@ -37,14 +37,22 @@
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
-Solide::Solide(const double& E, const double& nu){
+Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1);){
   lambda = E * nu / (1.+nu) / (1. - 2.*nu);
   mu = E / 2. / (1.+nu);
+  A = A1;
+  B = B1;
+  n = n1;
+  H = H1;
 }
 
 Solide::Solide(){
   lambda = 0.;
   mu = 0.;
+  A = 0.;
+  B = 0.;
+  n = 0.;
+  H = 0.;
 }
 
 Solide::~Solide(){   
@@ -391,8 +399,8 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans chaque p
       if(F->voisin>=0){
 	int part = F->voisin;
 	Vector_3 nIJ = (*F).normale;
-	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt/2. - (P->second).Dx - (P->second).u * dt/2.,  nIJ) ); //Quadrature au point milieu pour calcul des forces !
-	(P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V;
+	Matrix Dij_n(tens_sym(solide[part].Dx + solide[part].u * dt - (P->second).Dx - (P->second).u * dt,  nIJ) );
+	(P->second).discrete_gradient += (*F).S / 2. * Dij_n / (P->second).V; //Modifier
 
       }
     }
@@ -400,7 +408,6 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans chaque p
     (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
     //cout << "Trace dev Contrainte : " << (((P->second).contrainte).dev()).tr() << endl;
 
-    bool plastifie = false;
     //Mettre ces valeurs dans le param.dat !!!!!
     double B = 292000000.; //En Pa. JC.
     double n = .31; //JC.
@@ -410,24 +417,10 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans chaque p
     (P->second).seuil_elas = A; // + B * pow((P->second).def_plas_cumulee, n);
 
     if(((P->second).contrainte - H * (P->second).epsilon_p).VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
-      plastifie = true;
-      //Matrix n_elas(((*P).contrainte).dev() / (((*P).contrainte).dev()).norme() ); //Normale au domaine élastique de Von Mises
       Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
-      /*if((*P).n_elas_prev == -n_elas)
-	cout << "Chargement dans sens oppose !" << endl;
-      (*P).n_elas_prev = n_elas;*/
-      //cout << "Trace n_elas : " << n_elas.tr() << endl;
-      //cout << "Norme n_elas : " << n_elas.norme() << endl;
-      //double delta_p = pow(((*P).contrainte.VM() - A) / B, 1./n) - (*P).def_plas_cumulee;
       double delta_p = (((P->second).contrainte - H * (P->second).epsilon_p).VM() - A) / (2*mu + H);
       (*P).def_plas_cumulee += delta_p;
-      //cout << "Def plastique cumulee : " << (*P).def_plas_cumulee << endl;
       (P->second).epsilon_p += delta_p * n_elas;
-      //cout << "Trace def plas : " << ((P->second).epsilon_p).tr() << endl; //Pb ! Non-nulle !!!!
-      //cout << "Norme def plas : " << ((P->second).epsilon_p).norme() << endl;
-      
-      //((P->second).contrainte.VM() - A) / (2*mu) * n_elas;  //* signe( (P->second).contrainte ); //Plasticité parfaite
-      //(P->second).contrainte = A * signe( (P->second).contrainte );
     }
   }
 
@@ -443,13 +436,9 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
       if((*F).voisin>=0){
 	int part = (*F).voisin;
 	Vector_3 nIJ = (*F).normale;
-        Vector_3 Fij_elas( (*F).S / 2. * ( ((P->second).contrainte + solide[part].contrainte).tr() / 2. * nIJ + ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ ) ); //Force du lien IJ !
-	//cout << "Force : " << Fij_elas << endl;
-
-	(P->second).Fi = (P->second).Fi + Fij_elas; // * nIJ; //Force sur particule
-	
+        Vector_3 Fij_elas( (*F).S / 2. * ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ; //Force du lien IJ !
+	(P->second).Fi = (P->second).Fi + Fij_elas;	
       }
-      //cout << "Force interne : " << (P->second).Fi << endl;
     }
   }
 }
@@ -482,12 +471,13 @@ double Solide::Energie_potentielle(const int& N_dim, const double& nu, const dou
   return Ep;
 }
 
+//Reprendre le calcul de la CFL !!!
 double Solide::pas_temps(const double& t, const double& T, const double& cfls, const double& E, const double& nu, const double& rhos){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double dt = std::numeric_limits<double>::infinity();
   //Restriction CFL liee aux forces internes
   double cs = sqrt(E*(1.-nu)/rhos/(1.+nu)/(1.-2.*nu));
-  //Calcul du rayon de la sphï¿½re inscrite
+  //Calcul du rayon de la sphère inscrite
   double sigma = 100000.;
   for(int i=0;i<size();i++){
     for(int j=0;j<solide[i].faces.size();j++){
@@ -498,16 +488,6 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
     for(int j=0;j<(P->second).faces.size();j++){
       if((P->second).faces[j].voisin>=0){
 	dt = min(dt,cfls*(P->second).faces[j].D0/cs);
-	/*double Imin = min(min((P->second).I[0],(P->second).I[1]),(P->second).I[2]);
-	double S = (P->second).faces[j].S;
-	double D0 = (P->second).faces[j].D0;
-	double kappa = 1.;
-	double alphan = (2.+2.*nu-kappa)*E/4./(1.+nu)/S*((P->second).faces[j].Is+(P->second).faces[j].It);
-	double alphas = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(P->second).faces[j].Is-(2.+2.*nu-kappa)*(P->second).faces[j].It);
-	double alphat = E/4./(1.+nu)/S*((2.+2.*nu+kappa)*(P->second).faces[j].It-(2.+2.*nu-kappa)*(P->second).faces[j].Is);
-	dt = min(dt,cfls*sqrt(Imin*D0/S/alphan));
-	dt = min(dt,cfls*sqrt(Imin*D0/S/alphas));
-	dt = min(dt,cfls*sqrt(Imin*D0/S/alphat));*/
       }
     }
   }

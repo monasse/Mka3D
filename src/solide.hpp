@@ -39,7 +39,7 @@ class Solide
 public:
   
   Solide();//:solide(std::vector<Particule>(1)){}
-  Solide(const double& E, const double& nu);
+  Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1);
   Solide(const std::vector<Particule> & Part);
   ~Solide();
   Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
@@ -70,6 +70,10 @@ public:
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé
+  double A; //Limite élastique initiale
+  double B; //Ecrouissage JC
+  double n; //Ecrouissage JC
+  double H; //Ecrouissage linéaire
 };
 
 
