@@ -140,8 +140,18 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     f.vertex.push_back(v1 - 1); //Ajout du numéro des vertex
     f.vertex.push_back(v2 - 1);
     f.vertex.push_back(v3 - 1);
-    f.voisins.push_back(part_1); //Ajout du numéro des voisins dans la face
-    f.voisins.push_back(part_2);
+    if(part_1 == -1 || part_2 == -1)
+      f.BC = 1; //A calibrer selon les BC dispos à l'avenir
+    else
+      f.BC = 0; //Face au bord
+    if(part_1 >=0) { //Ajout du numéro des voisins dans la face
+      f.voisins.push_back(part_1);
+      f.voisins.push_back(part_2);
+    }
+    else { //La première valeur de voisin est la seule particule qui contient la face sur le bord
+      f.voisins.push_back(part_2);
+      f.voisins.push_back(part_1);
+    }
     bool calcul_normales = false;
     if(part_1 >= 0) { //cad particule pas sur le bord
       solide[part_1].faces(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
@@ -160,7 +170,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	int id_vertex_hors_face;
 	for(int j=0; j<solide[part_2].vertices.size ; j++) {
 	  if(solide[part_2].vertices[j].pos !=  vertex[v1-1] && solide[part_2].vertices[j].pos !=  vertex[v1-1] && solide[part_2].vertices[j].pos !=  vertex[v1-1])
-	    id_verte_hors_face = j;
+	    id_vertex_hors_face = j;
 	}
 	f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos, solide[part_2].vertices[id_verte_hors_face].pos);; //Calcul de la normale sortante, surface et barycentre face
       }
@@ -169,6 +179,9 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
       if(Vector_3(part_1.pos, part_2.pos) * f.normale  < 0.)
 	f.normale = -f.normale;
+    }
+    if(part_1 == -1 || part_2 == -1) { //Face au bord
+      f.normale = -f.normale; //normale forcement dans mauvais sens
     }
     faces.push_back(f);
   }
@@ -273,7 +286,7 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes l
     (P->second).discrete_gradient.col3 = Vector_3(0., 0., 0.);
     for(int i=0 ; (P->faces).size ; i++){
       int f = P->faces[i];
-      Vector_3 nIJ = faces[i].normale; //Comment tester si le signe est bon ?
+      Vector_3 nIJ = faces[i].normale;
       Matrix Dij_n(tens_sym(faces[f].I_Dx - (P->second).Dx,  nIJ) );
       (P->second).discrete_gradient += faces[i].S /  (P->second).V * Dij_n;
     }
@@ -295,11 +308,12 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes l
 
 
 void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
-  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  for(std::map<int, Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
-    for(std::vector<Face *>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){
-      if((*F).voisin>=0){
-	int part = (*F).voisin;
+    for(int i=0 ; (P->faces).size ; i++){
+      int f = P->faces[i];
+      if(faces[i].BC != 0){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
+	int part = (*F).voisin; //Reprendre la suite ici
 	Vector_3 nIJ = (*F).normale;
         Vector_3 Fij_elas( (*F).S / 2. * ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ; //Force du lien IJ !
 	(P->second).Fi = (P->second).Fi + Fij_elas;	

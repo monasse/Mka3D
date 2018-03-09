@@ -77,6 +77,7 @@ class Particule
   double seuil_elas;
 
   int id; //Numéro de la particule dans la map de Solide
+  int BC; //Vaut 0 si particule pas au bord et peut valoir 1,2,etc... selon la condition de bord
 }; 
 
 #endif
