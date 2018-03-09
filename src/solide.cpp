@@ -307,16 +307,25 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes l
 }
 
 
-void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
+void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule  
   for(std::map<int, Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
-    for(int i=0 ; (P->faces).size ; i++){
-      int f = P->faces[i];
+    for(int i=0 ; (P->second).faces.size ; i++){
       if(faces[i].BC != 0){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
-	int part = (*F).voisin; //Reprendre la suite ici
-	Vector_3 nIJ = (*F).normale;
-        Vector_3 Fij_elas( (*F).S / 2. * ((P->second).contrainte + solide[part].contrainte) / 2. * nIJ; //Force du lien IJ !
-	(P->second).Fi = (P->second).Fi + Fij_elas;	
+	int part_1 = (P->second).faces[i].voisins[0];
+	double c_part_1 = (P->second).faces[i].c_voisins[0];
+	int part_2 = (P->second).faces[i].voisins[1];
+	double c_part_2 = (P->second).faces[i].c_voisins[1];
+	int aux_1 = (P->second).faces[i].voisins[2];
+	double c_aux_1 = (P->second).faces[i].c_voisins[2];
+	int aux_2 = (P->second).faces[i].voisins[3];
+	double c_aux_2 = (P->second).faces[i].c_voisins[3];
+	//Sortir le sens de toutes les forces comme il faut...
+	Vector_3 nIJ = faces[i].normale;
+	//Ajouter les directions des forces avec particules aux_1 et aux_2
+	Vector_3 n_aux_1 = Vector_3((P->second).pos, solide[aux_1].pos) / sqrt(Vector_3((P->second).pos, solide[aux_1].pos).squared_length());
+	Vector_3 n_aux_2 = Vector_3((P->second).pos, solide[aux_2].pos) / sqrt(Vector_3((P->second).pos, solide[aux_2].pos).squared_length());
+	(P->second).Fi = (P->second).Fi + faces[i].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ + faces[i].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[i].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
       }
     }
   }
