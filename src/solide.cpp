@@ -179,6 +179,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const char* s4
 	faces[id_face].comp_quantities(solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[1]].pos, solide[id].vertices[vert_face[0]].pos, solide[id].vertices[vert_face[3]].pos); //Calcul de la normale sortante, surface et barycentre face
       }
     }
+    else { } //Comment faire pour trouver la face si celle-ci est sur le bord ? Quels sont les vertex dedans ???
 
     //face 2
     if(v2 >= 0) { //Sinon particule sur le bord et pas de voisin
