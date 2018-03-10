@@ -348,12 +348,8 @@ double Solide::Energie_cinetique(){
 double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
   double Ep = 0.;
 
-  double B = 292000000.; //En Pa. JC.
-  double n = .31; //JC.
-  double A = 90000000.; //En Pa. Vient de JC
-
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += ( 0.5 * contraction_double(((P->second)).contrainte, ((P->second)).discrete_gradient - ((P->second)).epsilon_p)  + B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
+    Ep += ( 0.5 * contraction_double(((P->second)).contrainte, ((P->second)).discrete_gradient - ((P->second)).epsilon_p) * ((P->second)).V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
   }
   //cout << "Energie potentielle : " << Ep << endl;
   return Ep;
@@ -382,114 +378,6 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
   dt = min(dt,T-t);
   return dt;
 }
-
-/*void Solide::update_triangles(){
-  for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    (P->second).triangles_prev = (P->second).triangles;
-    (P->second).normales_prev = (P->second).normales;
-    (P->second).fluide_prev = (P->second).fluide;
-    for(int it=0;it<(P->second).triangles.size();it++){
-      (P->second).Points_interface_prev[it] = (P->second).Points_interface[it];
-      (P->second).Triangles_interface_prev[it] = (P->second).Triangles_interface[it];
-      (P->second).Position_Triangles_interface_prev[it] = (P->second).Position_Triangles_interface[it];
-      (P->second).Points_interface[it].erase((P->second).Points_interface[it].begin(),(P->second).Points_interface[it].end());
-      (P->second).Triangles_interface[it].erase((P->second).Triangles_interface[it].begin(),(P->second).Triangles_interface[it].end());	(P->second).Position_Triangles_interface[it].erase((P->second).Position_Triangles_interface[it].begin(), (P->second).Position_Triangles_interface[it].end());
-    }
-    (P->second).triangles.erase((P->second).triangles.begin(),(P->second).triangles.end());
-    (P->second).normales.erase((P->second).normales.begin(),(P->second).normales.end());
-    (P->second).fluide.erase((P->second).fluide.begin(),(P->second).fluide.end());
-    (P->second).vide.erase((P->second).vide.begin(),(P->second).vide.end());
-		
-    //Calcul de la nouvelle position des triangles
-    for(int f=0;f<(P->second).faces.size();f++){
-      Point_3 s,r,v,t;
-			
-      if((P->second).faces[f].size() == 3){
-	vector<Point_3> ri,vi,si ;
-	for(int part=0; part<(P->second).faces[f].vertex[0].size();part++){
-	  int p = (P->second).faces[f].vertex[0].particules[part];
-	  ri.push_back(solide[p].mvt_t((P->second).faces[f].vertex[0].pos));
-	}
-	r = centroid(ri.begin(),ri.end());
-				
-				
-	for(int part=0;part<(P->second).faces[f].vertex[1].size();part++){
-	  int p = (P->second).faces[f].vertex[1].particules[part];
-	  vi.push_back(solide[p].mvt_t((P->second).faces[f].vertex[1].pos));
-	}
-	v = centroid(vi.begin(),vi.end());
-
-	for(int part=0;part<(P->second).faces[f].vertex[2].size();part++){
-	  int p = (P->second).faces[f].vertex[2].particules[part];
-	  si.push_back(solide[p].mvt_t((P->second).faces[f].vertex[2].pos));
-	}
-	s = centroid(si.begin(),si.end());
-				
-	Vector_3 vect0(r,v);
-	Vector_3 vect1(r,s);
-	Triangle_3 Tri(r,v,s);
-	(P->second).triangles.push_back(Tri);
-	Vector_3 normale = cross_product(vect0,vect1);
-	normale = normale*(1./sqrt((normale.squared_length())));
-	(P->second).normales.push_back(normale);
-	if((P->second).faces[f].voisin < 0){
-	  (P->second).fluide.push_back(true);
-	} else {
-	  (P->second).fluide.push_back(false);
-	}
-	if( (P->second).faces[f].voisin == -2){
-	  (P->second).vide.push_back(true);
-	} else {
-	  (P->second).vide.push_back(false);
-	}
-      }
-      else{
-			
-	vector<Point_3> si;
-	si.push_back((P->second).mvt_t((P->second).faces[f].centre));
-	int j = (P->second).faces[f].voisin;
-	if(j>=0){
-	  si.push_back(solide[j].mvt_t((P->second).faces[f].centre));
-	}
-	s = centroid(si.begin(),si.end());
-			
-	for(int k=0;k<(P->second).faces[f].size();k++){
-	  int kp = (k+1)%((P->second).faces[f].size());
-	  vector<Point_3> ri,vi;
-	  for(int part=0;part<(P->second).faces[f].vertex[k].size();part++){
-	    int p = (P->second).faces[f].vertex[k].particules[part];
-	    ri.push_back(solide[p].mvt_t((P->second).faces[f].vertex[k].pos));
-	  }
-	  r = centroid(ri.begin(),ri.end());
-	  for(int part=0;part<(P->second).faces[f].vertex[kp].size();part++){
-	    int p = (P->second).faces[f].vertex[kp].particules[part];
-	    vi.push_back(solide[p].mvt_t((P->second).faces[f].vertex[kp].pos));
-	  }
-	  v = centroid(vi.begin(),vi.end());
-	  Vector_3 vect0(s,r);
-	  Vector_3 vect1(s,v);
-	  Triangle_3 Tri(s,r,v);
-	  (P->second).triangles.push_back(Tri);
-	  Vector_3 normale = cross_product(vect0,vect1);
-	  normale = normale*(1./sqrt((normale.squared_length())));			  
-	  (P->second).normales.push_back(normale);
-	  if((P->second).faces[f].voisin < 0){
-	    (P->second).fluide.push_back(true);
-	  } 
-	  else {
-	    (P->second).fluide.push_back(false);
-	  }
-	  if( (P->second).faces[f].voisin == -2){
-	    (P->second).vide.push_back(true);
-	  } else {
-	    (P->second).vide.push_back(false);
-	  }
-	}
-      }
-			
-    }//Calcul de la nouvelle position des triangles
-  }
-  }*/
 
 void Solide::Impression(const int &n){ //Sortie au format vtk
   int nb_part = solide.size();

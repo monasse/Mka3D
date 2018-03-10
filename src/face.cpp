@@ -29,11 +29,10 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : pt_face(), I_Dx()
+Face::Face() : I_Dx()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
-  D = 0.;
   S = 0.;
 }
 
