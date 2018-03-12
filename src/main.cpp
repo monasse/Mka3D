@@ -274,7 +274,6 @@ int main(){
     cout<<"iteration="<<n<< " dt="<<dt<<" t="<<t<<endl;
     //Output at prescribed times
     if(t>next_timp){
-      cout << "Avant impressions " << endl;
       S.Impression(kimp);
       sorties_reprise << t << endl;
       kimp++;

@@ -119,7 +119,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     //Ajout de la particule dans le solide
     solide[id] = p;
   }
-  
+
+  cout << solide.begin()->first <<" " << solide.end()->first << endl;
   //Comment fixer BC ? Voir comment les gérer en tetgen ! Fichier en plus surement
 
   //Importation des faces et des connectivités
@@ -176,6 +177,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     }
     faces.push_back(f);
   }
+
+  cout << solide.begin()->first <<" " << solide.end()->first << endl;
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
@@ -250,6 +253,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       }
     }
   }
+  cout << solide.begin()->first <<" " << solide.end()->first << endl;
 }
 
 
@@ -319,7 +323,6 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       (P->second).discrete_gradient += faces[i].S /  (P->second).V * Dij_n;
     }
     (P->second).contrainte = lambda * ((P->second).discrete_gradient - (P->second).epsilon_p).tr() * unit() + 2*mu * ((P->second).discrete_gradient - (P->second).epsilon_p);
-	
     (P->second).seuil_elas = A; // + B * pow((P->second).def_plas_cumulee, n);
 
     if(((P->second).contrainte - H * (P->second).epsilon_p).VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
@@ -337,7 +340,6 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 
 void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
   stresses();
-  cout << "Avant calcul forces !" << endl;
   for(std::map<int, Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
     for(int i=0 ; i<(P->second).faces.size() ; i++){
@@ -345,15 +347,13 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
       int part_1 = faces[num_face].voisins[0];
       int part_2 = faces[num_face].voisins[1];
       if(faces[i].BC != -1 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
-	cout << "Num face " << num_face << " " <<  faces[i].BC << endl;
-	cout << "ok ? " << faces[num_face].c_voisins.size() << endl;
-	cout << part_1 << " " << part_2 << endl;
 	double c_part_1 = faces[num_face].c_voisins[0];
 	double c_part_2 = faces[num_face].c_voisins[1];
 	int aux_1 = faces[num_face].voisins[2];
 	double c_aux_1 = faces[num_face].c_voisins[2];
 	int aux_2 = faces[num_face].voisins[3];
 	double c_aux_2 = faces[num_face].c_voisins[3];
+	//cout << "coords bary : " <<c_part_1 << " " << c_part_2 << " " << c_aux_1 << " " << c_aux_2 << endl;
 	//Sortir le sens de toutes les forces comme il faut...
 	Vector_3 nIJ = faces[num_face].normale;
 	//Ajouter les directions des forces avec particules aux_1 et aux_2
@@ -362,8 +362,9 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	(P->second).Fi = (P->second).Fi + faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[num_face].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
       }
     }
+    /*cout << "Particule :" << P->first << endl;
+    cout << "Force : " << (P->second).Fi << endl; */
   }
-  cout << "Apres calcul forces !" << endl;
 }
 
 double Solide::Energie(const int& N_dim, const double& nu, const double& E){
