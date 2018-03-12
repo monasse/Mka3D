@@ -180,36 +180,81 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     int part_1 = F->voisins[0];
     int part_2 = F->voisins[1];
-    if(not(part_1 == -1) && not(part_2 == -1)) { //Face dans le bulk et pas sur le bord
+    bool tetra_ok = false;
+    if(not(part_1 == -1)) { //Face dans le bulk et pas sur le bord
       int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
       //Boucle dans les faces de la première particule
       for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++) {
-	if(faces[*G].voisins[0] != -1 && faces[*G].voisins[0] != part_1 && voisin1 == -1)
+	if(not(faces[*G] == *F) && faces[*G].voisins[0] != part_1 && faces[*G].voisins[0] != -1 && voisin1 == -1)
 	  voisin1 = faces[*G].voisins[0];
-	else if(faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1 && voisin1 == -1)
+	else if(not(faces[*G] == *F) && faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1 && voisin1 == -1)
 	  voisin1 = faces[*G].voisins[1];
-	else if(faces[*G].voisins[0] != -1 && faces[*G].voisins[0] != part_1)
-	  voisin2 = faces[*G].voisins[0];
-	else if(faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1)
-	  voisin2 = faces[*G].voisins[1]; 
       }
-      //Vérifie que le centre de la face est dans le tetra et tetra pas aplati
-      double vol = cross_product(Vector_3(solide[part_1].x0,solide[part_1].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.; //Volume du tetra associé à la face
-      if(vol < pow(10., -6.))
-	cout << "Face : " << F->id << " a un mauvais tetra associé !" << endl;
-      double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
-      double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
-      double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
-      double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
-      if(c_part_1 < 0. || c_part_2 < 0. || c_voisin1 < 0. || c_voisin2 < 0.)
-	cout << "Face : " << F->id << " a un mauvais tetra associé !" << endl;
-      else { //Stockage des particules du tetra et des coords bay si tetra ok
-	(F->voisins).push_back(voisin1);
-	(F->voisins).push_back(voisin2);
-	(F->c_voisins).push_back(c_part_1);
-	(F->c_voisins).push_back(c_part_2);
-	(F->c_voisins).push_back(c_voisin1);
-	(F->c_voisins).push_back(c_voisin2);
+      for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++) {
+	if(not(faces[*G] == *F) && faces[*G].voisins[0] != -1 && faces[*G].voisins[0] != part_1 && voisin1 != -1)
+	  voisin2 = faces[*G].voisins[0];
+	else if(not(faces[*G] == *F) && faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1 && voisin1 != -1)
+	  voisin2 = faces[*G].voisins[1]; 
+
+	//Vérifie que le centre de la face est dans le tetra et tetra pas aplati
+	double vol = cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.; //Volume du tetra associé à la face
+	cout << F->id << endl;
+	if(vol < pow(10., -10.))
+	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
+	double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+	double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+	double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+	double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
+	if(c_part_1 < 0. || c_part_2 < 0. || c_voisin1 < 0. || c_voisin2 < 0.)
+	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
+	else { //Stockage des particules du tetra et des coords bay si tetra ok
+	  (F->voisins).push_back(voisin1);
+	  (F->voisins).push_back(voisin2);
+	  (F->c_voisins).push_back(c_part_1);
+	  (F->c_voisins).push_back(c_part_2);
+	  (F->c_voisins).push_back(c_voisin1);
+	  (F->c_voisins).push_back(c_voisin2);
+	  tetra_ok = true;
+	  break;
+	}
+      }
+    }
+    if(not(tetra_ok) && not(part_2 == -1)) { //Si marche pas avec part_1, on teste avec part_2
+      int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
+      //Boucle dans les faces de la première particule
+      for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++) {
+	if(not(faces[*G] == *F) && faces[*G].voisins[0] != part_2 && faces[*G].voisins[0] != -1 && voisin1 == -1)
+	  voisin1 = faces[*G].voisins[0];
+	else if(not(faces[*G] == *F) && faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_2 && voisin1 == -1)
+	  voisin1 = faces[*G].voisins[1];
+      }
+      for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++) {
+	if(not(faces[*G] == *F) && faces[*G].voisins[0] != -1 && faces[*G].voisins[0] != part_1 && voisin1 != -1)
+	  voisin2 = faces[*G].voisins[0];
+	else if(not(faces[*G] == *F) && faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1 && voisin1 != -1)
+	  voisin2 = faces[*G].voisins[1]; 
+
+	//Vérifie que le centre de la face est dans le tetra et tetra pas aplati
+	double vol = cross_product(Vector_3(solide[part_2].x0,solide[part_1].x0),Vector_3(solide[part_2].x0,solide[voisin1].x0))*Vector_3(solide[part_2].x0,solide[voisin2].x0)/6.; //Volume du tetra associé à la face
+	cout << F->id << endl;
+	if(vol < pow(10., -10.))
+	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
+	double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+	double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+	double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+	double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
+	if(c_part_1 < 0. || c_part_2 < 0. || c_voisin1 < 0. || c_voisin2 < 0.)
+	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
+	else { //Stockage des particules du tetra et des coords bay si tetra ok
+	  (F->voisins).push_back(voisin1);
+	  (F->voisins).push_back(voisin2);
+	  (F->c_voisins).push_back(c_part_1);
+	  (F->c_voisins).push_back(c_part_2);
+	  (F->c_voisins).push_back(c_voisin1);
+	  (F->c_voisins).push_back(c_voisin2);
+	  tetra_ok = true;
+	  break;
+	}
       }
     }
   }
@@ -262,11 +307,10 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 
 void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
-    faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro
+    faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     if(not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
-    for(int j=0; i<faces[i].voisins.size() ; j++) {
+      for(int j=0; i<faces[i].voisins.size() ; j++)
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
-      }
     }
   }
   
