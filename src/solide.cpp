@@ -140,7 +140,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     f.vertex.push_back(v2 - 1);
     f.vertex.push_back(v3 - 1);
     if(part_1 == -1 || part_2 == -1)
-      f.BC = 1; //face au bord
+      f.BC = -1; //face au bord
     else {
       f.BC = 0; //Face pas au bord
       f.D0 = sqrt(Vector_3(solide[part_1].x0, solide[part_2].x0).squared_length());
@@ -182,7 +182,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     int part_1 = F->voisins[0];
     int part_2 = F->voisins[1];
     bool tetra_ok = false;
-    if(F->BC != 1 && not(part_1 == -1)) { //Face dans le bulk et pas sur le bord
+    if(F->BC != -1 && not(part_1 == -1)) { //Face dans le bulk et pas sur le bord
       int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
       //Boucle dans les faces de la première particule
       for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++) {
@@ -203,10 +203,6 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
-	if(F->id == 1) {
-	  cout << "On la traite !" << vol << endl;
-	  cout << c_part_1 << c_part_2 << c_voisin1 << c_voisin2 << endl;
-	}
 	if(vol > pow(10., -10.)) { // && c_part_1 > 0. && c_part_2 > 0. && c_voisin1 > 0. && c_voisin2 > 0.) { //Stockage des particules du tetra et des coords bary si ok
 	  (F->voisins).push_back(voisin1);
 	  (F->voisins).push_back(voisin2);
@@ -219,7 +215,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	}
       }
     }
-    if(F->BC != 1 && not(tetra_ok) && not(part_2 == -1)) { //Si marche pas avec part_1, on teste avec part_2
+    if(F->BC != -1 && not(tetra_ok) && not(part_2 == -1)) { //Si marche pas avec part_1, on teste avec part_2
       int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
       //Boucle dans les faces de la première particule
       for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++) {
@@ -304,14 +300,9 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
-    cout << "BC : " << faces[i].BC << endl;
-    if(faces[i].BC != 1) {
-       //not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
-      cout << i << endl;
-      for(int j=0; i<faces[i].voisins.size() ; j++) {
-	//cout << faces[i].voisins.size() << endl;
-	cout << "Pb ici ???" <<faces[i].c_voisins.size() << endl;
-	cout << solide[faces[i].voisins[j]].Dx<< endl;
+    //cout << "BC : " << faces[i].BC << endl;
+    if(faces[i].BC != -1) { //not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
+      for(int j=0; j<faces[i].voisins.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
       }
     }
@@ -345,16 +336,19 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 
 
 void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
-  cout << "Avant calcul efforts !" << endl;
   stresses();
+  cout << "Avant calcul forces !" << endl;
   for(std::map<int, Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
     for(int i=0 ; i<(P->second).faces.size() ; i++){
-      if(faces[i].BC != 0){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
-	int num_face = (P->second).faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
-	int part_1 = faces[num_face].voisins[0];
+      int num_face = (P->second).faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
+      int part_1 = faces[num_face].voisins[0];
+      int part_2 = faces[num_face].voisins[1];
+      if(faces[i].BC != -1 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
+	cout << "Num face " << num_face << " " <<  faces[i].BC << endl;
+	cout << "ok ? " << faces[num_face].c_voisins.size() << endl;
+	cout << part_1 << " " << part_2 << endl;
 	double c_part_1 = faces[num_face].c_voisins[0];
-	int part_2 = faces[num_face].voisins[1];
 	double c_part_2 = faces[num_face].c_voisins[1];
 	int aux_1 = faces[num_face].voisins[2];
 	double c_aux_1 = faces[num_face].c_voisins[2];
@@ -369,6 +363,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
       }
     }
   }
+  cout << "Apres calcul forces !" << endl;
 }
 
 double Solide::Energie(const int& N_dim, const double& nu, const double& E){
