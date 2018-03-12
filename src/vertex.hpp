@@ -37,7 +37,7 @@ class Vertex
 {
 public:
   Vertex();
-  Vertex(const Point_3 &p);
+  Vertex(const Point_3 &p, const int& id);
   Vertex(const Point_3 &p, const std::vector<int> & parts);
   Vertex & operator=(const  Vertex &V); // opérateur = surcharge pour l'affectation
   Point_3 pos; //!< Coordonnées du sommet

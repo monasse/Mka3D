@@ -39,7 +39,7 @@ public:
   int size(){
 	return vertex.size();
   }
-  void comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3, const Point_3& ext); //Computes the outward normal, the surface and the barycentre of the face
+  void comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3); //, const Point_3& ext); //Computes the outward normal, the surface and the barycentre of the face
 
   //Attributs
   Point_3 centre; //!< Centre de la face

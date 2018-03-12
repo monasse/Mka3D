@@ -89,7 +89,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     int id; //Numéro du vertex + 1
     double x,y,z;
     stm >> id >> x >> y >> z;
-    vertex.push_back(Vertex(Point_3(x,y,z))); //Vertex sont donnés dans l'ordre
+    vertex.push_back(Vertex(Point_3(x,y,z), id - 1)); //Vertex sont donnés dans l'ordre
   }
 
   //Importation des Particules
@@ -128,7 +128,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   int nbr_faces;
   stdf >> nbr_faces;
   for(int i=0; i<nbr_faces ; i++) {
-    getline(elements, ligne);
+    getline(import_faces, ligne);
     istringstream  stm(ligne);
     int id;
     int v1,v2,v3; //Les vertex de la face
@@ -155,24 +155,14 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     bool calcul_normales = false;
     if(part_1 >= 0) { //cad particule pas sur le bord
       solide[part_1].faces.push_back(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
-      int id_vertex_hors_face;
-      for(int j=0; j<solide[part_1].vertices.size() ; j++) { //on cherche le vertex de la particule pas dans la face pour le calcul de la normale
-	if(not(solide[part_1].vertices[j] ==  vertex[v1-1].pos) && not(solide[part_1].vertices[j] ==  vertex[v1-1].pos) && not(solide[part_1].vertices[j] ==  vertex[v1-1].pos))
-	  id_vertex_hors_face = j;
-      }
-      f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos, solide[part_1].vertices[id_vertex_hors_face]); //Calcul de la normale sortante, surface et barycentre face
+      f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos); //Calcul de la normale sortante, surface et barycentre face
       calcul_normales = true;
       
     }
     if(part_2 >= 0) { //cad particule pas sur le bord
       solide[part_2].faces.push_back(f.id);
       if(not(calcul_normales)) {
-	int id_vertex_hors_face;
-	for(int j=0; j<solide[part_2].vertices.size() ; j++) {
-	  if(not(solide[part_2].vertices[j] ==  vertex[v1-1].pos) && not(solide[part_2].vertices[j] ==  vertex[v1-1].pos) && not(solide[part_2].vertices[j] ==  vertex[v1-1].pos))
-	    id_vertex_hors_face = j;
-	}
-	f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos, solide[part_2].vertices[id_vertex_hors_face]);; //Calcul de la normale sortante, surface et barycentre face
+	f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos); //, solide[part_2].vertices[id_vertex_hors_face]); //Calcul de la normale sortante, surface et barycentre face
       }
     }
     //Vérification du sens de la normale

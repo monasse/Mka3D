@@ -34,8 +34,9 @@ Vertex::Vertex()
   num = 0;
 }
 
-Vertex::Vertex(const Point_3 &p) {
+Vertex::Vertex(const Point_3 &p, const int& id) {
   pos = p;
+  num = id;
 }
 
 Vertex::Vertex(const Point_3& p, const std::vector<int> & parts)
