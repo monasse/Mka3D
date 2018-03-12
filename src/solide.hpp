@@ -54,7 +54,7 @@ public:
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void Forces(const int &N_dim, const double& dt, const double& t, const double& T);
   void Forces_internes(const double& dt);
-  void stresses(const double& dt);
+  void stresses();
   void update_triangles();
   double Energie(const int &N_dim, const double &nu, const double &E);
   double Energie_potentielle(const int &N_dim, const double &nu, const double &E);

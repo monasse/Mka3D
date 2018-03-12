@@ -140,9 +140,11 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     f.vertex.push_back(v2 - 1);
     f.vertex.push_back(v3 - 1);
     if(part_1 == -1 || part_2 == -1)
-      f.BC = 1; //A calibrer selon les BC dispos à l'avenir
-    else
-      f.BC = 0; //Face au bord
+      f.BC = 1; //face au bord
+    else {
+      f.BC = 0; //Face pas au bord
+      f.D0 = sqrt(Vector_3(solide[part_1].x0, solide[part_2].x0).squared_length());
+    }
     if(part_1 >=0) { //Ajout du numéro des voisins dans la face
       f.voisins.push_back(part_1);
       f.voisins.push_back(part_2);
@@ -150,7 +152,6 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     else { //La première valeur de voisin est la seule particule qui contient la face sur le bord
       f.voisins.push_back(part_2);
       f.voisins.push_back(part_1);
-      f.D0 = sqrt(Vector_3(solide[part_1].x0, solide[part_2].x0).squared_length());
     }
     bool calcul_normales = false;
     if(part_1 >= 0) { //cad particule pas sur le bord
@@ -296,12 +297,17 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
     (P->second).Fi = (P->second).Fi + Forces_externes(t,T); //Reprendre calcul des forces externes
 }
 
-void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes les particules
+void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
-    if(not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
-      for(int j=0; i<faces[i].voisins.size() ; j++)
+    if(faces[i].BC != 1) {
+       //not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
+      cout << i << endl;
+      for(int j=0; i<faces[i].voisins.size() ; j++) {
+	cout << "Pb ici ???" <<faces[i].c_voisins.size() << endl;
+	cout << solide[faces[i].voisins[j]].Dx<< endl;
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
+      }
     }
   }
   
@@ -322,8 +328,8 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes l
     if(((P->second).contrainte - H * (P->second).epsilon_p).VM() > (P->second).seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / (((P->second).contrainte).dev()).norme() * ((P->second).contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = (((P->second).contrainte - H * (P->second).epsilon_p).VM() - A) / (2*mu + H);
-      (P->second).def_plas_cumulee += delta_p;
-      (P->second).epsilon_p += delta_p * n_elas;
+      //(P->second).def_plas_cumulee += delta_p;
+      //(P->second).epsilon_p += delta_p * n_elas;
     }
   }
 
@@ -332,7 +338,9 @@ void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes l
 }
 
 
-void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule  
+void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
+  cout << "Avant calcul efforts !" << endl;
+  stresses();
   for(std::map<int, Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     (P->second).Fi = Vector_3(0.,0.,0.);
     for(int i=0 ; i<(P->second).faces.size() ; i++){

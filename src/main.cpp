@@ -261,11 +261,13 @@ int main(){
     sorties_reprise << t << endl;
   }
   kimp++;
-  
+
+  cout << "Avant calcul Energie " << endl;
   double E0 = S.Energie(N_dim, nu, E);
   if(rep){
     E0 -= dE0rep;
   }
+  cout << "Avant calcul Forces_internes " << endl;
   S.Forces_internes(dt);
   int nb_part = S.size();
 
@@ -274,6 +276,7 @@ int main(){
     cout<<"iteration="<<n<< " dt="<<dt<<" t="<<t<<endl;
     //Output at prescribed times
     if(t>next_timp){
+      cout << "Avant impressions " << endl;
       S.Impression(kimp);
       sorties_reprise << t << endl;
       kimp++;
