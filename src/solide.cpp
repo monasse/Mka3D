@@ -198,16 +198,11 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
 	//Vérifie que le centre de la face est dans le tetra et tetra pas aplati
 	double vol = cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.; //Volume du tetra associé à la face
-	cout << F->id << endl;
-	if(vol < pow(10., -10.))
-	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
 	double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
-	if(c_part_1 < 0. || c_part_2 < 0. || c_voisin1 < 0. || c_voisin2 < 0.)
-	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
-	else { //Stockage des particules du tetra et des coords bay si tetra ok
+	if(vol > pow(10., -10.) && c_part_1 > 0. && c_part_2 > 0. && c_voisin1 > 0. && c_voisin2 > 0.) { //Stockage des particules du tetra et des coords bary si ok
 	  (F->voisins).push_back(voisin1);
 	  (F->voisins).push_back(voisin2);
 	  (F->c_voisins).push_back(c_part_1);
@@ -236,16 +231,12 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
 	//Vérifie que le centre de la face est dans le tetra et tetra pas aplati
 	double vol = cross_product(Vector_3(solide[part_2].x0,solide[part_1].x0),Vector_3(solide[part_2].x0,solide[voisin1].x0))*Vector_3(solide[part_2].x0,solide[voisin2].x0)/6.; //Volume du tetra associé à la face
-	cout << F->id << endl;
-	if(vol < pow(10., -10.))
-	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
+	//cout << F->id << endl;
 	double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
-	if(c_part_1 < 0. || c_part_2 < 0. || c_voisin1 < 0. || c_voisin2 < 0.)
-	  throw std::invalid_argument( "Face a un mauvais tetra associe !");
-	else { //Stockage des particules du tetra et des coords bay si tetra ok
+        if(vol > pow(10., -10.) && c_part_1 > 0. && c_part_2 > 0. && c_voisin1 > 0. && c_voisin2 > 0.) { //Stockage des particules du tetra et des coords bary si ok
 	  (F->voisins).push_back(voisin1);
 	  (F->voisins).push_back(voisin2);
 	  (F->c_voisins).push_back(c_part_1);
