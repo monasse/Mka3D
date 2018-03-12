@@ -271,11 +271,11 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 }
 
 void Solide::stresses(const double& dt){ //Calcul de la contrainte dans toutes les particules
-  for(std::vector<Face>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++){ //Calcul de la reconstruction sur chaque face
-    F->I_Dx = Vector_3(0., 0., 0.); //Remise à zéro
-    if(not(F->voisins[0] == -1) && not(F->voisins[0] == -1)) { //Cad particule dans le bulk et pas sur le bord
-      for(int i=0; i<(F->voisins).size ; i++) {
-	F->I_Dx += F->c_voisins[i] * solide[F->voisins[i]].Dx;
+  for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
+    faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro
+    if(not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
+    for(int j=0; i<faces[i].voisins.size() ; j++) {
+	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
       }
     }
   }
@@ -312,20 +312,21 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
     (P->second).Fi = Vector_3(0.,0.,0.);
     for(int i=0 ; i<(P->second).faces.size() ; i++){
       if(faces[i].BC != 0){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
-	int part_1 = ((((P->second).faces)[i]).voisins)[0];
-	double c_part_1 = (P->second).faces[i].c_voisins[0];
-	int part_2 = (P->second).faces[i].voisins[1];
-	double c_part_2 = (P->second).faces[i].c_voisins[1];
-	int aux_1 = (P->second).faces[i].voisins[2];
-	double c_aux_1 = (P->second).faces[i].c_voisins[2];
-	int aux_2 = (P->second).faces[i].voisins[3];
-	double c_aux_2 = (P->second).faces[i].c_voisins[3];
+	int num_face = (P->second).faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
+	int part_1 = faces[num_face].voisins[0];
+	double c_part_1 = faces[num_face].c_voisins[0];
+	int part_2 = faces[num_face].voisins[1];
+	double c_part_2 = faces[num_face].c_voisins[1];
+	int aux_1 = faces[num_face].voisins[2];
+	double c_aux_1 = faces[num_face].c_voisins[2];
+	int aux_2 = faces[num_face].voisins[3];
+	double c_aux_2 = faces[num_face].c_voisins[3];
 	//Sortir le sens de toutes les forces comme il faut...
-	Vector_3 nIJ = faces[i].normale;
+	Vector_3 nIJ = faces[num_face].normale;
 	//Ajouter les directions des forces avec particules aux_1 et aux_2
 	Vector_3 n_aux_1 = Vector_3((P->second).x0, solide[aux_1].x0) / sqrt(Vector_3((P->second).x0, solide[aux_1].x0).squared_length());
 	Vector_3 n_aux_2 = Vector_3((P->second).x0, solide[aux_2].x0) / sqrt(Vector_3((P->second).x0, solide[aux_2].x0).squared_length());
-	(P->second).Fi = (P->second).Fi + faces[i].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ + faces[i].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[i].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
+	(P->second).Fi = (P->second).Fi + faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[num_face].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
       }
     }
   }
@@ -425,7 +426,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   int compteur_vertex = 0;
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=(P->second).faces.begin();F!=(P->second).faces.end();F++) {
-      vtk << F->nb_vertex;
+      vtk << faces[*F].vertex.size();
       for(int k=0 ; k<faces[*F].vertex.size() ; k++)
 	vtk << " " << compteur_vertex + (faces[*F].vertex)[k];
       vtk << endl;
