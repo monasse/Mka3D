@@ -61,7 +61,7 @@ public:
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
 
-  std::vector<int> vertex_face(const int& particule, const int& voisin);
+  //std::vector<int> vertex_face(const int& particule, const int& voisin);
   
   // private :
   std::vector<Vertex> vertex;

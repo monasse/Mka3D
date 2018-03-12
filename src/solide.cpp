@@ -187,30 +187,30 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
-  for(std::vector<int>::iterator F=faces.begin();P!=faces.end();F++){ //Boucle sur toutes les faces
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     int part_1 = F->voisins[0];
     int part_2 = F->voisins[1];
     if(not(part_1 == -1) && not(part_2 == -1)) { //Face dans le bulk et pas sur le bord
       int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
       //Boucle dans les faces de la première particule
       for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++) {
-	if(G->voisins[0] != -1 && G->voisins[0] != part_1 && voisin1 == -1)
-	  voisin1 = G->voisins[0];
-	else if(G->voisins[1] != -1 && G->voisins[1] != part_1 && voisin1 == -1)
-	  voisin1 = G->voisins[1];
-	else if(G->voisins[0] != -1 && G->voisins[0] != part_1)
-	  voisin2 = G->voisins[0];
-	else if(G->voisins[1] != -1 && G->voisins[1] != part_1)
-	  voisin2 = G->voisins[1]; 
+	if(faces[*G].voisins[0] != -1 && faces[*G].voisins[0] != part_1 && voisin1 == -1)
+	  voisin1 = faces[*G].voisins[0];
+	else if(faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1 && voisin1 == -1)
+	  voisin1 = faces[*G].voisins[1];
+	else if(faces[*G].voisins[0] != -1 && faces[*G].voisins[0] != part_1)
+	  voisin2 = faces[*G].voisins[0];
+	else if(faces[*G].voisins[1] != -1 && faces[*G].voisins[1] != part_1)
+	  voisin2 = faces[*G].voisins[1]; 
       }
       //Vérifie que le centre de la face est dans le tetra et tetra pas aplati
-      double vol = cross_product(Vector_3(solide[part_1].pos,solide[part_1].pos),Vector_3(solide[part_1],voisin1))*Vector_3(solide[part_1].pos,voisin2)/6.; //Volume du tetra associé à la face
+      double vol = cross_product(Vector_3(solide[part_1].x0,solide[part_1].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.; //Volume du tetra associé à la face
       if(vol < pow(10., -6.))
 	cout << "Face : " << F->id << " a un mauvais tetra associé !" << endl;
-      double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].pos),Vector_3(F->centre,voisin1))*Vector_3(F->centre,voisin2)/6. / vol;
-      double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].pos),Vector_3(F->centre,voisin1))*Vector_3(F->centre,voisin2)/6. / vol;
-      double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].pos),Vector_3(F->centre,solide[part_2].pos))*Vector_3(F->centre,voisin2)/6. / vol;
-      double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].pos),Vector_3(F->centre,solide[part_2].pos))*Vector_3(F->centre,voisin1)/6. / vol;
+      double c_part_1 = cross_product(Vector_3(F->centre,solide[part_2].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+      double c_part_2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[voisin1].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+      double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
+      double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
       if(c_part_1 < 0. || c_part_2 < 0. || c_voisin1 < 0. || c_voisin2 < 0.)
 	cout << "Face : " << F->id << " a un mauvais tetra associé !" << endl;
       else { //Stockage des particules du tetra et des coords bay si tetra ok
@@ -226,7 +226,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 }
 
 
-std::vector<int> Solide::vertex_face(const int& particule, const int& voisin) {
+/*std::vector<int> Solide::vertex_face(const int& particule, const int& voisin) {
   std::vector<int> resultat;
   for(int j=0; j <solide[voisin].vertices.size ; j++) {
     if(solide[particule].vertices[0] == solide[voisin].vertices[j])
@@ -250,7 +250,7 @@ std::vector<int> Solide::vertex_face(const int& particule, const int& voisin) {
       resultat.push_back(j); //Dernière particule hors de la face mais sert pour le calcul de la normale
   }
   return resultat;
-}
+}*/
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -371,7 +371,7 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
   }
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(int j=0;j<(P->second).faces.size();j++){
-      if((P->second).faces[j].voisin>=0){
+      if(faces[(P->second).faces[j]].voisins[0] >=0 && faces[(P->second).faces[j]].voisins[1] >= 0){
 	dt = min(dt,cfls*(P->second).faces[j].D0/cs);
       }
     }
