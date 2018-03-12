@@ -262,12 +262,10 @@ int main(){
   }
   kimp++;
 
-  cout << "Avant calcul Energie " << endl;
   double E0 = S.Energie(N_dim, nu, E);
   if(rep){
     E0 -= dE0rep;
   }
-  cout << "Avant calcul Forces_internes " << endl;
   S.Forces_internes(dt);
   int nb_part = S.size();
 

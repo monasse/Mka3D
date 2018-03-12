@@ -42,12 +42,6 @@ inline double signe(const double &x)
   return (x < 0.) ? -1. : 1. ;
 }
 
-//Function absolute value
-double abs(const double &x)
-{
-  return max(x,-x);
-}
-
 Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien

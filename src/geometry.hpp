@@ -200,7 +200,10 @@ public:
   Tetrahedron transform(const Aff_transformation_3 &T) const;
 };
 
-  
+//Function absolute value
+double abs(const double &x);
+
+
 
 // bool inside_box(const Bbox& cell, const Point_3& P);
 // bool box_inside_convex_polygon(const Particule& S, const Bbox& cell);  
