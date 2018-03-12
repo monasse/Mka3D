@@ -77,6 +77,7 @@ void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &
   normale = orthogonal_vector(aux[0], aux[1], aux[2]);
   double norm = sqrt((normale.squared_length()));
   normale = normale / norm;
+  D0 = 100000000000.;
   /*if(Vector_3(aux[0], ext) * normale < 0.)
     normale = -1. * normale;
   double aux2 = Vector_3(centre, v1) * normale;

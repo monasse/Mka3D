@@ -51,6 +51,8 @@ public:
   std::vector<double> c_voisins; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
   int BC; //Vaut 0 si particule pas au bord et peut valoir 1,2,etc... selon la condition de bord
+
+  double D0; //Distance à l'equilibre entre les 2 particules voisines
 };
 
 bool operator==(const Face &F1, const Face &F2); //Compare les faces

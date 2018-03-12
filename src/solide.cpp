@@ -37,7 +37,7 @@
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
-Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1);){
+Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1){
   lambda = E * nu / (1.+nu) / (1. - 2.*nu);
   mu = E / 2. / (1.+nu);
   A = A1;
@@ -150,6 +150,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     else { //La première valeur de voisin est la seule particule qui contient la face sur le bord
       f.voisins.push_back(part_2);
       f.voisins.push_back(part_1);
+      f.D0 = sqrt(Vector_3(solide[part_1].x0, solide[part_2].x0).squared_length());
     }
     bool calcul_normales = false;
     if(part_1 >= 0) { //cad particule pas sur le bord
@@ -365,13 +366,13 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
   double sigma = 100000.;
   for(int i=0;i<size();i++){
     for(int j=0;j<solide[i].faces.size();j++){
-      sigma = min(sigma,solide[i].faces[j].D0);
+      sigma = min(sigma,faces[solide[i].faces[j]].D0);
     }
   }
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(int j=0;j<(P->second).faces.size();j++){
       if(faces[(P->second).faces[j]].voisins[0] >=0 && faces[(P->second).faces[j]].voisins[1] >= 0){
-	dt = min(dt,cfls*(P->second).faces[j].D0/cs);
+	dt = min(dt,cfls*faces[(P->second).faces[j]].D0/cs);
       }
     }
   }

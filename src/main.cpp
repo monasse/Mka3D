@@ -266,7 +266,7 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
-  S.Forces_internes(N_dim, nu, E, dt);
+  S.Forces_internes(dt);
   int nb_part = S.size();
 
   //Iterations on the time-steps
@@ -290,7 +290,8 @@ int main(){
     ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
     cout<< "Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
-    dt = 2. * pow(10., -7.); //S.pas_temps(t,T,cfl, E, nu, rho); //
+    if(dt < pow(10., -10.))
+      dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of forces
