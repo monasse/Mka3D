@@ -222,6 +222,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	}
       }
     }
+      cout << solide.begin()->first <<" " << solide.end()->first << endl;
     if(F->BC != -1 && not(tetra_ok) && not(part_2 == -1)) { //Si marche pas avec part_1, on teste avec part_2
       int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
       //Boucle dans les faces de la première particule
