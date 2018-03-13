@@ -175,6 +175,10 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     if(part_1 == -1 || part_2 == -1) { //Face au bord
       f.normale = -f.normale; //normale forcement dans mauvais sens
     }
+    if(solide.begin()->first <= 0)
+      cout << "On en a un en bas ! " << id << endl;
+    /*if(solide.end()->first >= 1696)
+      cout << "On en a une en haut !" << id << endl;*/
     faces.push_back(f);
   }
 
