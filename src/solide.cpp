@@ -120,7 +120,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     solide[id] = p;
   }
 
-  cout << solide.begin()->first <<" " << solide.end()->first << endl;
+  //cout << solide.begin()->first <<" " << solide.end()->first << endl;
   //Comment fixer BC ? Voir comment les gérer en tetgen ! Fichier en plus surement
 
   //Importation des faces et des connectivités
@@ -182,8 +182,6 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     faces.push_back(f);
   }
 
-  cout << solide.begin()->first <<" " << solide.end()->first << endl;
-
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     if(F->BC != -1) {
@@ -237,10 +235,9 @@ bool Solide::voisins_face(int num_face) {
       double c_part_2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
       double c_voisin1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
       double c_voisin2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0))/6. / vol;
-      cout << solide.begin()->first <<" " << solide.end()->first << " apres calcul coords bary" << endl;
       cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
       cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << endl;
-      if(vol > pow(10., -10.) && c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1.) { //Stockage des particules du tetra et des coords bary si ok
+      if(vol > pow(10., -10.) && c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.01) { //Stockage des particules du tetra et des coords bary si ok
 	faces[num_face].voisins.push_back(voisin1);
         faces[num_face].voisins.push_back(voisin2);
         faces[num_face].c_voisins.push_back(c_part_1);

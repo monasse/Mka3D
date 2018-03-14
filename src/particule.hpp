@@ -59,7 +59,7 @@ class Particule
   int fixe; //!< =true si la particule est fixe, false sinon
   double m; //!< Masse de la particule
   double V; //!< Volume de la particule
-  Point_3 x0; //!<Position du centre de la particule &agrave; t=0
+  Point_3 x0; //!<Position du centre de la particule dans la configuration initiale
   Vector_3 Dx; //!<Depleacement du centre de la particule en t
   //Vector_3 Dx_plas; //Déplacements plastiques...
   Vector_3 Dxprev; //!<Deplacement du centre de la particule en t-dt
