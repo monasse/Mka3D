@@ -60,8 +60,8 @@ public:
   double Energie_potentielle(const int &N_dim, const double &nu, const double &E);
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
+  bool voisins_face(int num_face); //Renvoie faux si trouve pas voisins pour reconstruction du gradient dans la face
 
-  //std::vector<int> vertex_face(const int& particule, const int& voisin);
   
   // private :
   std::vector<Vertex> vertex;

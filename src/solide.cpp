@@ -186,10 +186,68 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
-    int part_1 = F->voisins[0];
-    int part_2 = F->voisins[1];
-    bool tetra_ok = false;
-    if(F->BC != -1 && not(part_1 == -1)) { //Face dans le bulk et pas sur le bord
+    bool test = voisins_face(F->id);
+    if(not(test)) {
+	cout << "Face : " << F->id << endl;
+	throw std::invalid_argument( "Pas de tetra associe a une face" );    
+      }
+  }
+}
+
+bool Solide::voisins_face(int num_face) {
+  int part_1 = faces[num_face].voisins[0];
+  int part_2 = faces[num_face].voisins[1];
+
+  vector<int> tous_voisins; //Va être rempli des voisins des 2 particules qui peuvent être candidats pour former le tetra associé à la face !
+
+  for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++){
+    if(*G != num_face && faces[*G].voisins[0] != part_1 && faces[*G].voisins[0] != -1)
+      tous_voisins.push_back(faces[*G].voisins[0]);
+    else if(*G != num_face && faces[*G].voisins[1] != part_1 && faces[*G].voisins[1] != -1)
+      tous_voisins.push_back(faces[*G].voisins[1]);
+  }
+  for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++){
+    if(*G != num_face && faces[*G].voisins[0] != part_2 && faces[*G].voisins[0] != -1)
+      tous_voisins.push_back(faces[*G].voisins[0]);
+    else if(*G != num_face && faces[*G].voisins[1] != part_2 && faces[*G].voisins[1] != -1)
+      tous_voisins.push_back(faces[*G].voisins[1]);
+  }
+  //Tous_voisins rempli a priori
+
+  //On parcourt tous les couples candidats possibles sans les répéter
+  bool tetra_ok = false;
+  for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end();G++){
+    if(tetra_ok)
+      break;
+    for(std::vector<int>::iterator I=G++;G!=tous_voisins.end();G++){
+      int voisin1 = *G;
+      int voisin2 = *I;
+      //Test pour voir si tetra candidat est valable ou pas
+      double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
+      double c_part_1 = cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0)/6. / vol;
+      double c_part_2 = cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0)/6. / vol;
+      double c_voisin1 = cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0)/6. / vol;
+      double c_voisin2 = cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0)/6. / vol;
+      cout << solide.begin()->first <<" " << solide.end()->first << " apres calcul coords bary" << endl;
+      cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
+      cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << endl;
+      if(vol > pow(10., -10.) && c_part_1 > 0. && c_part_2 > 0. && c_voisin1 > 0. && c_voisin2 > 0.) { //Stockage des particules du tetra et des coords bary si ok
+	faces[num_face].voisins.push_back(voisin1);
+        faces[num_face].voisins.push_back(voisin2);
+        faces[num_face].c_voisins.push_back(c_part_1);
+        faces[num_face].c_voisins.push_back(c_part_2);
+        faces[num_face].c_voisins.push_back(c_voisin1);
+        faces[num_face].c_voisins.push_back(c_voisin2);
+	tetra_ok = true;
+	break;
+      }
+    }
+  }
+  return tetra_ok;
+}
+  
+    
+/*if(F->BC != -1 && not(part_1 == -1)) { //Face dans le bulk et pas sur le bord
       int voisin1 = -1, voisin2 = -1; //Vont être les 2 autres particules composant le tetra associé à la face 
       //Boucle dans les faces de la première particule
       for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++) {
@@ -220,6 +278,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	      double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	      double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
 	      cout << solide.begin()->first <<" " << solide.end()->first << " apres calcul coords bary" << endl;
+	      cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
+	      cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << endl;
 	      if(vol > pow(10., -10.) && c_part_1 > 0. && c_part_2 > 0. && c_voisin1 > 0. && c_voisin2 > 0.) { //Stockage des particules du tetra et des coords bary si ok
 		(F->voisins).push_back(voisin1);
 		(F->voisins).push_back(voisin2);
@@ -267,6 +327,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	      double c_voisin1 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin2].x0)/6. / vol;
 	      double c_voisin2 = cross_product(Vector_3(F->centre,solide[part_1].x0),Vector_3(F->centre,solide[part_2].x0))*Vector_3(F->centre,solide[voisin1].x0)/6. / vol;
 	      cout << solide.begin()->first <<" " << solide.end()->first << " apres calcul coords bary" << endl;
+	      cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
+	      cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << endl;
 	      if(vol > pow(10., -10.) && c_part_1 > 0. && c_part_2 > 0. && c_voisin1 > 0. && c_voisin2 > 0.) { //Stockage des particules du tetra et des coords bary si ok
 		(F->voisins).push_back(voisin1);
 		(F->voisins).push_back(voisin2);
@@ -280,41 +342,9 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	    }
 	  }
 	}
-      }
+      }    
     }
-    if(F->voisins.size() <= 2) {
-      cout << "Face : " << F->id << endl;
-      throw std::invalid_argument( "Pas de tetra associe a une face" );    
-    }
-  }
-}
-
-
-/*std::vector<int> Solide::vertex_face(const int& particule, const int& voisin) {
-  std::vector<int> resultat;
-  for(int j=0; j <solide[voisin].vertices.size ; j++) {
-    if(solide[particule].vertices[0] == solide[voisin].vertices[j])
-      resultat.push_back(0);
-  }
-  for(int j=0; j <solide[voisin].vertices.size ; j++) {
-    if(solide[particule].vertices[1] == solide[voisin].vertices[j])
-      resultat.push_back(1);
-  }
-  for(int j=0; j <solide[voisin].vertices.size ; j++) {
-    if(solide[particule].vertices[2] == solide[voisin].vertices[j])
-      resultat.push_back(2);
-  }
-  for(int j=0; j <solide[voisin].vertices.size ; j++) {
-    if(solide[particule].vertices[4] == solide[voisin].vertices[j])
-      resultat.push_back(4);
-  }
-
-  for(int j=0; j <solide[particule].vertices.size ; j++) {
-    if(solide[particule].vertices[j] != resultat[0] && solide[particule].vertices[j] != resultat[1] && solide[particule].vertices[j] != resultat[2])
-      resultat.push_back(j); //Dernière particule hors de la face mais sert pour le calcul de la normale
-  }
-  return resultat;
-}*/
+    }*/
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(std::map<int, Particule>::iterator P=solide.begin();P!=solide.end();P++){
