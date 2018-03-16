@@ -30,7 +30,6 @@
 #include "vitesse.hpp"
 #include "forces_ext.hpp"
 #include <iostream>
-#include <map>
 #include <string>
 #ifndef PARTICULE_CPP
 #define PARTICULE_CPP

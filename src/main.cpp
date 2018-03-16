@@ -284,8 +284,8 @@ int main(){
     cout<< "Solid energy:" << S.Energie(N_dim, nu, E) <<endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
-    for(std::map<int, Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
-      qdm = qdm+ (P->second).m*(P->second).u;
+    for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
+      qdm = qdm+ P->m * P->u;
     }
     
     ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
