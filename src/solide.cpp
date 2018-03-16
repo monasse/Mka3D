@@ -117,7 +117,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     p.m = rho * p.V;
 
     //Ajout de la particule dans le solide
-    solide[id] = p;
+    solide.push_back(p);
   }
 
   //cout << solide.begin()->first <<" " << solide.end()->first << endl;
@@ -136,7 +136,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     int part_1, part_2; //Le numéro des particules voisines
     stm >> id >> v1 >> v2 >> v3 >> part_1 >> part_2; //Numéro de la face, des vertex + 1 et des voisins (bon numéro)
     Face f;
-    f.id = id - 1;
+    f.id = id;
     f.vertex.push_back(v1); //Ajout du numéro des vertex
     f.vertex.push_back(v2);
     f.vertex.push_back(v3);
@@ -157,14 +157,14 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     bool calcul_normales = false;
     if(part_1 >= 0) { //cad particule pas sur le bord
       solide[part_1].faces.push_back(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
-      f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos); //Calcul de la normale sortante, surface et barycentre face
+      f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
       calcul_normales = true;
       
     }
     if(part_2 >= 0) { //cad particule pas sur le bord
       solide[part_2].faces.push_back(f.id);
       if(not(calcul_normales)) {
-	f.comp_quantities(vertex[v1-1].pos, vertex[v2-1].pos, vertex[v3-1].pos); //, solide[part_2].vertices[id_vertex_hors_face]); //Calcul de la normale sortante, surface et barycentre face
+	f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //, solide[part_2].vertices[id_vertex_hors_face]); //Calcul de la normale sortante, surface et barycentre face
       }
     }
     //Vérification du sens de la normale
@@ -185,7 +185,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     if(F->BC != -1) {
-      //cout << "Face : " << F->id << endl;
+      cout << "Face : " << F->id << endl;
       bool test = voisins_face(F->id);
       if(not(test)) {
 	cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
@@ -198,7 +198,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 bool Solide::voisins_face(int num_face) {
   int part_1 = faces[num_face].voisins[0];
   int part_2 = faces[num_face].voisins[1];
-  //cout << part_1 << " " << part_2 << endl;
+  cout << part_1 << " " << part_2 << endl;
 
   vector<int> tous_voisins; //Va être rempli des voisins des 2 particules qui peuvent être candidats pour former le tetra associé à la face !
 

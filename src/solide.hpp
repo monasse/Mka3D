@@ -29,8 +29,7 @@
 #include "geometry.hpp"
 #include "particule.hpp"
 #include "vertex.hpp"
-#include <set>
-#include <map>
+#include <vector>
 
 //! Definition de la classe Solide  
 class Solide
@@ -66,7 +65,7 @@ public:
   // private :
   std::vector<Vertex> vertex;
   std::vector<Face> faces;
-  std::map<int, Particule> solide; //Particules du maillage
+  std::vector<Particule> solide; //Particules du maillage
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé
