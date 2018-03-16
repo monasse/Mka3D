@@ -173,7 +173,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     if(part_1 == -1 || part_2 == -1) { //Face au bord
       f.normale = -f.normale; //normale forcement dans mauvais sens
     }
-    if(solide.begin()->id <= 0)
+    if(solide.begin()->id < 0)
       cout << "On en a un en bas ! " << id << endl;
     /*if(solide.end()->first >= 1696)
       cout << "On en a une en haut !" << id << endl;*/
@@ -187,7 +187,11 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       bool test = voisins_face(F->id);
       if(not(test)) {
 	cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	//throw std::invalid_argument( "Pas de tetra associe a une face" );    
+	//throw std::invalid_argument( "Pas de tetra associe a une face" );
+	cout << "Centre Face : " << F->centre << endl;
+	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
+	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
+	cout << "Barycentre Voisin B : " << solide[F->voisins[1]].x0 << endl;
       }
     }
   }
@@ -216,7 +220,8 @@ bool Solide::voisins_face(int num_face) {
   }
   //Tous_voisins rempli a priori
   for(std::vector<int>::iterator G=tous_voisins.begin();G<tous_voisins.end();G++)
-    cout << *G << " ";
+    cout << "Barycentre Voisin d'un voisin : " << solide[*G].x0 << endl;
+    //cout << *G << " ";
     cout << endl;
 
   //On parcourt tous les couples candidats possibles sans les répéter
@@ -230,13 +235,21 @@ bool Solide::voisins_face(int num_face) {
       //Tester voir si projection du vecteur part_1 - part_2 est dans la face ? Dans ce cas, on devrait pouvoir avoir un tetra associé à la face
       //Test pour voir si tetra candidat est valable ou pas
       double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
+      cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
+      if(vol < pow(10., -10.)) {
+	cout << "Problème volume : " << vol << endl;
+	cout << "Coords Points : " << solide[part_1].x0 << " " << solide[part_2].x0 << endl;
+	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;
+      }
+      else {
       double c_part_1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
       double c_part_2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
       double c_voisin1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
       double c_voisin2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0))/6. / vol;
-      cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
       cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
-      if(vol > pow(10., -10.) && c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.01) { //Stockage des particules du tetra et des coords bary si ok
+      
+	
+      if(c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.01) { //Stockage des particules du tetra et des coords bary si ok
 	faces[num_face].voisins.push_back(voisin1);
         faces[num_face].voisins.push_back(voisin2);
         faces[num_face].c_voisins.push_back(c_part_1);
@@ -245,6 +258,7 @@ bool Solide::voisins_face(int num_face) {
         faces[num_face].c_voisins.push_back(c_voisin2);
 	tetra_ok = true;
 	break;
+      }
       }
     }
   }
