@@ -236,20 +236,20 @@ bool Solide::voisins_face(int num_face) {
       //Test pour voir si tetra candidat est valable ou pas
       double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
       cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
-      if(vol < pow(10., -10.)) {
+      if(vol < pow(10., -7.)) {
 	cout << "Problème volume : " << vol << endl;
 	cout << "Coords Points : " << solide[part_1].x0 << " " << solide[part_2].x0 << endl;
 	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;
       }
       else {
-      double c_part_1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-      double c_part_2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-      double c_voisin1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-      double c_voisin2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0))/6. / vol;
+      double c_part_1 = cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0)/6. / vol;
+      double c_part_2 = cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0)/6. / vol;
+      double c_voisin1 = cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0)/6. / vol;
+      double c_voisin2 = cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0)/6. / vol;
       cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
       
 	
-      if(c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.01) { //Stockage des particules du tetra et des coords bary si ok
+      if(/*c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && */(c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.001) { //Stockage des particules du tetra et des coords bary si ok
 	faces[num_face].voisins.push_back(voisin1);
         faces[num_face].voisins.push_back(voisin2);
         faces[num_face].c_voisins.push_back(c_part_1);
