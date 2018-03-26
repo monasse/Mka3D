@@ -60,7 +60,7 @@ public:
   double Energie_cinetique();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   bool voisins_face(int num_face); //Renvoie faux si trouve pas voisins pour reconstruction du gradient dans la face
-  void trouve_coord_bary(double *c_part_1, double *c_part_2, double *c_voisin1,  double *c_voisin2);
+  Vector_3 trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisin1, Point_3 voisin2, Point_3 centre_face);
 
   
   // private :

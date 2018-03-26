@@ -242,13 +242,17 @@ bool Solide::voisins_face(int num_face) {
 	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;
       }
       else {
-	double c_part_1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
+	/*double c_part_1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
 	double c_part_2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
 	double c_voisin1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-	double c_voisin2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0))/6. / vol;
-	trouve_coord_bary(&c_part_1, &c_part_2, &c_voisin1, &c_voisin2);
+	double c_voisin2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0))/6. / vol;*/
+	Vector_3 coords = trouve_coord_bary(solide[part_1].x0, solide[part_2].x0, solide[voisin1].x0, solide[voisin2].x0, faces[num_face].centre);
+	double c_part_1 = coords.x();
+	double c_part_2 = coords.y();
+	double c_voisin1 = coords.z();
+	double c_voisin2 = 1. - (c_part_1 + c_part_2 + c_voisin1);
 	
-	cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
+	cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 <<endl; // " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
       	
 	if(/*c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && */(c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.001) { //Stockage des particules du tetra et des coords bary si ok
 	  faces[num_face].voisins.push_back(voisin1);
@@ -266,21 +270,47 @@ bool Solide::voisins_face(int num_face) {
   return tetra_ok;
 }
 
-Solide::trouve_coord_bary(double *c_part_1, double *c_part_2, double *c_voisin1, double *c_voisin2) {
-  //if(*c_part_1 + *c_part_2 + *c_voisin1 + *c_voisin2 - 1 < 0.001)
-  if(-*c_part_1 + *c_part_2 + *c_voisin1 + *c_voisin2 - 1 < 0.001) {
-    *c_part_1 = -*c_part_1;
-  }
-  else if(-*c_part_1 - *c_part_2 + *c_voisin1 + *c_voisin2 - 1 < 0.001) {
-    *c_part_1 = -*c_part_1;
-    *c_part_2 = -*c_part_2;
-  }
-  else if(-*c_part_1 - *c_part_2 - *c_voisin1 + *c_voisin2 - 1 < 0.001) {
-    *c_part_1 = -*c_part_1;
-    *c_part_2 = -*c_part_2;
-  }
+Vector_3 Solide::trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisin1, Point_3 voisin2, Point_3 centre_face) {
+  Vector_3 vec = centre_face - voisin2;
+  Matrix aux;
+  Matrix inverse;
+  Matrix transp;
 
-  //Fuck galère !
+  //Assemblage de la matrice de coords à inverser
+  aux.col1 = Vector_3(part_1.x() - voisin2.x(), part_1.y() - voisin2.y(), part_1.z() - voisin2.z());
+  aux.col2 = Vector_3(part_2.x() - voisin2.x(), part_2.y() - voisin2.y(), part_2.z() - voisin2.z());
+  aux.col3 = Vector_3(voisin1.x() - voisin2.x(), voisin1.y() - voisin2.y(), voisin1.z() - voisin2.z());
+  /*aux.col1[0] = part_1.x() - voisin2.x();
+  aux.col1[1] = part_1.y() - voisin2.y();
+  aux.col1[2] = part_1.z() - voisin2.z();
+  aux.col2[0] = part_2.x() - voisin2.x();
+  aux.col2[1] = part_2.y() - voisin2.y();
+  aux.col2[2] = part_2.z() - voisin2.z();
+  aux.col3[0] = voisin1.x() - voisin2.x();
+  aux.col3[1] = voisin1.y() - voisin2.y();
+  aux.col3[2] = voisin1.z() - voisin2.z();*/
+
+  //Calcul déterminant
+  double det = aux.col1[0] * (aux.col2[1] * aux.col3[2] - aux.col2[2] * aux.col3[1]) - aux.col2[0] * (aux.col1[1] * aux.col3[2] - aux.col1[2] * aux.col3[1]) + aux.col3[0] * (aux.col1[1] * aux.col2[2] - aux.col1[2] * aux.col2[1]);
+  if(abs(det) < pow(10., -15.))
+    throw std::invalid_argument( "Determinant vaut 0 !" );
+
+  //Assemblage matrice inverse
+  transp = aux.T();
+  inverse.col1 = Vector_3(transp.col2[1] * transp.col3[2] - transp.col2[2] * transp.col3[1], -(transp.col2[0] * transp.col3[2] - transp.col2[2] * transp.col3[0]), transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]);
+  inverse.col2 = Vector_3(-(transp.col1[1] * transp.col3[2] - transp.col1[2] * transp.col3[1]), (transp.col1[0] * transp.col3[2] - transp.col1[2] * transp.col3[0]), -(transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]));
+  inverse.col3 = Vector_3(transp.col1[1] * transp.col2[2] - transp.col1[2] * transp.col2[1], -(transp.col1[0] * transp.col2[2] - transp.col1[2] * transp.col2[0]), transp.col1[0] * transp.col2[1] - transp.col1[1] * transp.col2[0]);
+  /*inverse.col1[0] = transp.col2[1] * transp.col3[2] - transp.col2[2] * transp.col3[1];
+  inverse.col1[1] = -(transp.col2[0] * transp.col3[2] - transp.col2[2] * transp.col3[0]);
+  inverse.col1[2] = transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0];
+  inverse.col2[0] = -(transp.col1[1] * transp.col3[2] - transp.col1[2] * transp.col3[1]);
+  inverse.col2[1] = (transp.col1[0] * transp.col3[2] - transp.col1[2] * transp.col3[0]);
+  inverse.col2[2] = -(transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]);
+  inverse.col3[0] = transp.col1[1] * transp.col2[2] - transp.col1[2] * transp.col2[1];
+  inverse.col3[1] = - (transp.col1[0] * transp.col2[2] - transp.col1[2] * transp.col2[0]);
+  inverse.col3[2] = transp.col1[0] * transp.col2[1] - transp.col1[1] * transp.col2[0];*/
+  
+  return inverse / det * vec;
 }
     
 /*if(F->BC != -1 && not(part_1 == -1)) { //Face dans le bulk et pas sur le bord
