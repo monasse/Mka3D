@@ -183,15 +183,15 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     if(F->BC != -1) {
-      cout << "Face : " << F->id << endl;
+      //cout << "Face : " << F->id << endl;
       bool test = voisins_face(F->id);
       if(not(test)) {
 	cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
 	//throw std::invalid_argument( "Pas de tetra associe a une face" );
-	cout << "Centre Face : " << F->centre << endl;
+	/*cout << "Centre Face : " << F->centre << endl;
 	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
 	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
-	cout << "Barycentre Voisin B : " << solide[F->voisins[1]].x0 << endl;
+	cout << "Barycentre Voisin B : " << solide[F->voisins[1]].x0 << endl;*/
       }
     }
   }
@@ -200,7 +200,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 bool Solide::voisins_face(int num_face) {
   int part_1 = faces[num_face].voisins[0];
   int part_2 = faces[num_face].voisins[1];
-  cout << part_1 << " " << part_2 << endl;
+  //cout << part_1 << " " << part_2 << endl;
 
   vector<int> tous_voisins; //Va être rempli des voisins des 2 particules qui peuvent être candidats pour former le tetra associé à la face !
 
@@ -219,10 +219,10 @@ bool Solide::voisins_face(int num_face) {
       tous_voisins.push_back(faces[*G].voisins[1]);
   }
   //Tous_voisins rempli a priori
-  for(std::vector<int>::iterator G=tous_voisins.begin();G<tous_voisins.end();G++)
+  /*for(std::vector<int>::iterator G=tous_voisins.begin();G<tous_voisins.end();G++)
     cout << "Barycentre Voisin d'un voisin : " << solide[*G].x0 << endl;
     //cout << *G << " ";
-    cout << endl;
+    cout << endl;*/
 
   //On parcourt tous les couples candidats possibles sans les répéter
   bool tetra_ok = false;
@@ -235,24 +235,20 @@ bool Solide::voisins_face(int num_face) {
       //Tester voir si projection du vecteur part_1 - part_2 est dans la face ? Dans ce cas, on devrait pouvoir avoir un tetra associé à la face
       //Test pour voir si tetra candidat est valable ou pas
       double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
-      cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
+      //cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
       if(vol < pow(10., -7.)) {
 	cout << "Problème volume : " << vol << endl;
 	cout << "Coords Points : " << solide[part_1].x0 << " " << solide[part_2].x0 << endl;
 	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;
       }
       else {
-	/*double c_part_1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_2].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-	double c_part_2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[voisin1].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-	double c_voisin1 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin2].x0))/6. / vol;
-	double c_voisin2 = abs(cross_product(Vector_3(faces[num_face].centre,solide[part_1].x0),Vector_3(faces[num_face].centre,solide[part_2].x0))*Vector_3(faces[num_face].centre,solide[voisin1].x0))/6. / vol;*/
 	Vector_3 coords = trouve_coord_bary(solide[part_1].x0, solide[part_2].x0, solide[voisin1].x0, solide[voisin2].x0, faces[num_face].centre);
 	double c_part_1 = coords.x();
 	double c_part_2 = coords.y();
 	double c_voisin1 = coords.z();
 	double c_voisin2 = 1. - (c_part_1 + c_part_2 + c_voisin1);
 	
-	cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 <<endl; // " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
+	//cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
       	
 	if(/*c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && */(c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.001) { //Stockage des particules du tetra et des coords bary si ok
 	  faces[num_face].voisins.push_back(voisin1);
