@@ -81,10 +81,10 @@ Point_3 operator+(const Point_3 &p, const Point_3 &v);
 
 class Vector_3 
 {
-  
-private :
+  public:
+  //private :
   double vec[3];
-public:
+
   Vector_3();
   Vector_3(const double &x0, const double &y0, const double &z0);
   Vector_3(const Point_3 &p1, const Point_3 &p2);

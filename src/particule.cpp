@@ -85,8 +85,8 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   } else {
     if(fixe==0){ //fixe=0: particule mobile
       Dxprev = Dx;
-      u = u + Fi/2.* (dt/m);
-      u_half = u;
+      //u = u + Fi/2.* (dt/m);
+      //u_half = u;
       Dx = Dx+u*dt;
     }
     else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
@@ -96,7 +96,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
       //u_half = u;
       Dxprev = Dx;
       //u = u + Fi/2.*(dt/m);
-      u_half = u;
+      //u_half = u;
       Dx = Dx+u*dt;
     }
   }
@@ -114,17 +114,20 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 }
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  if(fixe==1){
+  /*if(fixe==1){
     u = Vector_3(0.,0.,0.);
     //omega = Vector_3(0.,0.,0.);
   } else {
     if(fixe==0){
-      u = u + Fi /2.*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+      u = u + Fi*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+      u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
     }
     else if(fixe==2 || fixe==3){
       u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
     }
-  }
+    }*/
+  u = u + Fi*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
 }
 
 void Particule::barycentre() {

@@ -173,10 +173,6 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     if(part_1 == -1 || part_2 == -1) { //Face au bord
       f.normale = -f.normale; //normale forcement dans mauvais sens
     }
-    if(solide.begin()->id < 0)
-      cout << "On en a un en bas ! " << id << endl;
-    /*if(solide.end()->first >= 1696)
-      cout << "On en a une en haut !" << id << endl;*/
     faces.push_back(f);
   }
 
@@ -186,7 +182,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       //cout << "Face : " << F->id << endl;
       bool test = voisins_face(F->id);
       if(not(test)) {
-	cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
+	//cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
 	//throw std::invalid_argument( "Pas de tetra associe a une face" );
 	/*cout << "Centre Face : " << F->centre << endl;
 	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
@@ -237,9 +233,9 @@ bool Solide::voisins_face(int num_face) {
       double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
       //cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
       if(vol < pow(10., -7.)) {
-	cout << "Problème volume : " << vol << endl;
+	/*cout << "Problème volume : " << vol << endl;
 	cout << "Coords Points : " << solide[part_1].x0 << " " << solide[part_2].x0 << endl;
-	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;
+	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;*/
       }
       else {
 	Vector_3 coords = trouve_coord_bary(solide[part_1].x0, solide[part_2].x0, solide[voisin1].x0, solide[voisin2].x0, faces[num_face].centre);
@@ -250,16 +246,16 @@ bool Solide::voisins_face(int num_face) {
 	
 	//cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
       	
-	if(/*c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && */(c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.001) { //Stockage des particules du tetra et des coords bary si ok
-	  faces[num_face].voisins.push_back(voisin1);
-	  faces[num_face].voisins.push_back(voisin2);
-	  faces[num_face].c_voisins.push_back(c_part_1);
-	  faces[num_face].c_voisins.push_back(c_part_2);
-	  faces[num_face].c_voisins.push_back(c_voisin1);
-	  faces[num_face].c_voisins.push_back(c_voisin2);
-	  tetra_ok = true;
-	  break;
-	}
+	//if(/*c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && */(c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.001) { //Stockage des particules du tetra et des coords bary si ok
+	faces[num_face].voisins.push_back(voisin1);
+	faces[num_face].voisins.push_back(voisin2);
+	faces[num_face].c_voisins.push_back(c_part_1);
+	faces[num_face].c_voisins.push_back(c_part_2);
+	faces[num_face].c_voisins.push_back(c_voisin1);
+	faces[num_face].c_voisins.push_back(c_voisin2);
+	tetra_ok = true;
+	break;
+	
       }
     }
   }

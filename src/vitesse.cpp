@@ -31,14 +31,6 @@ Vector_3 velocity(const Point_3 &p)
   return Vector_3(0,0,0); */
 }
 
-//Initial angular velocity of the solid particles
-Vector_3 omega(const Point_3 &p)
-{
-  return Vector_3(0,0,0);
-  //return Vector_3(0.1,0,0);
-  
-}
-
 //Boundary velocities of the solid particles
 /*Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx) {
   return Vector_3(0,0,-1.); // * t / T; //En m.s^-1
@@ -105,4 +97,18 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   }
  else */
     return Dx;
+}
+
+double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx, const Vector_3& u) {
+  //Chargement linéaire en traction
+  if(p.z() <= 0.2) {
+    if( t < 0.8 * T)
+      return -0.05; // * t / T; //En m.s^-1
+    else
+      return 0.;
+  }
+  else if(p.z() >= 2.8)
+    return 0.;
+  else
+    return u[2];
 }
