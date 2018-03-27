@@ -558,7 +558,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     for(std::vector<Face>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       size += F->nb_vertex; //Egale à nb_points au final ?
   }*/
-  size += nb_faces;
+  //size += nb_faces; //Utile ?
     
   //Initialisation du fichier vtk
   vtk << "# vtk DataFile Version 3.0" << endl;
@@ -570,11 +570,12 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     
   //Sortie des points
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    for(std::vector<Point_3>::iterator V=P->vertices.begin();V!=P->vertices.end();V++) {
-      vtk << P->mvt_t(*V) << endl;
+    for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+      for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++)
+	vtk << P->mvt_t(vertex[*V].pos) << endl;
     }
   }
-  vtk << "\n";
+  vtk << endl;
     
   //Sortie des faces
   int point_tmp=0;
@@ -590,10 +591,11 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     compteur_vertex += P->vertices.size();
     //vtk << endl;
   }
-  vtk << "\n";
+  vtk << endl;
   vtk << "CELL_TYPES " << nb_faces << endl;
   for(int i=0;i<nb_faces;i++){
-    vtk << 7 << endl;
+    //vtk << 7 << endl;
+    vtk << 5 << endl; //Pour triangle
   }
   vtk << "\n";
   vtk << "CELL_DATA " << nb_faces << endl;
