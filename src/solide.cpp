@@ -551,7 +551,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //vtk << setprecision(15);
   
   //Pour tetras !
-  int nb_points = 4 * nb_part;
+  int nb_points = 3 * 4 * nb_part;
   int nb_faces = 4 * nb_part;
   int size = 4 * nb_faces;
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
