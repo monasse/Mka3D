@@ -431,6 +431,14 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
       Vector_3 nIJ = faces[i].normale;
+      //Vérfication sens normale
+      int voisin;
+      if(P->id == faces[f].voisins[0])
+	voisin = faces[f].voisins[1];
+      else if(P->id == faces[f].voisins[1])
+	voisin = faces[f].voisins[0];
+      if(nIJ * Vector_3(P->x0, solide[voisin].x0) < -0.0001)
+	  nIJ = -nIJ; //Normale pas dans le bon sens...
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[i].S /  P->V * Dij_n;
     }
@@ -466,10 +474,17 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	int aux_2 = faces[num_face].voisins[3];
 	double c_aux_2 = faces[num_face].c_voisins[3];
 	//cout << "coords bary : " <<c_part_1 << " " << c_part_2 << " " << c_aux_1 << " " << c_aux_2 << endl;
+	
 	//Sortir le sens de toutes les forces comme il faut...
 	Vector_3 nIJ = faces[num_face].normale;
-	if(nIJ * Vector_3(P->x0, solide[part_1].x0) < -0.0001 && nIJ * Vector_3(P->x0, solide[part_2].x0) < -0.0001 )
+	int voisin;
+	if(P->id == faces[num_face].voisins[0])
+	  voisin = faces[num_face].voisins[1];
+	else if(P->id == faces[num_face].voisins[1])
+	  voisin = faces[num_face].voisins[0];
+	if(nIJ * Vector_3(P->x0, solide[voisin].x0) < -0.0001)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
+
 	//Ajouter les directions des forces avec particules aux_1 et aux_2
 	Vector_3 n_aux_1 = Vector_3(P->x0, solide[aux_1].x0) / sqrt(Vector_3(P->x0, solide[aux_1].x0).squared_length());
 	Vector_3 n_aux_2 = Vector_3(P->x0, solide[aux_2].x0) / sqrt(Vector_3(P->x0, solide[aux_2].x0).squared_length());
