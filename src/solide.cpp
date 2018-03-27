@@ -283,15 +283,14 @@ Vector_3 Solide::trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisi
   inverse.col1 = Vector_3(transp.col2[1] * transp.col3[2] - transp.col2[2] * transp.col3[1], -(transp.col2[0] * transp.col3[2] - transp.col2[2] * transp.col3[0]), transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]);
   inverse.col2 = Vector_3(-(transp.col1[1] * transp.col3[2] - transp.col1[2] * transp.col3[1]), (transp.col1[0] * transp.col3[2] - transp.col1[2] * transp.col3[0]), -(transp.col1[0] * transp.col3[1] - transp.col1[1] * transp.col3[0]));
   inverse.col3 = Vector_3(transp.col1[1] * transp.col2[2] - transp.col1[2] * transp.col2[1], -(transp.col1[0] * transp.col2[2] - transp.col1[2] * transp.col2[0]), transp.col1[0] * transp.col2[1] - transp.col1[1] * transp.col2[0]);
-  /*inverse.col1[0] = transp.col2[1] * transp.col3[2] - transp.col2[2] * transp.col3[1];
-  inverse.col1[1] = -(transp.col2[0] * transp.col3[2] - transp.col2[2] * transp.col3[0]);
-  inverse.col1[2] = transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0];
-  inverse.col2[0] = -(transp.col1[1] * transp.col3[2] - transp.col1[2] * transp.col3[1]);
-  inverse.col2[1] = (transp.col1[0] * transp.col3[2] - transp.col1[2] * transp.col3[0]);
-  inverse.col2[2] = -(transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]);
-  inverse.col3[0] = transp.col1[1] * transp.col2[2] - transp.col1[2] * transp.col2[1];
-  inverse.col3[1] = - (transp.col1[0] * transp.col2[2] - transp.col1[2] * transp.col2[0]);
-  inverse.col3[2] = transp.col1[0] * transp.col2[1] - transp.col1[1] * transp.col2[0];*/
+
+  /*Matrix id(inverse / det * aux);
+  cout << id.col1 << endl;
+  cout << id.col2 << endl;
+  cout << id.col3 << endl;
+
+  if(abs(id.col1[0] * id.col2[1] * id.col3[2] - 1. ) > pow(10., -10.))
+  throw std::invalid_argument( "Inverse mal calculee !" );*/
   
   return inverse / det * vec;
 }
