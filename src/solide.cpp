@@ -553,12 +553,12 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //Pour tetras !
   int nb_points = 3 * 4 * nb_part;
   int nb_faces = 4 * nb_part;
-  int size = 4 * nb_faces;
+  int size = 3 * nb_faces;
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       size += F->nb_vertex; //Egale à nb_points au final ?
   }*/
-  //size += nb_faces; //Utile ?
+  size += nb_faces; //Pk ? Mystère...
     
   //Initialisation du fichier vtk
   vtk << "# vtk DataFile Version 3.0" << endl;
@@ -583,12 +583,12 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   int compteur_vertex = 0;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
-      vtk << faces[*F].vertex.size();
+      vtk << faces[*F].vertex.size(); //Vaut 3
       for(int k=0 ; k<faces[*F].vertex.size() ; k++)
-	vtk << " " << compteur_vertex + (faces[*F].vertex)[k];
+	vtk << " " << compteur_vertex + k; //(faces[*F].vertex)[k];
       vtk << endl;
+      compteur_vertex += faces[*F].vertex.size();
     }
-    compteur_vertex += P->vertices.size();
     //vtk << endl;
   }
   vtk << endl;
