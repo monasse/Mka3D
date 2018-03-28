@@ -343,6 +343,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
     P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
     Matrix test;
+    Vector_3 test_vec;
     //Test
     /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
@@ -361,13 +362,29 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	cout << "Pas la bonne norme !!!!" << endl;
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[i].S /  P->V * Dij_n;
-      test += faces[i].S /  P->V * tens_sym(faces[f].centre - P->x0,  nIJ);
+      test = test + faces[i].S /  P->V * tens(faces[f].centre - P->x0,  nIJ);
+      test_vec = test_vec + faces[i].S * nIJ;
+      if(faces[i].S<0.){
+	cout << "S=" << faces[i].S << endl;
+      }
     }
+
+    if(test_vec.squared_length() > pow(10., -10.)) {
+      for(int i=0 ; i < P->faces.size() ; i++){
+	cout << "MTF" << endl;
+	cout << vertex[faces[i].vertex[0]].pos << endl;
+	cout << vertex[faces[i].vertex[1]].pos << endl;
+	cout << vertex[faces[i].vertex[2]].pos << endl;
+	cout << endl;
+      }
+    }
+    
     if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
     cout << test.col1 << endl;
     cout << test.col2 << endl;
-    cout << test.col3 << endl;    
+    cout << test.col3 << endl;
+    cout << "V=" << P->V <<  endl;
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
