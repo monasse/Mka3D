@@ -73,7 +73,7 @@ void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &
   aux.push_back(v2);
   aux.push_back(v3);
   centre = centroid(aux.begin(),aux.end());
-  S = 1./2.* sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length());
+  S = 1./2. * sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length());
   normale = orthogonal_vector(aux[0], aux[1], aux[2]);
   double norm = sqrt((normale.squared_length()));
   normale = normale / norm;

@@ -355,14 +355,19 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	voisin = faces[f].voisins[1];
       else if(faces[i].BC != -1 && P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];
-      if(faces[i].BC != -1 && nIJ * Vector_3(P->x0, solide[voisin].x0) < -0.0001)
+      if(faces[i].BC != -1 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
+      if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
+	cout << "Pas la bonne norme !!!!" << endl;
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[i].S /  P->V * Dij_n;
       test += faces[i].S /  P->V * tens_sym(faces[f].centre - P->x0,  nIJ);
     }
-    if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-10.))
+    if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
+    cout << test.col1 << endl;
+    cout << test.col2 << endl;
+    cout << test.col3 << endl;    
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
