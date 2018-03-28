@@ -234,17 +234,24 @@ bool Solide::voisins_face(int num_face) {
       //Test pour voir si tetra candidat est valable ou pas
       double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
       //cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
-      if(vol < pow(10., -7.)) {
+      if(vol < pow(10., -8.)) {
 	/*cout << "Problème volume : " << vol << endl;
 	cout << "Coords Points : " << solide[part_1].x0 << " " << solide[part_2].x0 << endl;
 	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;*/
       }
       else {
-	Vector_3 coords = trouve_coord_bary(solide[part_1].x0, solide[part_2].x0, solide[voisin1].x0, solide[voisin2].x0, faces[num_face].centre);
+	/*Vector_3 coords = trouve_coord_bary(solide[part_1].x0, solide[part_2].x0, solide[voisin1].x0, solide[voisin2].x0, faces[num_face].centre);
 	double c_part_1 = coords.x();
 	double c_part_2 = coords.y();
 	double c_voisin1 = coords.z();
-	double c_voisin2 = 1. - (c_part_1 + c_part_2 + c_voisin1);
+	double c_voisin2 = 1. - (c_part_1 + c_part_2 + c_voisin1);*/
+
+	double c_part_1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	double c_part_2 = (Vector_3(solide[part_1].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
+	double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
+
+
 	
 	//cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
       	
@@ -285,8 +292,14 @@ Vector_3 Solide::trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisi
   inverse.col1 = Vector_3(transp.col2[1] * transp.col3[2] - transp.col2[2] * transp.col3[1], -(transp.col2[0] * transp.col3[2] - transp.col2[2] * transp.col3[0]), transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]);
   inverse.col2 = Vector_3(-(transp.col1[1] * transp.col3[2] - transp.col1[2] * transp.col3[1]), (transp.col1[0] * transp.col3[2] - transp.col1[2] * transp.col3[0]), -(transp.col1[0] * transp.col3[1] - transp.col1[1] * transp.col3[0]));
   inverse.col3 = Vector_3(transp.col1[1] * transp.col2[2] - transp.col1[2] * transp.col2[1], -(transp.col1[0] * transp.col2[2] - transp.col1[2] * transp.col2[0]), transp.col1[0] * transp.col2[1] - transp.col1[1] * transp.col2[0]);
+
+  inverse = inverse / det;
+
+  /*Matrix test = inverse * aux;
+  if(abs(test.col1[0] - 1.) > 0.001 || abs(test.col2[1] - 1.) > 0.001 || abs(test.col3[2] - 1.) > 0.001)
+  cout << "On calcule pas l'inverse !!!" << endl;*/
   
-  return inverse / det * vec;
+  return inverse * vec;
 }
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
