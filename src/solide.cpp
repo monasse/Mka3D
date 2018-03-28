@@ -324,11 +324,17 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
+    Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC != -1) { //not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
       for(int j=0; j<faces[i].voisins.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
+	test_pos = test_pos + faces[i].c_voisins[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].voisins[j]].x0);
       }
       //faces[i].I_Dx = faces[i].c_voisins[0] * solide[faces[i].voisins[0]].Dx + faces[i].c_voisins[1] * solide[faces[i].voisins[1]].Dx;
+      if(abs(faces[i].I_Dx[2] - 4. / 3. * faces[i].centre.z()) > 0.00001)
+	cout << "Problème reconstruction sur face : " << i << endl;
+      /*if(sqrt((test_pos - Vector_3(Point_3(0.,0.,0.),faces[i].centre)).squared_length()) > pow(10., -11.))
+	cout << "Problème reconstruction barycentre face : " << i << endl;*/
     }
   }
   
@@ -336,6 +342,10 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
     P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
     P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+    Matrix test;
+    //Test
+    /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
+      cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
       Vector_3 nIJ = faces[i].normale;
@@ -349,7 +359,10 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[i].S /  P->V * Dij_n;
+      test += faces[i].S /  P->V * tens_sym(faces[f].centre - P->x0,  nIJ);
     }
+    if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-10.))
+      cout << "Problème sur tenseur identité !" << endl;
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
