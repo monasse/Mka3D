@@ -80,8 +80,8 @@ Particule & Particule:: operator=(const Particule &P){
 
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   Dxprev = Dx;
-  Dx = Dx+u*dt;
-  //Dx = x0.z() / 3. * 4 * Vector_3(0., 0., 1.);
+  //Dx = Dx+u*dt;
+  Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
 
 
   //Dx = displacement_BC(x0, Dx, t, T);

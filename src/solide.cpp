@@ -378,6 +378,8 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       if(faces[f].S<0.){
       cout << "S=" << faces[f].S << endl;*/
     }
+    if(P->discrete_gradient.col3[2] > pow(10., -6.))
+      cout << "Num element : " << P->id << " def : " << P->discrete_gradient.col3[2] << endl;
 
   /*if(test_vec.squared_length() > pow(10., -5.)) {
       cout << "MTF : " << test_vec << endl;
@@ -617,12 +619,20 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk << "\n";
   //Deformation plastique cumulée
   vtk << "SCALARS p double 1" << endl;
-  vtk << "LOOKUP_TABLE default" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       vtk << P->def_plas_cumulee << endl;
   }
   vtk << "\n";
+  //Deformation plastique cumulée
+  vtk << "SCALARS id double 1" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
+      vtk << P->id << endl;
+  }
+  vtk << endl;
   vtk.close();
 }
 
