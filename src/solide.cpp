@@ -179,7 +179,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     }
     if(part_1 == -1 || part_2 == -1) { //Face au bord
       Vector_3 bonne_direction = Vector_3(solide[f.voisins[0]].x0, f.centre);
-      if(bonne_direction * f.normale < -0.00001)
+      if(bonne_direction * f.normale < 0.)
 	f.normale = -f.normale;
     }
     faces.push_back(f);
@@ -333,7 +333,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1)
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //BC imposée fortement dans Mka !
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka !
     else if(faces[i].BC == 0) { //Cad particule dans le bulk
       for(int j=0; j<faces[i].voisins.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
@@ -417,7 +417,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
       int num_face = P->faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
       int part_1 = faces[num_face].voisins[0];
       int part_2 = faces[num_face].voisins[1];
-      if(faces[i].BC != -1 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
+      if(faces[i].BC == 0 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
 	double c_part_1 = faces[num_face].c_voisins[0];
 	double c_part_2 = faces[num_face].c_voisins[1];
 	int aux_1 = faces[num_face].voisins[2];
@@ -433,7 +433,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	  voisin = faces[num_face].voisins[1];
 	else if(P->id == faces[num_face].voisins[1])
 	  voisin = faces[num_face].voisins[0];
-	if(nIJ * Vector_3(P->x0, solide[voisin].x0) < -0.0001)
+	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
 	//Ajouter les directions des forces avec particules aux_1 et aux_2
