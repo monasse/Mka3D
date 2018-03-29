@@ -84,7 +84,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   for(int i=0; i < nbr_vertex ; i++) {
     getline(noeuds, ligne);
     istringstream  stm(ligne);
-    int id; //Numéro du vertex + 1
+    int id; //Numéro du vertex
     double x,y,z;
     stm >> id >> x >> y >> z;
     vertex.push_back(Vertex(Point_3(x,y,z), id)); //Vertex sont donnés dans l'ordre
@@ -349,33 +349,35 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      Vector_3 nIJ = faces[i].normale;
+      Vector_3 nIJ = faces[f].normale;
       //Vérfication sens normale
       int voisin;
-      if(faces[i].BC != -1 && P->id == faces[f].voisins[0])
+      if(faces[f].BC != -1 && P->id == faces[f].voisins[0])
 	voisin = faces[f].voisins[1];
-      else if(faces[i].BC != -1 && P->id == faces[f].voisins[1])
+      else if(faces[f].BC != -1 && P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];
       if(faces[i].BC != -1 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
       if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
-      P->discrete_gradient += faces[i].S /  P->V * Dij_n;
-      test = test + faces[i].S /  P->V * tens(faces[f].centre - P->x0,  nIJ);
-      test_vec = test_vec + faces[i].S * nIJ;
-      if(faces[i].S<0.){
-	cout << "S=" << faces[i].S << endl;
+      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      test = test + faces[f].S /  P->V * tens(faces[f].centre - P->x0,  nIJ);
+      test_vec = test_vec + faces[f].S * nIJ;
+      if(P->faces.size() != 4)
+      cout << "Nbr faces : " << P->faces.size() << endl;
+      if(faces[f].S<0.){
+	cout << "S=" << faces[f].S << endl;
       }
     }
 
-    if(test_vec.squared_length() > pow(10., -10.)) {
+    if(test_vec.squared_length() > pow(10., -5.)) {
+      cout << "MTF : " << test_vec << endl;
       for(int i=0 ; i < P->faces.size() ; i++){
-	cout << "MTF" << endl;
-	cout << vertex[faces[i].vertex[0]].pos << endl;
+	/*cout << vertex[faces[i].vertex[0]].pos << endl;
 	cout << vertex[faces[i].vertex[1]].pos << endl;
 	cout << vertex[faces[i].vertex[2]].pos << endl;
-	cout << endl;
+	cout << endl;*/
       }
     }
     
