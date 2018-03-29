@@ -77,7 +77,7 @@ Particule & Particule:: operator=(const Particule &P){
 }
 
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  /*if(fixe==1){
+  if(fixe==1){
     Dx = Vector_3(0.,0.,0.);
     Dxprev = Vector_3(0.,0.,0.);
     u = Vector_3(0.,0.,0.);
@@ -99,8 +99,8 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
       //u_half = u;
       Dx = Dx+u*dt;
     }
-    }*/
-  Dx = x0.z() / 3. * 4 * Vector_3(0., 0., 1.);
+  }
+  //Dx = x0.z() / 3. * 4 * Vector_3(0., 0., 1.);
 
 
   //Dx = displacement_BC(x0, Dx, t, T);
