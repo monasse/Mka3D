@@ -131,19 +131,21 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     istringstream  stm(ligne);
     int id;
     int v1,v2,v3; //Les vertex de la face
+    int BC; //Condition de bord
     int part_1, part_2; //Le numéro des particules voisines
-    stm >> id >> v1 >> v2 >> v3 >> part_1 >> part_2; //Numéro de la face, des vertex + 1 et des voisins (bon numéro)
+    stm >> id >> v1 >> v2 >> v3 >> BC >> part_1 >> part_2; //Numéro de la face, des vertex + 1 et des voisins (bon numéro)
     Face f;
     f.id = id;
     f.vertex.push_back(v1); //Ajout du numéro des vertex
     f.vertex.push_back(v2);
     f.vertex.push_back(v3);
-    if(part_1 == -1 || part_2 == -1)
+    f.BC = BC;
+    /*if(part_1 == -1 || part_2 == -1)
       f.BC = -1; //face au bord
     else {
       f.BC = 0; //Face pas au bord
       f.D0 = sqrt(Vector_3(solide[part_1].x0, solide[part_2].x0).squared_length());
-    }
+      }*/
     if(part_1 >=0) { //Ajout du numéro des voisins dans la face
       f.voisins.push_back(part_1);
       f.voisins.push_back(part_2);
@@ -153,11 +155,16 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       f.voisins.push_back(part_1);
     }
     //bool calcul_normales = false;
-    if(part_1 >= 0) //cad particule pas sur le bord
+    if(part_1 >= 0) {
       solide[part_1].faces.push_back(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
-    if(part_2 >= 0) //cad particule pas sur le bord
-      solide[part_2].faces.push_back(f.id);
-    
+      if(solide[part_1].BC <= 0 && f.BC != 0)
+	solide[part_1].BC = f.BC;
+    }
+    if(part_2 >= 0) {
+      solide[part_2].faces.push_back(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
+      if(solide[part_2].BC <= 0 && f.BC != 0)
+	solide[part_2].BC = f.BC;
+    }    
     f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
     //calcul_normales = true;
     
@@ -324,15 +331,17 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
-    Vector_3 test_pos(0., 0., 0.);
-    if(faces[i].BC != -1) { //not(faces[i].voisins[0] == -1) && not(faces[i].voisins[1] == -1)) { //Cad particule dans le bulk et pas sur le bord
+    //Vector_3 test_pos(0., 0., 0.);
+    if(faces[i].BC == 1)
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //BC imposée fortement dans Mka !
+    else if(faces[i].BC == 0) { //Cad particule dans le bulk
       for(int j=0; j<faces[i].voisins.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
-	test_pos = test_pos + faces[i].c_voisins[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].voisins[j]].x0);
+	//test_pos = test_pos + faces[i].c_voisins[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].voisins[j]].x0);
       }
       //faces[i].I_Dx = faces[i].c_voisins[0] * solide[faces[i].voisins[0]].Dx + faces[i].c_voisins[1] * solide[faces[i].voisins[1]].Dx;
-      if(abs(faces[i].I_Dx[2] - 4. / 3. * faces[i].centre.z()) > 0.00001)
-	cout << "Problème reconstruction sur face : " << i << endl;
+      /*if(abs(faces[i].I_Dx[2] - 4. / 3. * faces[i].centre.z()) > 0.00001)
+	cout << "Problème reconstruction sur face : " << i << endl;*/
       /*if(sqrt((test_pos - Vector_3(Point_3(0.,0.,0.),faces[i].centre)).squared_length()) > pow(10., -11.))
 	cout << "Problème reconstruction barycentre face : " << i << endl;*/
     }
@@ -342,8 +351,8 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
     P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
     P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    Matrix test;
-    Vector_3 test_vec;
+    //Matrix test;
+    //Vector_3 test_vec;
     //Test
     /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
@@ -354,39 +363,36 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       int voisin;
       if(faces[f].BC != -1 && P->id == faces[f].voisins[0])
 	voisin = faces[f].voisins[1];
-      else if(faces[f].BC != -1 && P->id == faces[f].voisins[1])
+      else if(faces[f].BC != -1 && P->id == faces[f].voisins[1]) 
 	voisin = faces[f].voisins[0];
       if(faces[i].BC != -1 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
-      if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
-	cout << "Pas la bonne norme !!!!" << endl;
+      /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
+	cout << "Pas la bonne norme !!!!" << endl;*/
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
+      /*test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       test_vec = test_vec + faces[f].S * nIJ;
       if(P->faces.size() != 4)
       cout << "Nbr faces : " << P->faces.size() << endl;
       if(faces[f].S<0.){
-	cout << "S=" << faces[f].S << endl;
-      }
+      cout << "S=" << faces[f].S << endl;*/
     }
 
-    if(test_vec.squared_length() > pow(10., -5.)) {
+  /*if(test_vec.squared_length() > pow(10., -5.)) {
       cout << "MTF : " << test_vec << endl;
       for(int i=0 ; i < P->faces.size() ; i++){
-	/*cout << vertex[faces[i].vertex[0]].pos << endl;
+	cout << vertex[faces[i].vertex[0]].pos << endl;
 	cout << vertex[faces[i].vertex[1]].pos << endl;
 	cout << vertex[faces[i].vertex[2]].pos << endl;
 	cout << endl;*/
-      }
-    }
     
-    if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
+/*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
     cout << test.col1 << endl;
     cout << test.col2 << endl;
     cout << test.col3 << endl;
-    cout << "V=" << P->V <<  endl;
+    cout << "V=" << P->V <<  endl;*/
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
