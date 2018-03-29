@@ -79,30 +79,9 @@ Particule & Particule:: operator=(const Particule &P){
 }
 
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  /*if(fixe==1){
-    Dx = Vector_3(0.,0.,0.);
-    Dxprev = Vector_3(0.,0.,0.);
-    u = Vector_3(0.,0.,0.);
-    u_half = u;
-  } else {
-    if(fixe==0){ //fixe=0: particule mobile
-      Dxprev = Dx;
-      //u = u + Fi/2.* (dt/m);
-      //u_half = u;
-      Dx = Dx+u*dt;
-    }
-    else if(fixe==2 || fixe==3){//fixe=2: BC en vitesse imposées ! ; fixe=3: fixee en deplacement et rotation seulement selon l'axe y
-      //Dx = Vector_3(0.,0.,0.);
-      //Dxprev = Vector_3(0.,0.,0.);
-      //u = Vector_3(0.,0.,0.);
-      //u_half = u;
-      Dxprev = Dx;
-      //u = u + Fi/2.*(dt/m);
-      //u_half = u;
-      Dx = Dx+u*dt;
-    }
-  }*/
-  Dx = x0.z() / 3. * 4 * Vector_3(0., 0., 1.);
+  Dxprev = Dx;
+  Dx = Dx+u*dt;
+  //Dx = x0.z() / 3. * 4 * Vector_3(0., 0., 1.);
 
 
   //Dx = displacement_BC(x0, Dx, t, T);
