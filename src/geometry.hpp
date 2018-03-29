@@ -104,7 +104,7 @@ class Vector_3
 ostream& operator<<(ostream &os, const Vector_3 &v);
 Point_3 operator+(const Point_3 &p, const Vector_3 &v);
 Point_3 operator-(const Point_3 &p, const Vector_3 &v);
-Vector_3 operator-(const Point_3 &p1, const Point_3 &p2);
+Vector_3 operator-(const Point_3 &p2, const Point_3 &p1);
 Vector_3 operator*(const double &s, const Vector_3 &v);
 bool operator==(const Vector_3 &vec1, const Vector_3 &vec2);
 

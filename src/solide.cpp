@@ -362,7 +362,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	cout << "Pas la bonne norme !!!!" << endl;
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      test = test + faces[f].S /  P->V * tens(faces[f].centre - P->x0,  nIJ);
+      test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       test_vec = test_vec + faces[f].S * nIJ;
       if(P->faces.size() != 4)
       cout << "Nbr faces : " << P->faces.size() << endl;
