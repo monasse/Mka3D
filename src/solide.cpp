@@ -301,11 +301,11 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       Vector_3 nIJ = faces[f].normale;
       //Vérfication sens normale
       int voisin;
-      if(faces[f].BC != -1 && P->id == faces[f].voisins[0])
+      if(faces[f].BC == 0 && P->id == faces[f].voisins[0])
 	voisin = faces[f].voisins[1];
-      else if(faces[f].BC != -1 && P->id == faces[f].voisins[1]) 
+      else if(faces[f].BC == 0 && P->id == faces[f].voisins[1]) 
 	voisin = faces[f].voisins[0];
-      if(faces[i].BC != -1 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
+      if(faces[i].BC == 0 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
@@ -321,7 +321,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       /*if(P->discrete_gradient.col3[2] > pow(10., -6.))
 	cout << "Num element : " << P->id << " def : " << P->discrete_gradient.col3[2] << endl;*/
 
-  if(test_vec.squared_length() > pow(10., -5.)) {
+    /*if(test_vec.squared_length() > pow(10., -5.)) {
     //cout << "MTF : " << test_vec << endl;
     cout << "Num element : " << P->id << endl;
       for(int i=0 ; i < P->faces.size() ; i++){
@@ -329,7 +329,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	cout << vertex[faces[i].vertex[1]].pos << endl;
 	cout << vertex[faces[i].vertex[2]].pos << endl;
 	cout << endl;
-      }
+	}*/
   }
     
 /*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
@@ -381,7 +381,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	//Ajouter les directions des forces avec particules aux_1 et aux_2
 	Vector_3 n_aux_1 = Vector_3(P->x0, solide[aux_1].x0) / sqrt(Vector_3(P->x0, solide[aux_1].x0).squared_length());
 	Vector_3 n_aux_2 = Vector_3(P->x0, solide[aux_2].x0) / sqrt(Vector_3(P->x0, solide[aux_2].x0).squared_length());
-	P->Fi = P->Fi - faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[num_face].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
+	P->Fi = P->Fi - faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ; // + faces[num_face].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[num_face].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
       }
     }
     /*cout << "Particule :" << P->first << endl;
