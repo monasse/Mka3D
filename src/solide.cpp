@@ -381,7 +381,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	//Ajouter les directions des forces avec particules aux_1 et aux_2
 	Vector_3 n_aux_1 = Vector_3(P->x0, solide[aux_1].x0) / sqrt(Vector_3(P->x0, solide[aux_1].x0).squared_length());
 	Vector_3 n_aux_2 = Vector_3(P->x0, solide[aux_2].x0) / sqrt(Vector_3(P->x0, solide[aux_2].x0).squared_length());
-	P->Fi = P->Fi - faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ; //  + faces[num_face].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[num_face].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
+	P->Fi = P->Fi - faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * solide[aux_1].contrainte * n_aux_1 + faces[num_face].S * c_aux_2 * solide[aux_2].contrainte * n_aux_2;
       }
     }
     /*cout << "Particule :" << P->first << endl;
