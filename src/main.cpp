@@ -292,7 +292,7 @@ int main(){
     cout<< "Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
     //Time step
     if(dt < pow(10., -10.))
-      dt = pow(10., -6.);
+      dt = pow(10., -8.); //9.
       //dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d, t, T);
