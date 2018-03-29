@@ -166,12 +166,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	solide[part_2].BC = f.BC;
     }    
     f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
-    //calcul_normales = true;
-    
-  /*if(not(calcul_normales)) {
-	f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //, solide[part_2].vertices[id_vertex_hors_face]); //Calcul de la normale sortante, surface et barycentre face
-	}
-	}*/
+
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
       if(Vector_3(solide[part_1].x0, solide[part_2].x0) * f.normale  < 0.)
@@ -187,12 +182,12 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
-    if(F->BC != -1) {
+    if(F->BC == 0) {
       //cout << "Face : " << F->id << endl;
       bool test = voisins_face(F->id);
       if(not(test)) {
 	//cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	//throw std::invalid_argument( "Pas de tetra associe a une face" );
+	throw std::invalid_argument( "Pas de tetra associe a une face" );
 	/*cout << "Centre Face : " << F->centre << endl;
 	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
 	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
@@ -216,6 +211,7 @@ bool Solide::voisins_face(int num_face) {
     else if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[1] != part_1 && faces[*G].voisins[1] != -1)
       tous_voisins.push_back(faces[*G].voisins[1]);
   }
+  //Boucle sur deuxième groupe de particules
   for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++){
     //cout << "Num face teste : " << *G << endl;
     if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[0] != part_2 && faces[*G].voisins[0] != -1)
@@ -224,12 +220,7 @@ bool Solide::voisins_face(int num_face) {
       tous_voisins.push_back(faces[*G].voisins[1]);
   }
   //Tous_voisins rempli a priori
-  /*for(std::vector<int>::iterator G=tous_voisins.begin();G<tous_voisins.end();G++)
-    cout << "Barycentre Voisin d'un voisin : " << solide[*G].x0 << endl;
-    //cout << *G << " ";
-    cout << endl;*/
 
-  //On parcourt tous les couples candidats possibles sans les répéter
   bool tetra_ok = false;
   for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end()-1;G++){
     if(tetra_ok)
@@ -237,32 +228,13 @@ bool Solide::voisins_face(int num_face) {
     for(std::vector<int>::iterator I=G + 1;I!=tous_voisins.end();I++){
       int voisin1 = *G;
       int voisin2 = *I;
-      //Tester voir si projection du vecteur part_1 - part_2 est dans la face ? Dans ce cas, on devrait pouvoir avoir un tetra associé à la face
-      //Test pour voir si tetra candidat est valable ou pas
       double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
-      //cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl;
-      if(vol < pow(10., -8.)) {
-	/*cout << "Problème volume : " << vol << endl;
-	cout << "Coords Points : " << solide[part_1].x0 << " " << solide[part_2].x0 << endl;
-	cout << "Coords Points : " << solide[voisin1].x0 << " " << solide[voisin2].x0 << endl;*/
-      }
-      else {
-	/*Vector_3 coords = trouve_coord_bary(solide[part_1].x0, solide[part_2].x0, solide[voisin1].x0, solide[voisin2].x0, faces[num_face].centre);
-	double c_part_1 = coords.x();
-	double c_part_2 = coords.y();
-	double c_voisin1 = coords.z();
-	double c_voisin2 = 1. - (c_part_1 + c_part_2 + c_voisin1);*/
-
+      if(vol > pow(10., -8.)) {
 	double c_part_1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_part_2 = (Vector_3(solide[part_1].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
 	double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-
-	
-	//cout << "Coords bary : " << c_part_1 <<" " << c_part_2 << " " <<  c_voisin1 << " " << c_voisin2 << " "  << (c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) << endl;
-      	
-	//if(/*c_part_1 < 1. && c_part_2 < 1. && c_voisin1 < 1. && c_voisin2 < 1. && */(c_part_1 + c_part_2 + c_voisin1 + c_voisin2 - 1.) < 0.001) { //Stockage des particules du tetra et des coords bary si ok
 	faces[num_face].voisins.push_back(voisin1);
 	faces[num_face].voisins.push_back(voisin2);
 	faces[num_face].c_voisins.push_back(c_part_1);
@@ -270,43 +242,11 @@ bool Solide::voisins_face(int num_face) {
 	faces[num_face].c_voisins.push_back(c_voisin1);
 	faces[num_face].c_voisins.push_back(c_voisin2);
 	tetra_ok = true;
-	break;
-	
+	break;	
       }
     }
   }
   return tetra_ok;
-}
-
-Vector_3 Solide::trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisin1, Point_3 voisin2, Point_3 centre_face) {
-  Vector_3 vec = centre_face - voisin2;
-  Matrix aux;
-  Matrix inverse;
-  Matrix transp;
-
-  //Assemblage de la matrice de coords à inverser
-  aux.col1 = Vector_3(part_1.x() - voisin2.x(), part_1.y() - voisin2.y(), part_1.z() - voisin2.z());
-  aux.col2 = Vector_3(part_2.x() - voisin2.x(), part_2.y() - voisin2.y(), part_2.z() - voisin2.z());
-  aux.col3 = Vector_3(voisin1.x() - voisin2.x(), voisin1.y() - voisin2.y(), voisin1.z() - voisin2.z());
-
-  //Calcul déterminant
-  double det = aux.col1[0] * (aux.col2[1] * aux.col3[2] - aux.col2[2] * aux.col3[1]) - aux.col2[0] * (aux.col1[1] * aux.col3[2] - aux.col1[2] * aux.col3[1]) + aux.col3[0] * (aux.col1[1] * aux.col2[2] - aux.col1[2] * aux.col2[1]);
-  if(abs(det) < pow(10., -15.))
-    throw std::invalid_argument( "Determinant vaut 0 !" );
-
-  //Assemblage matrice inverse
-  transp = aux.T();
-  inverse.col1 = Vector_3(transp.col2[1] * transp.col3[2] - transp.col2[2] * transp.col3[1], -(transp.col2[0] * transp.col3[2] - transp.col2[2] * transp.col3[0]), transp.col2[0] * transp.col3[1] - transp.col2[1] * transp.col3[0]);
-  inverse.col2 = Vector_3(-(transp.col1[1] * transp.col3[2] - transp.col1[2] * transp.col3[1]), (transp.col1[0] * transp.col3[2] - transp.col1[2] * transp.col3[0]), -(transp.col1[0] * transp.col3[1] - transp.col1[1] * transp.col3[0]));
-  inverse.col3 = Vector_3(transp.col1[1] * transp.col2[2] - transp.col1[2] * transp.col2[1], -(transp.col1[0] * transp.col2[2] - transp.col1[2] * transp.col2[0]), transp.col1[0] * transp.col2[1] - transp.col1[1] * transp.col2[0]);
-
-  inverse = inverse / det;
-
-  /*Matrix test = inverse * aux;
-  if(abs(test.col1[0] - 1.) > 0.001 || abs(test.col2[1] - 1.) > 0.001 || abs(test.col3[2] - 1.) > 0.001)
-  cout << "On calcule pas l'inverse !!!" << endl;*/
-  
-  return inverse * vec;
 }
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
@@ -352,7 +292,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
     P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
     //Matrix test;
-    //Vector_3 test_vec;
+    Vector_3 test_vec;
     //Test
     /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
@@ -371,23 +311,26 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	cout << "Pas la bonne norme !!!!" << endl;*/
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      /*test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
+      //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       test_vec = test_vec + faces[f].S * nIJ;
-      if(P->faces.size() != 4)
+      /*if(P->faces.size() != 4)
       cout << "Nbr faces : " << P->faces.size() << endl;
       if(faces[f].S<0.){
       cout << "S=" << faces[f].S << endl;*/
     }
-    if(P->discrete_gradient.col3[2] > pow(10., -6.))
-      cout << "Num element : " << P->id << " def : " << P->discrete_gradient.col3[2] << endl;
+      /*if(P->discrete_gradient.col3[2] > pow(10., -6.))
+	cout << "Num element : " << P->id << " def : " << P->discrete_gradient.col3[2] << endl;*/
 
-  /*if(test_vec.squared_length() > pow(10., -5.)) {
-      cout << "MTF : " << test_vec << endl;
+  if(test_vec.squared_length() > pow(10., -5.)) {
+    //cout << "MTF : " << test_vec << endl;
+    cout << "Num element : " << P->id << endl;
       for(int i=0 ; i < P->faces.size() ; i++){
 	cout << vertex[faces[i].vertex[0]].pos << endl;
 	cout << vertex[faces[i].vertex[1]].pos << endl;
 	cout << vertex[faces[i].vertex[2]].pos << endl;
-	cout << endl;*/
+	cout << endl;
+      }
+  }
     
 /*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
@@ -405,9 +348,6 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       //P->epsilon_p += delta_p * n_elas;
     }
   }
-
-  /*if(plastifie)
-    cout << "Plastification dans ce pas de temps !" << endl;*/
 }
 
 
@@ -619,20 +559,20 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk << "\n";
   //Deformation plastique cumulée
   vtk << "SCALARS p double 1" << endl;
-  //vtk << "LOOKUP_TABLE default" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       vtk << P->def_plas_cumulee << endl;
   }
   vtk << "\n";
-  //Deformation plastique cumulée
-  vtk << "SCALARS id double 1" << endl;
-  //vtk << "LOOKUP_TABLE default" << endl;
+  //Numéro des particules
+  /*vtk << "SCALARS id double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       vtk << P->id << endl;
   }
-  vtk << endl;
+  vtk << endl;*/
   vtk.close();
 }
 
