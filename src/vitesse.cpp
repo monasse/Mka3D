@@ -75,28 +75,14 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
 //Boundary velocities of the solid particles
 Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
 {
-  double T_p = 0.001;
-  
-  //Chargement linéaire en traction
-  /*if(p.z() <= 0.2)
-    return Vector_3(-0.1,0,0) * t / T_p; //En m.
-  else
-  return Dx;*/
-
-  //Chargement torsion
-  /*if(p.z() <= 0.1) { //Déplacement en BC...
-    double alpha_pt = 3.1416 / 360. * 45 / T; // * t / T; //Rotation de 45° sur [0, T]
-    double r = sqrt((p.y()-0.5)*(p.y()-0.5) + (p.x()-0.5)*(p.x()-0.5));
-    double theta = 0.;
-
-    if(p.x() >= 0.5)
-      theta = atan((p.y() - 0.5) / (p.x() - 0.5));
-    else //if(p.x() >= 0.5 && p.y() >= 0.5)
-      theta = 3.1416 - atan((p.y() - 0.5) / (p.x() - 0.5));
-    return r * Vector_3(-sin(alpha_pt), cos(alpha_pt), 0.); //En m
+  if(t < 1. * pow(10., -8.)) {
+    if(p.z() <= 0.2)
+      return Vector_3(0., 0., -0.001);
+    else if(p.z() >= 2.8)
+      return Vector_3(0., 0., 0.001);
   }
- else */
-    return Dx;
+  else
+    return Vector_3(0., 0., 0.); //Dx; 
 }
 
 double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx, const Vector_3& u) {

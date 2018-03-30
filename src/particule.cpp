@@ -82,9 +82,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dxprev = Dx;
   Dx = Dx+u*dt;
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-
-
-  //Dx = displacement_BC(x0, Dx, t, T);
+  //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
 
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
@@ -96,20 +94,8 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 }
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  /*if(fixe==1){
-    u = Vector_3(0.,0.,0.);
-    //omega = Vector_3(0.,0.,0.);
-  } else {
-    if(fixe==0){
-      u = u + Fi*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-      u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
-    }
-    else if(fixe==2 || fixe==3){
-      u = velocity_BC(x0, t, T, Dx); //Vector_3(0.,0.,0.);
-    }
-    }*/
   u = u + Fi*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-  u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
+  //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
 }
 
 void Particule::barycentre() {

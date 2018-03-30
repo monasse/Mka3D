@@ -272,8 +272,10 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
-    if(faces[i].BC == 1)
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka !
+    if(faces[i].BC == 1) {
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka !
+      faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, 0., 0.);
+    }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk
       for(int j=0; j<faces[i].voisins.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
