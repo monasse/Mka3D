@@ -330,7 +330,6 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	cout << vertex[faces[i].vertex[2]].pos << endl;
 	cout << endl;
 	}*/
-  }
     
 /*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
