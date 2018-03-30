@@ -305,7 +305,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	voisin = faces[f].voisins[1];
       else if(faces[f].BC == 0 && P->id == faces[f].voisins[1]) 
 	voisin = faces[f].voisins[0];
-      if(faces[i].BC == 0 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
+      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
@@ -359,7 +359,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
       int num_face = P->faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
       int part_1 = faces[num_face].voisins[0];
       int part_2 = faces[num_face].voisins[1];
-      if(faces[i].BC == 0 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
+      if(faces[num_face].BC == 0 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
 	double c_part_1 = faces[num_face].c_voisins[0];
 	double c_part_2 = faces[num_face].c_voisins[1];
 	int aux_1 = faces[num_face].voisins[2];
