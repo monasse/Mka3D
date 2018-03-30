@@ -108,6 +108,8 @@ double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const
     }
     else if(p.z() >= 2.8)
       return 0.;
+    else
+      return u[2]
   }
   else
     return u[2];
