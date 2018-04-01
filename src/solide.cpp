@@ -380,9 +380,9 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
-	P->Fi = P->Fi - faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ; // - faces[num_face].S * c_aux_1 * P->contrainte * nIJ - faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
-	//solide[aux_1].Fi = solide[aux_1].Fi + faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
-	//solide[aux_2].Fi = solide[aux_2].Fi + faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
+	P->Fi = P->Fi - faces[num_face].S * (c_part_1 * solide[part_1].contrainte + c_part_2 * solide[part_2].contrainte) * nIJ - faces[num_face].S * c_aux_1 * P->contrainte * nIJ - faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
+	solide[aux_1].Fi = solide[aux_1].Fi + faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
+	solide[aux_2].Fi = solide[aux_2].Fi + faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;
