@@ -84,7 +84,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-  //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
+  Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
 
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
