@@ -273,8 +273,8 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka !
-      faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, 0., 0.);
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, 0., 0.);
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk
       /*for(int j=0; j<faces[i].voisins.size() ; j++) {
@@ -296,27 +296,24 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
     P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
     //Matrix test;
-    Vector_3 test_vec;
+    //Vector_3 test_vec;
     //Test
     /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      Vector_3 nIJ = faces[f].normale;
-      //Vérfication sens normale
-      int voisin;
-      if(faces[f].BC == 0 && P->id == faces[f].voisins[0])
-	voisin = faces[f].voisins[1];
-      else if(faces[f].BC == 0 && P->id == faces[f].voisins[1]) 
-	voisin = faces[f].voisins[0];
-      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, /*solide[voisin].x0)*/ faces[f].centre) < 0.)
+      /*Vector_3 nIJ = faces[f].normale;
+      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
+	  */
+      Vector_3 nIJ = Vector_3(P->x0, faces[f].centre);
+      nIJ = nIJ / sqrt(nIJ.squared_length());
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
-      test_vec = test_vec + faces[f].S * nIJ;
+      //test_vec = test_vec + faces[f].S * nIJ;
       /*if(P->faces.size() != 4)
       cout << "Nbr faces : " << P->faces.size() << endl;
       if(faces[f].S<0.){
@@ -382,7 +379,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
-	P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
+	P->Fi = P->Fi - faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
 	//P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ; //c_part_1 ; c_part_2
 	//solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	//solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
