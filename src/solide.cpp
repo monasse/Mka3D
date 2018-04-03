@@ -302,15 +302,15 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      /*Vector_3 nIJ = faces[f].normale;
+      Vector_3 nIJ = faces[f].normale;
       if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
-	  */
-      Vector_3 nIJ = Vector_3(P->x0, faces[f].centre);
-      nIJ = nIJ / sqrt(nIJ.squared_length());
+      /*Vector_3 nIJ = Vector_3(P->x0, faces[f].centre);
+	nIJ = nIJ / sqrt(nIJ.squared_length());*/
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
-      Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
+      //Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
+      Matrix Dij_n(tens_sym(solide[faces[i].voisins[0]].Dx - P->Dx,  nIJ) / 2.); //Voronoi
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
@@ -379,7 +379,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
-	P->Fi = P->Fi - faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
+	P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
 	//P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ; //c_part_1 ; c_part_2
 	//solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	//solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
