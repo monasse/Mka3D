@@ -41,7 +41,7 @@ inline double signe(const double &x)
   return (x < 0.) ? -1. : 1. ;
 }
 
-Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0() {
+Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
@@ -49,7 +49,7 @@ Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p
   BC = 0;
 }
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), x0()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx()
 {
   id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
@@ -73,14 +73,16 @@ Particule & Particule:: operator=(const Particule &P){
   Dxprev = P.Dxprev;
   Fi = P.Fi;
   u = P.u;
-  u_half = P.u_half;
+  u_prev = P.u_prev;
   mvt_t = P.mvt_t;
   mvt_tprev = P.mvt_tprev;
 }
 
 void Particule::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   Dxprev = Dx;
-  Dx = Dx+u*dt;
+  err_Dx = err_Dx + u * dt;
+  Dx = Dx+ err_Dx;
+  err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
 
@@ -94,7 +96,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 }
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  u = u + Fi*(dt/m)*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+  u_prev = u;
+  err_u = err_u + Fi * dt / m;
+  u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+  err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
 }
 

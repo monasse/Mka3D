@@ -65,7 +65,7 @@ class Particule
   Vector_3 Dxprev; //!<Deplacement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
   Vector_3 u; //!< Vitesse de la particule au temps t
-  Vector_3 u_half; //!< Vitesse de la particule au temps t-dt/2
+  Vector_3 u_prev; //!< Vitesse de la particule au temps t-dt/2
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
 
@@ -75,6 +75,10 @@ class Particule
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   Matrix epsilon_p; //Déformation plastique rémanante
   double seuil_elas;
+
+  //Pour compensation des sommations
+  Vector_3 err_u;
+  Vector_3 err_Dx;
 
   int id; //Numéro de la particule dans la map de Solide
   int BC; //Vaut 0 si particule pas au bord et peut valoir 1,2,etc... selon la condition de bord

@@ -310,7 +310,12 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
       //Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
-      Matrix Dij_n(tens_sym(solide[faces[i].voisins[0]].Dx - P->Dx,  nIJ) / 2.); //Voronoi
+      int voisin;
+	if(P->id == faces[f].voisins[0])
+	  voisin = faces[f].voisins[1];
+	else if(P->id == faces[f].voisins[1])
+	  voisin = faces[f].voisins[0];
+      Matrix Dij_n(tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2.); //Voronoi
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
@@ -397,8 +402,7 @@ double Solide::Energie(const int& N_dim, const double& nu, const double& E){
 double Solide::Energie_cinetique(){
   double E = 0.;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    double u2 = (P->u.squared_length());
-    E += 1./2. * P->m * u2;
+    E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
   }
   //cout << "Energie cinetique : " << E << endl;
   return E;
