@@ -263,7 +263,7 @@ int main(){
   }
   kimp++;
 
-  double E0 = S.Energie(N_dim, nu, E);
+  double E0 = S.Energie();
   if(rep){
     E0 -= dE0rep;
   }
@@ -281,15 +281,15 @@ int main(){
       next_timp += dtimp;
     }
     //Variation of energy
-    cout<< "Solid energy:" << S.Energie(N_dim, nu, E) <<endl;
+    cout<< "Solid energy:" << S.Energie() <<endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
     for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
       qdm = qdm+ P->m * P->u;
     }
     
-    ener << t << " " << S.Energie(N_dim, nu, E) << " " << S.Energie(N_dim, nu, E)-E0 << " " << qdm <<endl;
-    cout<< "Energy variation: "<< S.Energie(N_dim, nu, E) - E0 << endl;
+    ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
+    cout<< "Energy variation: "<< S.Energie() - E0 << endl;
     //Time step
     if(dt < pow(10., -10.))
       dt = pow(10., -7.); //8.
@@ -310,6 +310,6 @@ int main(){
   //Final output
   cout << "Final time of the simulation: " << t<<endl;
   cout << "Computational time: " << (double) (end-start)/CLOCKS_PER_SEC << endl; 
-  cout << "Energy variation: " << S.Energie(N_dim, nu, E) - E0 << endl;
+  cout << "Energy variation: " << S.Energie() - E0 << endl;
   return 0;
 }

@@ -264,7 +264,7 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   Forces_internes(dt);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
-    P->Fi = P->Fi + Forces_externes(t,T); //Reprendre calcul des forces externes
+    P->Fi = P->Fi; // + Forces_externes(t,T); //Reprendre calcul des forces externes
 }
 
 void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
@@ -315,7 +315,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	  voisin = faces[f].voisins[1];
 	else if(P->id == faces[f].voisins[1])
 	  voisin = faces[f].voisins[0];
-      Matrix Dij_n(tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2.); //Voronoi
+	Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //Voronoi
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
@@ -395,11 +395,11 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
   }
 }
 
-double Solide::Energie(const int& N_dim, const double& nu, const double& E){
-  return Energie_cinetique()+Energie_potentielle(N_dim, nu, E);
+const double Solide::Energie(){
+  return Energie_cinetique()+Energie_potentielle();
 }
 
-double Solide::Energie_cinetique(){
+const double Solide::Energie_cinetique(){
   double E = 0.;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
@@ -408,7 +408,7 @@ double Solide::Energie_cinetique(){
   return E;
 }
 
-double Solide::Energie_potentielle(const int& N_dim, const double& nu, const double& E){
+const double Solide::Energie_potentielle(){
   double Ep = 0.;
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
