@@ -386,7 +386,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
-	P->Fi = P->Fi + /*faces[num_face].S *  2 * mu * */ P->discrete_gradient * nIJ; //(solide[voisin].Dx - P->Dx);
+	P->Fi = P->Fi + faces[num_face].S *  2 * mu *  P->discrete_gradient * nIJ; //(solide[voisin].Dx - P->Dx);
 	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
 	//P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
 	//solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
@@ -415,8 +415,11 @@ const double Solide::Energie_potentielle(){
   double Ep = 0.;
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    Ep += 0.5 * contraction_double(P->discrete_gradient, P->discrete_gradient);
+    for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++){
+      Vector_3 nIJ = faces[*F].normale;
+      Ep += 0.5 * faces[*F].S * 2 * mu * (P->discrete_gradient * nIJ ) * (P->discrete_gradient * nIJ) ;
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
+    }
   }
   //cout << "Energie potentielle : " << Ep << endl;
   return Ep;
