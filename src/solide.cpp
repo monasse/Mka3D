@@ -309,13 +309,13 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	nIJ = nIJ / sqrt(nIJ.squared_length());*/
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
-      Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
-      /*int voisin;
+      //Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
+      int voisin;
       if(P->id == faces[f].voisins[0])
 	voisin = faces[f].voisins[1];
       else if(P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];
-	Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. );*/ //Voronoi
+	Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //Voronoi
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
@@ -344,6 +344,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     cout << test.col3 << endl;
     cout << "V=" << P->V <<  endl;*/
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
+    //P->contrainte = lambda * (P->discrete_gradient).tr() * unit() + 2*mu * (P->discrete_gradient);
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
@@ -376,18 +377,19 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	
 	//Sortir le sens de toutes les forces comme il faut...
 	Vector_3 nIJ = faces[num_face].normale;
-	/*int voisin;
+	int voisin;
 	if(P->id == faces[num_face].voisins[0])
 	  voisin = faces[num_face].voisins[1];
 	else if(P->id == faces[num_face].voisins[1])
-	voisin = faces[num_face].voisins[0];*/
+	voisin = faces[num_face].voisins[0];
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
+	P->Fi = P->Fi + faces[num_face].S * 2 * mu * (solide[voisin].Dx - P->Dx);
 	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
-	P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
-	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
-	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
+	//P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
+	//solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
+	//solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;

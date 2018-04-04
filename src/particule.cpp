@@ -84,7 +84,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-  Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
+  //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
 
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
@@ -92,7 +92,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Aff_transformation_3 translation(Vector_3(Point_3(0.,0.,0.),x0)+Dx);
   Aff_transformation_3 translation_inv(Vector_3(x0,Point_3(0.,0.,0.)));
   mvt_t = translation*(/*rotation*/translation_inv);
-	//cout<<"position du centre de la particule "<<x0+Dx<<endl;
+  //cout<<"position du centre de la particule "<<x0+Dx<<endl;
 }
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
