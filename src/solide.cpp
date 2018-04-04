@@ -310,14 +310,16 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
       //Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) );
-      int voisin;
-      if(P->id == faces[f].voisins[0])
-	voisin = faces[f].voisins[1];
+      if(faces[f]. BC == 0) {
+	int voisin;
+	if(P->id == faces[f].voisins[0])
+	  voisin = faces[f].voisins[1];
       else if(P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];
-      //Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //Voronoi
-	//P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-	P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
+	Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //Voronoi
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      }
+      //P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
       /*if(P->faces.size() != 4)
@@ -386,8 +388,8 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
-	P->Fi = P->Fi + /*faces[num_face].S * */ 2 * mu * (solide[voisin].Dx - P->Dx); //(solide[voisin].Dx - P->Dx);
-	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
+	//P->Fi = P->Fi +  2 * mu * (solide[voisin].Dx - P->Dx); //OK flux à 2 points
+	P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
 	//P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
 	//solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	//solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
@@ -417,8 +419,7 @@ const double Solide::Energie_potentielle(){
   double Ep = 0.;
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++){
-    //Vector_3 nIJ = faces[*F].normale;
+    /*for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++){
       int voisin;
       int num_face = *F;
       if(faces[num_face].BC == 0) {
@@ -426,12 +427,11 @@ const double Solide::Energie_potentielle(){
 	  voisin = faces[num_face].voisins[1];
 	else if(P->id == faces[num_face].voisins[1])
 	  voisin = faces[num_face].voisins[0];
-	//Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
 	Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
       }
-    }
+      }*/
     //Ep += 0.5 * /*faces[*F].S * */ 2 * mu * (P->discrete_gradient * nIJ ) * (P->discrete_gradient * nIJ) ;
-    //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
     //}
   }
   //cout << "Energie potentielle : " << Ep << endl;
