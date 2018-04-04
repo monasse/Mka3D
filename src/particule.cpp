@@ -83,6 +83,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   err_Dx = err_Dx + u * dt;
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
+  
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
 
@@ -100,8 +101,8 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   err_u = err_u + Fi * dt / m;
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
-  if(t < pow(10., -8.))
-    u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);
+  /*if(t < pow(10., -8.))
+    u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u);*/
 }
 
 void Particule::barycentre() {

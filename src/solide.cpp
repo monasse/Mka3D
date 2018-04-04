@@ -315,7 +315,7 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	voisin = faces[f].voisins[1];
       else if(P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];
-	Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //Voronoi
+      //Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //Voronoi
 	//P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
@@ -367,7 +367,7 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
       int num_face = P->faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
       int part_1 = faces[num_face].voisins[0];
       int part_2 = faces[num_face].voisins[1];
-      if(faces[num_face].BC == 0 && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
+      if(faces[num_face].BC == 0) { // && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
 	double c_part_1 = faces[num_face].c_voisins[0];
 	double c_part_2 = faces[num_face].c_voisins[1];
 	int aux_1 = faces[num_face].voisins[2];
@@ -382,11 +382,11 @@ void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque 
 	if(P->id == faces[num_face].voisins[0])
 	  voisin = faces[num_face].voisins[1];
 	else if(P->id == faces[num_face].voisins[1])
-	voisin = faces[num_face].voisins[0];
+	  voisin = faces[num_face].voisins[0];
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
-	P->Fi = P->Fi + /*faces[num_face].S * */ 2 * mu * P->discrete_gradient * nIJ; //(solide[voisin].Dx - P->Dx);
+	P->Fi = P->Fi + /*faces[num_face].S * */ 2 * mu * (solide[voisin].Dx - P->Dx); //(solide[voisin].Dx - P->Dx);
 	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ;
 	//P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
 	//solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
@@ -405,24 +405,35 @@ const double Solide::Energie(){
 const double Solide::Energie_cinetique(){
   double E = 0.;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
+    ///E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
+    E += 1./2. * P->m * P->u * P->u;
   }
   //cout << "Energie cinetique : " << E << endl;
   return E;
+  //return 0.;
 }
 
 const double Solide::Energie_potentielle(){
   double Ep = 0.;
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++){
+    for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++){
     //Vector_3 nIJ = faces[*F].normale;
-    Ep += 0.5 * 2. * mu * contraction_double(P->discrete_gradient, P->discrete_gradient);
+      int voisin;
+      int num_face = *F;
+      if(P->id == faces[num_face].voisins[0])
+	voisin = faces[num_face].voisins[1];
+      else if(P->id == faces[num_face].voisins[1])
+	voisin = faces[num_face].voisins[0];
+      //Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
+      Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
+    }
     //Ep += 0.5 * /*faces[*F].S * */ 2 * mu * (P->discrete_gradient * nIJ ) * (P->discrete_gradient * nIJ) ;
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
     //}
   }
   //cout << "Energie potentielle : " << Ep << endl;
+  //return 0.;
   return Ep;
 }
 

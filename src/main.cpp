@@ -118,6 +118,7 @@ Exemple: \n
 #include <iostream>
 #include <ctime>
 #include "solide.hpp"
+#include "vitesse.hpp"
 using namespace std;      
 
 /*!
@@ -243,8 +244,8 @@ int main(){
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
-  /*for(std::map<int, Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
-    cout << "Particle ID : " << (P->second).id << endl;
+  /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
+    cout << "Particle pos : " << P->x0 << endl;
     }*/
   	
   //Initialization of time measurements
@@ -267,8 +268,16 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
-  S.Forces_internes(dt);
+  //S.Forces_internes(dt);
   int nb_part = S.size();
+
+  for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
+    if((P->x0).z() <= 0.2)
+      (P->u).vec[2] = 0.05;
+    else if((P->x0).z() >= 2.8)
+      (P->u).vec[2] = -0.05;
+    P->u_prev = P->u;
+  }
 
   //Iterations on the time-steps
   for (int n=0; (t<T) && n<Nmax; n++){
@@ -281,7 +290,7 @@ int main(){
       next_timp += dtimp;
     }
     //Variation of energy
-    cout<< "Solid energy:" << S.Energie() <<endl;
+    cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
     for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
