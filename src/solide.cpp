@@ -405,8 +405,8 @@ const double Solide::Energie(){
 const double Solide::Energie_cinetique(){
   double E = 0.;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    ///E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
-    E += 1./2. * P->m * P->u * P->u;
+    E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
+    //E += 1./2. * P->m * P->u * P->u;
   }
   //cout << "Energie cinetique : " << E << endl;
   return E;
@@ -421,12 +421,14 @@ const double Solide::Energie_potentielle(){
     //Vector_3 nIJ = faces[*F].normale;
       int voisin;
       int num_face = *F;
-      if(P->id == faces[num_face].voisins[0])
-	voisin = faces[num_face].voisins[1];
-      else if(P->id == faces[num_face].voisins[1])
-	voisin = faces[num_face].voisins[0];
-      //Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
-      Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
+      if(faces[num_face].BC == 0) {
+	if(P->id == faces[num_face].voisins[0])
+	  voisin = faces[num_face].voisins[1];
+	else if(P->id == faces[num_face].voisins[1])
+	  voisin = faces[num_face].voisins[0];
+	//Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
+	Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
+      }
     }
     //Ep += 0.5 * /*faces[*F].S * */ 2 * mu * (P->discrete_gradient * nIJ ) * (P->discrete_gradient * nIJ) ;
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
