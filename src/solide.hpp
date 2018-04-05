@@ -28,8 +28,11 @@
 
 #include "geometry.hpp"
 #include "particule.hpp"
+#include "face.hpp"
 #include "vertex.hpp"
 #include <vector>
+
+class Particule;
 
 //! Definition de la classe Solide  
 class Solide

@@ -105,12 +105,34 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
 }
 
-void Particule::barycentre() {
-  x0 = centroid(vertices.begin(), vertices.end());
+void Particule::barycentre(Solide* Sol) {
+  std::vector<Point_3> aux;
+  aux.push_back(Sol->vertex[vertices[0]].pos);
+  aux.push_back(Sol->vertex[vertices[1]].pos);
+  aux.push_back(Sol->vertex[vertices[2]].pos);
+  aux.push_back(Sol->vertex[vertices[3]].pos);
+  x0 = centroid(aux.begin(), aux.end());
 }
 
-void Particule::volume() {
-  V = abs(cross_product(Vector_3(vertices[0],vertices[1]),Vector_3(vertices[0],vertices[2]))*Vector_3(vertices[0],vertices[3]))/6.;
+void Particule::volume(Solide* Sol) {
+  V = cross_product(Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[1]].pos),Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[2]].pos))*Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[3]].pos)/6.;
+}
+
+bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les 3 vertex de la face
+  if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3]) {
+    if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3]) {
+      if(f.vertex[2] == vertices[0] || f.vertex[2] == vertices[1] || f.vertex[2] == vertices[2] || f.vertex[2] == vertices[3]) {
+	//cout << "Numéro vertex : " << f.vertex[0] << " " << f.vertex[1] << " " << f.vertex[2] << " " << endl;
+	return true;
+      }
+      else
+	return false;
+    }
+    else
+      return false;
+  }
+  else
+    return false;
 }
 
 #endif
