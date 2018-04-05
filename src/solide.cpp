@@ -173,7 +173,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 	  solide[part_1].BC = f.BC;
       }
     }    
-    f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
+    f.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
@@ -205,8 +205,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 }
 
-void Solide::Init(const char* s, const bool& rep, const int& numrep, const double& rho){ //Pour gmsh
-  std::ifstream maillage(s,ios::in);
+void Solide::Init(const char* s1, const bool& rep, const int& numrep, const double& rho){ //Pour gmsh
+  std::ifstream maillage(s1,ios::in);
   if(not(maillage))
     throw std::invalid_argument( "Ouverture du maillage ratee !" );  
 
@@ -332,18 +332,20 @@ void Solide::Init(const char* s, const bool& rep, const int& numrep, const doubl
       F->BC = 0;
 
     //Continuer à partir d'ici
+    int part_1 = F->voisins[0];
+    int part_2 = F->voisins[1];
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
-      if(Vector_3(solide[part_1].x0, solide[part_2].x0) * f.normale  < 0.)
-	f.normale = -f.normale;
+      if(Vector_3(solide[part_1].x0, solide[part_2].x0) * F->normale  < 0.)
+	F->normale = -F->normale;
     }
     if(part_1 == -1 || part_2 == -1) { //Face au bord
-      Vector_3 bonne_direction = Vector_3(solide[f.voisins[0]].x0, f.centre);
-      if(bonne_direction * f.normale < 0.)
-	f.normale = -f.normale;
+      Vector_3 bonne_direction = Vector_3(solide[F->voisins[0]].x0, F->centre);
+      if(bonne_direction * F->normale < 0.)
+	F->normale = -F->normale;
     }
-    faces.push_back(f);
+    //faces.push_back(f);
   }
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
@@ -361,6 +363,14 @@ void Solide::Init(const char* s, const bool& rep, const int& numrep, const doubl
       }
     }
   }
+}
+
+bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    if(*F == f)
+      return true;
+  }
+  return false;
 }
 
 bool Solide::voisins_face(int num_face) {

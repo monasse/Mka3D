@@ -32,6 +32,8 @@
 
 class Solide;
 
+class Face;
+
 class Particule
 {
 

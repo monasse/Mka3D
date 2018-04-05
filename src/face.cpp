@@ -67,7 +67,10 @@ bool operator==(const Face &F1, const Face &F2) { //Compare les faces
   }
 }
 
-void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3) { //, const Point_3& ext) {
+void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
+  const Point_3 v1 = Sol->vertex[vertex[0]].pos;
+  const Point_3 v2 = Sol->vertex[vertex[1]].pos;
+  const Point_3 v3 = Sol->vertex[vertex[2]].pos;
   std::vector<Point_3> aux;
   aux.push_back(v1);
   aux.push_back(v2);
