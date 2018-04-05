@@ -268,7 +268,12 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
-  //S.Forces_internes(dt);
+  /*S.Forces_internes(dt);
+  for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
+    if(P->contrainte.norme() > pow(10., -14.))
+      cout << "Contrainte non-nulle !" << endl;
+  }
+  S.Solve_vitesse(dt, false, 1.0, 0., 45.);*/
   int nb_part = S.size();
 
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
@@ -276,7 +281,9 @@ int main(){
       (P->u).vec[2] = 0.05;
     else if((P->x0).z() >= 2.8)
       (P->u).vec[2] = -0.05;
-    P->u_prev = P->u;
+      P->u_prev = P->u;
+      //if((P->u).squared_length() > pow(10., -10.))
+      //cout << "Vitesse non nulle pour : " << P->id << endl;
   }
 
   //Iterations on the time-steps

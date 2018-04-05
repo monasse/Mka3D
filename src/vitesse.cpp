@@ -17,8 +17,9 @@
   along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "geometry.hpp"
 #include <math.h>
+#include <iostream>
+#include "geometry.hpp"
 
 //Initial velocity of the solid particles
 Vector_3 velocity(const Point_3 &p)
@@ -76,8 +77,9 @@ Vector_3 velocity_BC(const Point_3 &p, const double& t, const double& T, const V
 Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
 {
   if(t < 1. * pow(10., -8.)) {
-    if(p.z() <= 0.2)
+    if(p.z() <= 0.2) {
       return Vector_3(0., 0., -0.001);
+    }
     else if(p.z() >= 2.8)
       return Vector_3(0., 0., 0.001);
   }
