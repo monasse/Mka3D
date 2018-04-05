@@ -205,6 +205,10 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 }
 
+void Solide::Init(const char* s, const bool& rep, const int& numrep, const double& rho){ //Pour gmsh
+
+}
+
 bool Solide::voisins_face(int num_face) {
   int part_1 = faces[num_face].voisins[0];
   int part_2 = faces[num_face].voisins[1];
