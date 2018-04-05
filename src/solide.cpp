@@ -157,13 +157,21 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     //bool calcul_normales = false;
     if(part_1 >= 0) {
       solide[part_1].faces.push_back(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
-      if(solide[part_1].BC <= 0 && f.BC != 0)
-	solide[part_1].BC = f.BC;
+      if(f.BC != 0) {
+	if(f.BC == 1)
+	  solide[part_1].BC = f.BC;
+	else if(solide[part_1].BC <= 0)
+	  solide[part_1].BC = f.BC;
+      }
     }
     if(part_2 >= 0) {
       solide[part_2].faces.push_back(f.id); //Ajout du numéro de la face dans la liste ds voisins de chaque particule
-      if(solide[part_2].BC <= 0 && f.BC != 0)
-	solide[part_2].BC = f.BC;
+      if(f.BC != 0) {
+	if(f.BC == 1)
+	  solide[part_1].BC = f.BC;
+	else if(solide[part_1].BC <= 0)
+	  solide[part_1].BC = f.BC;
+      }
     }    
     f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
 
