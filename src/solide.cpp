@@ -205,6 +205,10 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 }
 
+void Solide::Init(const char* s, const bool& rep, const int& numrep, const double& rho){ //Pour gmsh
+
+}
+
 bool Solide::voisins_face(int num_face) {
   int part_1 = faces[num_face].voisins[0];
   int part_2 = faces[num_face].voisins[1];
@@ -361,8 +365,8 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      //P->def_plas_cumulee += delta_p;
-      //P->epsilon_p += delta_p * n_elas;
+      P->def_plas_cumulee += delta_p;
+      P->epsilon_p += delta_p * n_elas;
     }
   }
 }
@@ -440,7 +444,7 @@ const double Solide::Energie_potentielle(){
       }
       }*/
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //OK Voronoi
-    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
     //}
   }
   //cout << "Energie potentielle : " << Ep << endl;
