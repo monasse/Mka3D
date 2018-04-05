@@ -87,7 +87,7 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
     return Vector_3(0., 0., 0.); //Dx
 }
 
-double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx, const Vector_3& u) {
+double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx, const Vector_3& u, const int& BC) {
   //Chargement linéaire en traction
   /*if(t < 1. * pow(10., -8.)) {
     if(p.z() <= 0.2) {
@@ -101,6 +101,10 @@ double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const
   }
   else
   return u[2];*/
-  if(p.z() <= 0.2) // && p.x() <= 0.2 && p.y() <= 0.2)
-    return 0.05;
+  if(p.z() <= 0.2 && BC == 1) // && p.x() <= 0.2 && p.y() <= 0.2)
+    return -0.05;
+  else if(p.z() >= 2.8 && BC == 1)
+      return 0.;
+  else
+    return u[2];
 }

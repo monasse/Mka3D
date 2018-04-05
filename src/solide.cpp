@@ -324,8 +324,8 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	else if(P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
-      Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
-      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	}
       //P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);

@@ -276,18 +276,19 @@ int main(){
   S.Solve_vitesse(dt, false, 1.0, 0., 45.);*/
   int nb_part = S.size();
 
-  for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
+  /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     if(P->BC == 1 && (P->x0).z() <= 0.2)
-      (P->Dx).vec[2] = 0.001;
+      (P->Dx).vec[2] = 0.0001;
     else if(P->BC == 1 && (P->x0).z() >= 2.8)
-      (P->Dx).vec[2] = -0.001;
+      (P->Dx).vec[2] = -0.0001;
     //P->u_prev = P->u;
-  }
-  S.Forces_internes(dt);
-  S.Solve_vitesse(dt, false, 1.0, 0., 45.);
+    }*/
+  /*S.Forces_internes(dt);
+  S.Solve_vitesse(pow(10.,-8.), false, 1.0, 0., 45.);
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     P->u_prev = P->u;
   }
+  S.Impression(-1);*/
 
   //Iterations on the time-steps
   for (int n=0; (t<T) && n<Nmax; n++){
