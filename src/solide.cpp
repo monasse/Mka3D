@@ -270,19 +270,20 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
-  Forces_internes(dt);
+  Forces_internes(dt, t);
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->Fi = P->Fi; // + Forces_externes(t,T); //Reprendre calcul des forces externes
 }
 
-void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
+void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
-      faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, 0., 0.);
+      //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
+      faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk
       for(int j=0; j<faces[i].voisins.size() ; j++) {
@@ -317,16 +318,16 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 	nIJ = nIJ / sqrt(nIJ.squared_length());*/
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
-      //if(faces[f]. BC == 0) {
+      if(faces[f].BC >= 0) {
 	/*int voisin;
 	if(P->id == faces[f].voisins[0])
 	  voisin = faces[f].voisins[1];
 	else if(P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
-      Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
-      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-	//}
+	Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      }
       //P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
@@ -368,8 +369,8 @@ void Solide::stresses(){ //Calcul de la contrainte dans toutes les particules
 }
 
 
-void Solide::Forces_internes(const double& dt){ //Calcul des forces pour chaque particule
-  stresses();
+void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des forces pour chaque particule
+  stresses(t);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Remet à zéro toutes les forces
     P->Fi = Vector_3(0.,0.,0.);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
