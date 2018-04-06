@@ -53,8 +53,8 @@ public:
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void Forces(const int &N_dim, const double& dt, const double& t, const double& T);
-  void Forces_internes(const double& dt);
-  void stresses();
+  void Forces_internes(const double& dt, const double& t);
+  void stresses(const double& t);
   void update_triangles();
   const double Energie();
   const double Energie_potentielle();
