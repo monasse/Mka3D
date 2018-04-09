@@ -205,6 +205,10 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
   }
 }
 
+void Solide::Init(const char* s, const bool& rep, const int& numrep, const double& rho){ //Pour gmsh
+
+}
+
 bool Solide::voisins_face(int num_face) {
   int part_1 = faces[num_face].voisins[0];
   int part_2 = faces[num_face].voisins[1];
@@ -281,9 +285,14 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
+    }
+    else if(faces[i].BC == -1) {
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
+      //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk
       for(int j=0; j<faces[i].voisins.size() ; j++) {
@@ -362,8 +371,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      //P->def_plas_cumulee += delta_p;
-      //P->epsilon_p += delta_p * n_elas;
+      P->def_plas_cumulee += delta_p;
+      P->epsilon_p += delta_p * n_elas;
     }
   }
 }
@@ -403,7 +412,7 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
       }
-      else if(faces[num_face].BC == 1) {
+      else /*if(faces[num_face].BC == 1) */{
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
 	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ;
@@ -446,7 +455,7 @@ const double Solide::Energie_potentielle(){
       }
       }*/
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //OK Voronoi
-    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.) + A * ((P->second)).def_plas_cumulee ) * ((P->second)).V;
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
     //}
   }
   //cout << "Energie potentielle : " << Ep << endl;
