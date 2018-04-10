@@ -100,8 +100,8 @@ double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t
   }
   else if(p.z() >= 2.8)
     return 0.001;
-  else
-    return Dx.vec[2];
+  /*else
+    return Dx.vec[2];*/
   /*if(p.z() <= 0.2) {
     return -0.05 * t;
   }
