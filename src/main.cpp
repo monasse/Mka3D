@@ -287,12 +287,12 @@ int main(){
       (P->Dx).vec[2] = -0.0001;
     //P->u_prev = P->u;
     }*/
-  /*S.Forces_internes(dt);
+  S.Forces_internes(dt, 0.);
   S.Solve_vitesse(pow(10.,-8.), false, 1.0, 0., 45.);
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     P->u_prev = P->u;
   }
-  S.Impression(-1);*/
+  S.Impression(-1);
 
   //Iterations on the time-steps
   for (int n=0; (t<T) && n<Nmax; n++){
