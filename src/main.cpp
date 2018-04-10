@@ -296,7 +296,7 @@ int main(){
       (F->I_Dx).vec[2] = -0.0001;
     //P->u_prev = P->u;
   }
-  S.Forces_internes(dt, 0.);
+  S.Forces_internes(dt, -1.);
   S.Solve_vitesse(pow(10.,-8.), false, 1.0, 0., 45.);
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     P->u_prev = P->u;
