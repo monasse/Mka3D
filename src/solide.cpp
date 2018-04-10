@@ -327,7 +327,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	nIJ = nIJ / sqrt(nIJ.squared_length());*/
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
-      if(faces[f].BC >= 0) {
+      if(faces[f].BC >= 0) { //Car conditions de Neumann homogènes sur bord en -1
 	/*int voisin;
 	if(P->id == faces[f].voisins[0])
 	  voisin = faces[f].voisins[1];
@@ -412,7 +412,7 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
       }
-      else /*if(faces[num_face].BC == 1) */{
+      else if(faces[num_face].BC == 1/* || faces[num_face].BC == -1*/) { //Pas de DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
 	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ;
