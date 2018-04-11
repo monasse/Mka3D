@@ -262,21 +262,31 @@ bool Solide::voisins_face(int num_face) {
 }
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_position(dt, flag_2d, t, T);
+  for(std::vector<Particule>::iterator F=faces.begin();P!=faces.end();P++){
+    if(F->BC == -1)
+      F->solve_position(dt, flag_2d, t, T);
+    else if(F->BC == 1 && t > 0.)
+      F->solve_position(dt, flag_2d, t, T);
   }
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
+  for(std::vector<Particule>::iterator F=faces.begin();P!=faces.end();P++){
+    if(F->BC != 0)
+      F->solve_vitesse(dt, flag_2d, t, T);
   }
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   Forces_internes(dt, t);
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
-    P->Fi = P->Fi; // + Forces_externes(t,T); //Reprendre calcul des forces externes
+  for(std::vector<Particule>::iterator F=faces.begin();F!=faces.end();F++) {
+    if(F->BC == -1)
+      F->Fi = F->Fi; // + Forces_externes(t,T); //Forces ext s'appliquent sur les faces !
+  }
 }
 
 void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes les particules
@@ -286,19 +296,19 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
-      if(t > 0.)
-	faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //if(t > 0.)
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
-    else if(faces[i].BC == 0) { //Cad particule dans le bulk
+    else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].voisins.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
 	//test_pos = test_pos + faces[i].c_voisins[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].voisins[j]].x0);
@@ -331,16 +341,16 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	nIJ = nIJ / sqrt(nIJ.squared_length());*/
       /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
 	cout << "Pas la bonne norme !!!!" << endl;*/
-      if(faces[f].BC >= 0) { //Car conditions de Neumann homogènes sur bord en -1
+      //if(faces[f].BC >= 0) { //Car conditions de Neumann homogènes sur bord en -1
 	/*int voisin;
 	if(P->id == faces[f].voisins[0])
 	  voisin = faces[f].voisins[1];
 	else if(P->id == faces[f].voisins[1])
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
-	Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
-	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      }
+      Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
+      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	//}
       //P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
       //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
       //test_vec = test_vec + faces[f].S * nIJ;
@@ -415,11 +425,12 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
       }
-      /*else if(faces[num_face].BC == 1 && t < pow(10., -8.)) { //Pas de DDL sur face avec BC de Neuman homogène et Dirichlet que à t=0. Ensuite Neuman homogène
+      else if(t > pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
-	P->Fi = P->Fi + faces[num_face].S * pow(10., 7.) * nIJ;//solide[part].contrainte * nIJ;
-	}*/
+	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
+      }
     }
     /*cout << "Particule :" << P->first << endl;
     cout << "Force : " << P->Fi << endl; */

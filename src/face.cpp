@@ -17,19 +17,13 @@
   along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*!
-\authors Laurent Monasse and Adela Puscas
- *  \file solide.cpp
- *  \brief Definition of the methods for solid classes.
- * Procedures specific to coupling are preceded by a "warning".
- */
 #include "face.hpp"
 #include "vertex.hpp"
 #include "geometry.hpp"
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx()
+Face::Face() : I_Dx(), I_u()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
@@ -82,6 +76,30 @@ void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &
     normale = -1. * normale;
   double aux2 = Vector_3(centre, v1) * normale;
   pt_face = centre + aux2 * normale;*/
+}
+
+void Face::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
+  Dxprev = Dx;
+  err_Dx = err_Dx + u * dt;
+  Dx = Dx+ err_Dx;
+  err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
+
+  if(id = 45) { //Pour éviter translation en x ou y...
+    Dx.vec[0] = 0.;
+    Dx.vec[1] = 0.;
+  }
+  
+  //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
+  //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
+}
+
+void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+  u_prev = u;
+  err_u = err_u + Fi * dt / m;
+  u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+  err_u = err_u + (u_prev - u); //Version compensation erreur sommation
+  //if(t < pow(10., -8.))
+  //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
 }
 
 #endif
