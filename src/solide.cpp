@@ -174,6 +174,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
       }
     }    
     f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
+    if(f.BC != 0)
+      f.m = rho / 3. * f.S * (f.centre - solide[f.voisins[0]].x0) * f.normale;
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
@@ -264,10 +266,10 @@ bool Solide::voisins_face(int num_face) {
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_position(dt, flag_2d, t, T);
-  for(std::vector<Particule>::iterator F=faces.begin();P!=faces.end();P++){
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC == -1)
       F->solve_position(dt, flag_2d, t, T);
-    else if(F->BC == 1 && t > 0.)
+    else if(F->BC == 1 && t > 0.) //Modifier après test conservation énergie
       F->solve_position(dt, flag_2d, t, T);
   }
 }
@@ -275,15 +277,15 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
-  for(std::vector<Particule>::iterator F=faces.begin();P!=faces.end();P++){
-    if(F->BC != 0)
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    if(F->BC != 0) //Mettre que Neumann après test conservation énergie
       F->solve_vitesse(dt, flag_2d, t, T);
   }
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   Forces_internes(dt, t);
-  for(std::vector<Particule>::iterator F=faces.begin();F!=faces.end();F++) {
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     if(F->BC == -1)
       F->Fi = F->Fi; // + Forces_externes(t,T); //Forces ext s'appliquent sur les faces !
   }

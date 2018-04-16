@@ -28,6 +28,7 @@ Face::Face() : I_Dx(), I_u()
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
   S = 0.;
+  m = 0.;
 }
 
 Face & Face:: operator=(const Face &F){
@@ -88,15 +89,13 @@ void Face::solve_position(const double& dt, const bool& flag_2d, const double& t
   I_Dx = I_Dx + I_u * dt;
 }
 
-void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& t, const double& T){
   /*u_prev = u;
   err_u= err_u + Fi * dt / m;
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   */
-  I_u = I_u + Fi * dt
-
-  
+  I_u = I_u + Fi / m * dt;
 }
 
 #endif

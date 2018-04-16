@@ -41,11 +41,12 @@ public:
   }
   void comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3); //, const Point_3& ext); //Computes the outward normal, the surface and the barycentre of the face
   void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
+  void solve_vitesse(const double &dt, const bool &flag_2d, const double& t, const double& T);
 
   //Attributs
   Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante à la face
+  double m; //Masse du diamant associé à la face
   double S; //Surface de la face
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
