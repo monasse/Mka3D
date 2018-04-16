@@ -89,12 +89,14 @@ void Face::solve_position(const double& dt, const bool& flag_2d, const double& t
 }
 
 void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  u_prev = u;
-  err_u = err_u + Fi * dt / m;
+  /*u_prev = u;
+  err_u= err_u + Fi * dt / m;
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
-  //if(t < pow(10., -8.))
-  //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
+  */
+  I_u = I_u + Fi * dt
+
+  
 }
 
 #endif
