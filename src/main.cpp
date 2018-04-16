@@ -290,10 +290,10 @@ int main(){
 
   for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     if(F->BC == 1 && (F->centre).z() <= 0.2) {
-      (F->I_Dx).vec[2] = 0.0001;
+      (F->I_Dx).vec[2] = 0.001;
     }
     else if(F->BC == 1 && (F->centre).z() >= 2.8)
-      (F->I_Dx).vec[2] = -0.0001;
+      (F->I_Dx).vec[2] = -0.001;
     //P->u_prev = P->u;
   }
   S.Forces_internes(dt, -1.);
