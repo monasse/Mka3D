@@ -299,7 +299,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
       //if(t > 0.)
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
