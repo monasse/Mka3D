@@ -15,5 +15,5 @@ n_ecrouissage_JC	.31
 A_limite_elas		90000000.
 H_ecrouissage_lineaire	0.
 Mesh_type		1
-nom_fichier		poutre
+nom_fichier		file5_40_40
 

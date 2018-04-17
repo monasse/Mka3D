@@ -110,8 +110,8 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     p.vertices.push_back(v4);
 
     //Calcul des quantités volumiques (liées particule)
-    p.barycentre(this); //Calcul du barycentre
-    p.volume(this); //calcul du volume
+    p.barycentre(this, 4); //Calcul du barycentre
+    p.volume(this, 4); //calcul du volume
     p.m = rho * p.V;
 
     //Ajout de la particule dans le solide
@@ -233,7 +233,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     istringstream  stm(ligne);
     int id,type,nbr_tag,tag_1,tag_2;
     stm >> id >> type;
-    if(type == 4) {
+    if(type == 4) { //Tetra
       int v1,v2,v3,v4;
       stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3 >> v4;
       //Ajout des vertex de la particule
@@ -245,8 +245,31 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       p.vertices.push_back(v4 - 1);
 
       //Calcul des quantités volumiques (liées particule)
-      p.barycentre(this); //Calcul du barycentre
-      p.volume(this); //calcul du volume
+      p.barycentre(this, type); //Calcul du barycentre
+      p.volume(this, type); //calcul du volume
+      p.m = rho * p.V;
+
+      //Ajout de la particule dans le solide
+      solide.push_back(p);
+    }
+    else if(type == 5) { //Hexa
+      int v1,v2,v3,v4,v5,v6,v7,v8;
+      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3 >> v4 >> v5 >> v6 >> v7 >> v8;
+      //Ajout des vertex de la particule
+      Particule p;
+      p.id = solide.size();
+      p.vertices.push_back(v1 - 1);
+      p.vertices.push_back(v2 - 1);
+      p.vertices.push_back(v3 - 1);
+      p.vertices.push_back(v4 - 1);
+      p.vertices.push_back(v5 - 1);
+      p.vertices.push_back(v6 - 1);
+      p.vertices.push_back(v7 - 1);
+      p.vertices.push_back(v8 - 1);
+
+      //Calcul des quantités volumiques (liées particule)
+      p.barycentre(this, type); //Calcul du barycentre
+      p.volume(this, type); //calcul du volume
       p.m = rho * p.V;
 
       //Ajout de la particule dans le solide
@@ -584,10 +607,10 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
 	//P->Fi = P->Fi +  2 * mu * (solide[voisin].Dx - P->Dx); //OK flux à 2 points
-	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
-	P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
+	P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
+	/*P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
-	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
+	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;*/
       }
       else if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
