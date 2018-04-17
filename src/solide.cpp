@@ -293,8 +293,8 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 
 void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
-    if(t > 0.)
-      faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
+    //if(t > 0.)
+    //faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
@@ -427,7 +427,7 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
       }
-      else if(t > pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
+      else if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
 	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;

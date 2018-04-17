@@ -17,6 +17,7 @@
   along with Mka3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <iostream>
 #include "face.hpp"
 #include "vertex.hpp"
 #include "geometry.hpp"
@@ -87,6 +88,8 @@ void Face::solve_position(const double& dt, const bool& flag_2d, const double& t
   */
 
   I_Dx = I_Dx + I_u * dt;
+  /*if(I_Dx.squared_length() > 0.0000001)
+    cout << "Pos face : " << I_Dx << endl;*/
 }
 
 void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& t, const double& T){
