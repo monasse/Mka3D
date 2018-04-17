@@ -109,7 +109,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
-  //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
+  u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
 }
 
 void Particule::barycentre() {
