@@ -293,13 +293,13 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 
 void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
-    //if(t > 0.)
-    //faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
+    if(faces[i].BC == 0) //cad face dans bulk et donc I_Dx reconstruit
+      faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
       //if(t > 0.)
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+	//faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))

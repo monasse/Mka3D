@@ -89,7 +89,7 @@ void Face::solve_position(const double& dt, const bool& flag_2d, const double& t
 
   I_Dx = I_Dx + I_u * dt;
   /*if(I_Dx.squared_length() > 0.0000001)
-    cout << "Pos face : " << I_Dx << endl;*/
+    cout << "Pos face : " << I_Dx << endl;*/ 
 }
 
 void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& t, const double& T){
