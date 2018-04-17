@@ -175,7 +175,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     }    
     f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
     if(f.BC != 0)
-      f.m = rho / 3. * f.S * (f.centre - solide[f.voisins[0]].x0) * f.normale;
+      f.m = rho / 6. * f.S * (f.centre - solide[f.voisins[0]].x0) * f.normale; // / 3.
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
@@ -299,14 +299,14 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
       //if(t > 0.)
-	//faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+	faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
@@ -430,8 +430,8 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
       else if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
-	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
-	faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
+	//P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	//faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;
