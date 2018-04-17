@@ -95,18 +95,18 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
 double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
 {
   //if(t < 1. * pow(10., -8.)) {
-  if(p.z() <= 0.2) {
+  /*if(p.z() <= 0.2) {
     return -0.001;
   }
   else if(p.z() >= 2.8)
-    return 0.001;
+  return 0.001;*/
   /*else
     return Dx.vec[2];*/
-  /*if(p.z() <= 0.2) {
+  if(p.z() <= 0.2) {
     return -0.05 * t;
   }
   else if(p.z() >= 2.8)
-  return 0.;*/
+    return 0.;
 }
 
 double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx, const Vector_3& u, const int& BC) {
