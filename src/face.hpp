@@ -43,17 +43,22 @@ public:
 	return vertex.size();
   }
   void comp_quantities(Solide* Sol); //Computes the outward normal, the surface and the barycentre of the face
+  void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
+  void solve_vitesse(const double &dt, const bool &flag_2d, const double& t, const double& T);
 
   //Attributs
   Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante à la face
+  double m; //Masse du diamant associé à la face
   double S; //Surface de la face
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
   std::vector<int> voisins; //Donne le numéro des 2 voisins de la face puis celui des 2 autres particules pour avoir le tétra associé à la face et calculer le gradient
   std::vector<double> c_voisins; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
+  Vector_3 I_u; //u calculé sur la face. Interpolation dans bulk. Intégration forces au bord
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
+  Vector_3 Fi; //Forces sur la face
 
   double D0; //Distance à l'equilibre entre les 2 particules voisines
 };

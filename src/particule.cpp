@@ -41,7 +41,7 @@ inline double signe(const double &x)
   return (x < 0.) ? -1. : 1. ;
 }
 
-Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx() {
+Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
@@ -49,7 +49,7 @@ Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p
   BC = 0;
 }
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx()
 {
   id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
@@ -83,6 +83,13 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   err_Dx = err_Dx + u * dt;
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
+
+  //Dx = Dx + u * dt;
+
+  if(id == 45) { //Pour éviter translation en x ou y...
+    Dx.vec[0] = 0.;
+    Dx.vec[1] = 0.;
+  }
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
