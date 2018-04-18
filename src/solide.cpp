@@ -175,7 +175,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     }    
     f.comp_quantities(vertex[v1].pos, vertex[v2].pos, vertex[v3].pos); //Calcul de la normale sortante, surface et barycentre face
     if(f.BC != 0)
-      f.m = rho / 6. * f.S * (f.centre - solide[f.voisins[0]].x0) * f.normale; // / 3.
+      f.m = rho / 3. * f.S * (f.centre - solide[f.voisins[0]].x0) * f.normale; // / 6.
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
