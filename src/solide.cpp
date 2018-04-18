@@ -306,7 +306,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
@@ -363,16 +363,6 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     }
       /*if(P->discrete_gradient.col3[2] > pow(10., -6.))
 	cout << "Num element : " << P->id << " def : " << P->discrete_gradient.col3[2] << endl;*/
-
-    /*if(test_vec.squared_length() > pow(10., -5.)) {
-    //cout << "MTF : " << test_vec << endl;
-    cout << "Num element : " << P->id << endl;
-      for(int i=0 ; i < P->faces.size() ; i++){
-	cout << vertex[faces[i].vertex[0]].pos << endl;
-	cout << vertex[faces[i].vertex[1]].pos << endl;
-	cout << vertex[faces[i].vertex[2]].pos << endl;
-	cout << endl;
-	}*/
     
 /*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
@@ -436,7 +426,7 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
       else if(faces[num_face].BC == -1) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
-	//P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
 	faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
       }
     }
