@@ -277,28 +277,28 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  //Comment fixer BC ? Voir comment les gérer en gmsh ! Fichier en plus surement
-
   //Création des faces
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //face 1
     Face face1;
     face1.vertex.push_back(P->vertices[1]);
-    face1.vertex.push_back(P->vertices[2]);
+    face1.vertex.push_back(P->vertices[4]);
     face1.vertex.push_back(P->vertices[3]);
+    face1.vertex.push_back(P->vertices[2]);
     if(not(face_existe(face1))) { //Ajout de la face dans l'ensemble des faces du Solide
       face1.id = faces.size();
       face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face1.normale * Vector_3(face1.centre, vertex[P->vertices[0]].pos) < 0.)
+      if(face1.normale * Vector_3(face1.centre, vertex[P->vertices[1]].pos) < 0.)
 	face1.normale = -face1.normale;
       faces.push_back(face1);
     }
 
     //face 2
     Face face2;
-    face2.vertex.push_back(P->vertices[0]);
-    face2.vertex.push_back(P->vertices[2]);
-    face2.vertex.push_back(P->vertices[3]);
+    face2.vertex.push_back(P->vertices[1]);
+    face2.vertex.push_back(P->vertices[5]);
+    face2.vertex.push_back(P->vertices[8]);
+    face2.vertex.push_back(P->vertices[4]);
     if(not(face_existe(face2))) { //Ajout de la face dans l'ensemble des faces du Solide
       face2.id = faces.size();
       face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -309,28 +309,58 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
     //face 3
     Face face3;
-    face3.vertex.push_back(P->vertices[0]);
-    face3.vertex.push_back(P->vertices[1]);
-    face3.vertex.push_back(P->vertices[3]);
+    face3.vertex.push_back(P->vertices[5]);
+    face3.vertex.push_back(P->vertices[6]);
+    face3.vertex.push_back(P->vertices[7]);
+    face2.vertex.push_back(P->vertices[8]);
     if(not(face_existe(face3))) { //Ajout de la face dans l'ensemble des faces du Solide
       face3.id = faces.size();
       face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face3.normale * Vector_3(face3.centre, vertex[P->vertices[2]].pos) < 0.)
+      if(face3.normale * Vector_3(face3.centre, vertex[P->vertices[5]].pos) < 0.)
 	face3.normale = -face3.normale;
       faces.push_back(face3);
     }
 
     //face 4
     Face face4;
-    face4.vertex.push_back(P->vertices[0]);
-    face4.vertex.push_back(P->vertices[1]);
     face4.vertex.push_back(P->vertices[2]);
+    face4.vertex.push_back(P->vertices[3]);
+    face4.vertex.push_back(P->vertices[7]);
+    face4.vertex.push_back(P->vertices[6]);
     if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
       face4.id = faces.size();
       face4.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face4.normale * Vector_3(face4.centre, vertex[P->vertices[3]].pos) < 0.)
+      if(face4.normale * Vector_3(face4.centre, vertex[P->vertices[2]].pos) < 0.)
 	face4.normale = -face4.normale;
       faces.push_back(face4);
+    }
+
+    //face 5
+    Face face5;
+    face5.vertex.push_back(P->vertices[1]);
+    face5.vertex.push_back(P->vertices[2]);
+    face5.vertex.push_back(P->vertices[6]);
+    face5.vertex.push_back(P->vertices[5]);
+    if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
+      face5.id = faces.size();
+      face5.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+      if(face5.normale * Vector_3(face5.centre, vertex[P->vertices[2]].pos) < 0.)
+	face5.normale = -face5.normale;
+      faces.push_back(face5);
+    }
+
+    //face 6
+    Face face6;
+    face6.vertex.push_back(P->vertices[8]);
+    face6.vertex.push_back(P->vertices[7]);
+    face6.vertex.push_back(P->vertices[3]);
+    face6.vertex.push_back(P->vertices[4]);
+    if(not(face_existe(face6))) { //Ajout de la face dans l'ensemble des faces du Solide
+      face6.id = faces.size();
+      face6.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+      if(face6.normale * Vector_3(face6.centre, vertex[P->vertices[4]].pos) < 0.)
+	face6.normale = -face6.normale;
+      faces.push_back(face6);
     }
   }
 
@@ -372,20 +402,16 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
+  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     if(F->BC == 0) {
       //cout << "Face : " << F->id << endl;
       bool test = voisins_face(F->id);
       if(not(test)) {
 	//cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
 	throw std::invalid_argument( "Pas de tetra associe a une face" );
-	/*cout << "Centre Face : " << F->centre << endl;
-	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
-	cout << "Barycentre Voisin A : " << solide[F->voisins[0]].x0 << endl;
-	cout << "Barycentre Voisin B : " << solide[F->voisins[1]].x0 << endl;*/
       }
     }
-  }
+  }*/
 }
 
 bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
