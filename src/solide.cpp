@@ -269,8 +269,8 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC == -1)
       F->solve_position(dt, flag_2d, t, T);
-    else if(F->BC == 1 && t > 0.) //Modifier après test conservation énergie
-      F->solve_position(dt, flag_2d, t, T);
+    /*else if(F->BC == 1 && t > 0.) //Modifier après test conservation énergie
+      F->solve_position(dt, flag_2d, t, T);*/
   }
 }
 
@@ -278,7 +278,7 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->BC != 0) //Mettre que Neumann après test conservation énergie
+    if(F->BC == -1) //Mettre que Neumann après test conservation énergie
       F->solve_vitesse(dt, flag_2d, t, T);
   }
 }
@@ -432,6 +432,12 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	Vector_3 nIJ = faces[num_face].normale;
 	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
 	//faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
+      }
+      else if(faces[num_face].BC == -1) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
+	int part = faces[num_face].voisins[0];
+	Vector_3 nIJ = faces[num_face].normale;
+	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;

@@ -103,7 +103,7 @@ double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t
   /*else
     return Dx.vec[2];*/
   if(p.z() <= 0.2) {
-    return -0.01 * t;
+    return -0.005 * t;
   }
   else if(p.z() >= 2.8)
     return 0.;
