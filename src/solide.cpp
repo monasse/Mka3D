@@ -371,6 +371,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	//cout << "Particule : " << P->id << endl;
 	P->faces.push_back(F->id);
 	(F->voisins).push_back(P->id);
+	(F->c_voisins).push_back(0.5); //Maillage de Voronoi
 	if(F->voisins.size() > 2) {
 	  cout << "Numéro face : " << F->id << endl;
 	  throw std::invalid_argument("Face a trop de voisins !");
@@ -477,29 +478,29 @@ bool Solide::voisins_face(int num_face) {
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_position(dt, flag_2d, t, T);
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC == -1)
       F->solve_position(dt, flag_2d, t, T);
     else if(F->BC == 1 && t > 0.) //Modifier après test conservation énergie
       F->solve_position(dt, flag_2d, t, T);
-  }
+      }*/
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC != 0) //Mettre que Neumann après test conservation énergie
       F->solve_vitesse(dt, flag_2d, t, T);
-  }
+      }*/
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   Forces_internes(dt, t);
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
+  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     if(F->BC == -1)
       F->Fi = F->Fi; // + Forces_externes(t,T); //Forces ext s'appliquent sur les faces !
-  }
+      }*/
 }
 
 void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes les particules
@@ -572,18 +573,6 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       if(faces[f].S<0.){
       cout << "S=" << faces[f].S << endl;*/
     }
-      /*if(P->discrete_gradient.col3[2] > pow(10., -6.))
-	cout << "Num element : " << P->id << " def : " << P->discrete_gradient.col3[2] << endl;*/
-
-    /*if(test_vec.squared_length() > pow(10., -5.)) {
-    //cout << "MTF : " << test_vec << endl;
-    cout << "Num element : " << P->id << endl;
-      for(int i=0 ; i < P->faces.size() ; i++){
-	cout << vertex[faces[i].vertex[0]].pos << endl;
-	cout << vertex[faces[i].vertex[1]].pos << endl;
-	cout << vertex[faces[i].vertex[2]].pos << endl;
-	cout << endl;
-	}*/
     
 /*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
@@ -616,10 +605,10 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
       if(faces[num_face].BC == 0) { // && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
 	double c_part_1 = faces[num_face].c_voisins[0];
 	double c_part_2 = faces[num_face].c_voisins[1];
-	int aux_1 = faces[num_face].voisins[2];
+	/*int aux_1 = faces[num_face].voisins[2];
 	double c_aux_1 = faces[num_face].c_voisins[2];
 	int aux_2 = faces[num_face].voisins[3];
-	double c_aux_2 = faces[num_face].c_voisins[3];
+	double c_aux_2 = faces[num_face].c_voisins[3];*/
 	//cout << "coords bary : " <<c_part_1 << " " << c_part_2 << " " << c_aux_1 << " " << c_aux_2 << endl;
 	
 	//Sortir le sens de toutes les forces comme il faut...
@@ -729,9 +718,9 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //vtk << setprecision(15);
   
   //Pour tetras !
-  int nb_points = 3 * 4 * nb_part;
-  int nb_faces = 4 * nb_part;
-  int size = 3 * nb_faces;
+  int nb_points = 4 * 6 * nb_part;
+  int nb_faces = 6 * nb_part;
+  int size = 4 * nb_faces;
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       size += F->nb_vertex; //Egale à nb_points au final ?
@@ -772,8 +761,8 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk << endl;
   vtk << "CELL_TYPES " << nb_faces << endl;
   for(int i=0;i<nb_faces;i++){
-    //vtk << 7 << endl;
-    vtk << 5 << endl; //Pour triangle
+    vtk << 7 << endl;
+    //vtk << 5 << endl; //Pour triangle
   }
   vtk << "\n";
   vtk << "CELL_DATA " << nb_faces << endl;
