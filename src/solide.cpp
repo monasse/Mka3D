@@ -281,10 +281,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //face 1
     Face face1;
-    face1.vertex.push_back(P->vertices[1]);
-    face1.vertex.push_back(P->vertices[4]);
+    face1.vertex.push_back(P->vertices[0]);
     face1.vertex.push_back(P->vertices[3]);
     face1.vertex.push_back(P->vertices[2]);
+    face1.vertex.push_back(P->vertices[1]);
     if(not(face_existe(face1))) { //Ajout de la face dans l'ensemble des faces du Solide
       face1.id = faces.size();
       face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -295,24 +295,24 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
     //face 2
     Face face2;
-    face2.vertex.push_back(P->vertices[1]);
-    face2.vertex.push_back(P->vertices[5]);
-    face2.vertex.push_back(P->vertices[8]);
+    face2.vertex.push_back(P->vertices[0]);
     face2.vertex.push_back(P->vertices[4]);
+    face2.vertex.push_back(P->vertices[7]);
+    face2.vertex.push_back(P->vertices[3]);
     if(not(face_existe(face2))) { //Ajout de la face dans l'ensemble des faces du Solide
       face2.id = faces.size();
       face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face2.normale * Vector_3(face2.centre, vertex[P->vertices[1]].pos) < 0.)
+      if(face2.normale * Vector_3(face2.centre, vertex[P->vertices[0]].pos) < 0.)
 	face2.normale = -face2.normale;
       faces.push_back(face2);
     }
 
     //face 3
     Face face3;
+    face3.vertex.push_back(P->vertices[4]);
     face3.vertex.push_back(P->vertices[5]);
     face3.vertex.push_back(P->vertices[6]);
-    face3.vertex.push_back(P->vertices[7]);
-    face2.vertex.push_back(P->vertices[8]);
+    face2.vertex.push_back(P->vertices[7]);
     if(not(face_existe(face3))) { //Ajout de la face dans l'ensemble des faces du Solide
       face3.id = faces.size();
       face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -323,9 +323,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
     //face 4
     Face face4;
+    face4.vertex.push_back(P->vertices[5]);
+    face4.vertex.push_back(P->vertices[1]);
     face4.vertex.push_back(P->vertices[2]);
-    face4.vertex.push_back(P->vertices[3]);
-    face4.vertex.push_back(P->vertices[7]);
     face4.vertex.push_back(P->vertices[6]);
     if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
       face4.id = faces.size();
@@ -337,10 +337,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
     //face 5
     Face face5;
-    face5.vertex.push_back(P->vertices[1]);
-    face5.vertex.push_back(P->vertices[2]);
+    face5.vertex.push_back(P->vertices[7]);
     face5.vertex.push_back(P->vertices[6]);
-    face5.vertex.push_back(P->vertices[5]);
+    face5.vertex.push_back(P->vertices[2]);
+    face5.vertex.push_back(P->vertices[3]);
     if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
       face5.id = faces.size();
       face5.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -351,9 +351,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
     //face 6
     Face face6;
-    face6.vertex.push_back(P->vertices[8]);
-    face6.vertex.push_back(P->vertices[7]);
-    face6.vertex.push_back(P->vertices[3]);
+    face6.vertex.push_back(P->vertices[0]);
+    face6.vertex.push_back(P->vertices[1]);
+    face6.vertex.push_back(P->vertices[5]);
     face6.vertex.push_back(P->vertices[4]);
     if(not(face_existe(face6))) { //Ajout de la face dans l'ensemble des faces du Solide
       face6.id = faces.size();
@@ -363,6 +363,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       faces.push_back(face6);
     }
   }
+
+  cout << "ok faces !" << endl;
 
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
