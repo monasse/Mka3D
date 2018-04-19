@@ -364,10 +364,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  cout << "ok faces !" << endl;
-
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
+    //cout << "Face : " << F->id << endl;
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       if(P->contient_face(*F)) { //On ajoute les numéros de la face dans la particule et réciproquement
 	//cout << "Particule : " << P->id << endl;
@@ -380,29 +379,34 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	}
       }
     }
+    //cout << "ok conn !" << endl;
     if(F->voisins.size() == 1) {
-      F->voisins.push_back(-1); // Cad particule au bord
+      F->voisins.push_back(-1); // Cad face au bord
       F->BC = -1;
     }
     else
       F->BC = 0;
 
+    cout << F->BC  << endl;
+
     //Continuer à partir d'ici
     int part_1 = F->voisins[0];
-    int part_2 = F->voisins[1];
+    int part_2 = -1;
+    if(F->BC == 0)
+      part_2 = F->voisins[1];
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
       if(Vector_3(solide[part_1].x0, solide[part_2].x0) * F->normale  < 0.)
 	F->normale = -F->normale;
     }
-    if(part_1 == -1 || part_2 == -1) { //Face au bord
+    else if(part_1 == -1 || part_2 == -1) { //Face au bord
       Vector_3 bonne_direction = Vector_3(solide[F->voisins[0]].x0, F->centre);
       if(bonne_direction * F->normale < 0.)
 	F->normale = -F->normale;
     }
-    //faces.push_back(f);
   }
+
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces

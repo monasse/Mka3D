@@ -143,9 +143,9 @@ void Particule::volume(Solide* Sol, const int& cell_type) {
 }
 
 bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les 3 vertex de la face
-  if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3]) {
-    if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3]) {
-      if(f.vertex[2] == vertices[0] || f.vertex[2] == vertices[1] || f.vertex[2] == vertices[2] || f.vertex[2] == vertices[3]) {
+  if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3] || f.vertex[0] == vertices[4] || f.vertex[0] == vertices[5] || f.vertex[0] == vertices[6] || f.vertex[0] == vertices[7]) {
+    if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3] || f.vertex[1] == vertices[4] || f.vertex[1] == vertices[5] || f.vertex[1] == vertices[6] || f.vertex[1] == vertices[7]) {
+      if(f.vertex[2] == vertices[0] || f.vertex[2] == vertices[1] || f.vertex[2] == vertices[2] || f.vertex[2] == vertices[3] || f.vertex[2] == vertices[4] || f.vertex[2] == vertices[5] || f.vertex[2] == vertices[6] || f.vertex[2] == vertices[7]) {
 	//cout << "Numéro vertex : " << f.vertex[0] << " " << f.vertex[1] << " " << f.vertex[2] << " " << endl;
 	return true;
       }
