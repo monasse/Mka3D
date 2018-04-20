@@ -316,8 +316,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face3.vertex.push_back(P->vertices[4]);
       face3.vertex.push_back(P->vertices[5]);
       face3.vertex.push_back(P->vertices[6]);
-      face2.vertex.push_back(P->vertices[7]);
-      face2.type = 3;
+      face3.vertex.push_back(P->vertices[7]);
+      face3.type = 3;
       if(not(face_existe(face3))) { //Ajout de la face dans l'ensemble des faces du Solide
 	face3.id = faces.size();
 	face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -380,7 +380,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
-    //cout << "Face : " << F->id << endl;
+    if(F->vertex.size() != 4)
+      cout << "Face : " << F->id << " probleme face !" << endl;
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       if(P->contient_face(*F)) { //On ajoute les numéros de la face dans la particule et réciproquement
 	//cout << "Particule : " << P->id << endl;
@@ -393,7 +394,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	}
       }
     }
-    //cout << "ok conn !" << endl;
+
     if(F->voisins.size() == 1) {
       F->voisins.push_back(-1); // Cad face au bord
       F->BC = -1;
@@ -401,9 +402,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     else
       F->BC = 0;
 
-    cout << F->BC  << endl;
-
-    //Continuer à partir d'ici
     int part_1 = F->voisins[0];
     int part_2 = -1;
     if(F->BC == 0)
@@ -781,7 +779,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk << endl;
   vtk << "CELL_TYPES " << nb_faces << endl;
   for(int i=0;i<nb_faces;i++){
-    vtk << 7 << endl;
+    vtk << 9 << endl; //Pour Quad
     //vtk << 5 << endl; //Pour triangle
   }
   vtk << "\n";
