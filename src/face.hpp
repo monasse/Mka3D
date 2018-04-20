@@ -43,8 +43,6 @@ public:
 	return vertex.size();
   }
   void comp_quantities(Solide* Sol); //Computes the outward normal, the surface and the barycentre of the face
-  void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  void solve_vitesse(const double &dt, const bool &flag_2d, const double& t, const double& T);
 
   //Attributs
   Point_3 centre; //!< Centre de la face
@@ -60,7 +58,8 @@ public:
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
   Vector_3 Fi; //Forces sur la face
 
-  double D0; //Distance à l'equilibre entre les 2 particules voisines
+  int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
+  double D0; //Distance centre face. Sera utile pour CFL...
 };
 
 bool operator==(const Face &F1, const Face &F2); //Compare les faces

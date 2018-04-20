@@ -227,11 +227,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 
   //Importation des Particules
+  int type; //Celui des particules
   getline(maillage, ligne); //$Elements
   getline(maillage, ligne); //Nbr Elements
   while(getline(maillage, ligne) && ligne != "$EndElements") {
     istringstream  stm(ligne);
-    int id,type,nbr_tag,tag_1,tag_2;
+    int id,nbr_tag,tag_1,tag_2;
     stm >> id >> type;
     if(type == 4) { //Tetra
       int v1,v2,v3,v4;
@@ -278,90 +279,103 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 
   //Création des faces
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //face 1
-    Face face1;
-    face1.vertex.push_back(P->vertices[0]);
-    face1.vertex.push_back(P->vertices[3]);
-    face1.vertex.push_back(P->vertices[2]);
-    face1.vertex.push_back(P->vertices[1]);
-    if(not(face_existe(face1))) { //Ajout de la face dans l'ensemble des faces du Solide
-      face1.id = faces.size();
-      face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face1.normale * Vector_3(face1.centre, vertex[P->vertices[1]].pos) < 0.)
-	face1.normale = -face1.normale;
-      faces.push_back(face1);
-    }
+  if(type == 5) { //Hexa
+    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      //face 1
+      Face face1;
+      face1.vertex.push_back(P->vertices[0]);
+      face1.vertex.push_back(P->vertices[3]);
+      face1.vertex.push_back(P->vertices[2]);
+      face1.vertex.push_back(P->vertices[1]);
+      face1.type = 3;
+      if(not(face_existe(face1))) { //Ajout de la face dans l'ensemble des faces du Solide
+	face1.id = faces.size();
+	face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+	if(face1.normale * Vector_3(face1.centre, vertex[P->vertices[1]].pos) < 0.)
+	  face1.normale = -face1.normale;
+	faces.push_back(face1);
+      }
 
-    //face 2
-    Face face2;
-    face2.vertex.push_back(P->vertices[0]);
-    face2.vertex.push_back(P->vertices[4]);
-    face2.vertex.push_back(P->vertices[7]);
-    face2.vertex.push_back(P->vertices[3]);
-    if(not(face_existe(face2))) { //Ajout de la face dans l'ensemble des faces du Solide
-      face2.id = faces.size();
-      face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face2.normale * Vector_3(face2.centre, vertex[P->vertices[0]].pos) < 0.)
-	face2.normale = -face2.normale;
-      faces.push_back(face2);
-    }
+      //face 2
+      Face face2;
+      face2.vertex.push_back(P->vertices[0]);
+      face2.vertex.push_back(P->vertices[4]);
+      face2.vertex.push_back(P->vertices[7]);
+      face2.vertex.push_back(P->vertices[3]);
+      face2.type = 3;
+      if(not(face_existe(face2))) { //Ajout de la face dans l'ensemble des faces du Solide
+	face2.id = faces.size();
+	face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+	if(face2.normale * Vector_3(face2.centre, vertex[P->vertices[0]].pos) < 0.)
+	  face2.normale = -face2.normale;
+	faces.push_back(face2);
+      }
 
-    //face 3
-    Face face3;
-    face3.vertex.push_back(P->vertices[4]);
-    face3.vertex.push_back(P->vertices[5]);
-    face3.vertex.push_back(P->vertices[6]);
-    face2.vertex.push_back(P->vertices[7]);
-    if(not(face_existe(face3))) { //Ajout de la face dans l'ensemble des faces du Solide
-      face3.id = faces.size();
-      face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face3.normale * Vector_3(face3.centre, vertex[P->vertices[5]].pos) < 0.)
-	face3.normale = -face3.normale;
-      faces.push_back(face3);
-    }
+      //face 3
+      Face face3;
+      face3.vertex.push_back(P->vertices[4]);
+      face3.vertex.push_back(P->vertices[5]);
+      face3.vertex.push_back(P->vertices[6]);
+      face2.vertex.push_back(P->vertices[7]);
+      face2.type = 3;
+      if(not(face_existe(face3))) { //Ajout de la face dans l'ensemble des faces du Solide
+	face3.id = faces.size();
+	face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+	if(face3.normale * Vector_3(face3.centre, vertex[P->vertices[5]].pos) < 0.)
+	  face3.normale = -face3.normale;
+	faces.push_back(face3);
+      }
 
-    //face 4
-    Face face4;
-    face4.vertex.push_back(P->vertices[5]);
-    face4.vertex.push_back(P->vertices[1]);
-    face4.vertex.push_back(P->vertices[2]);
-    face4.vertex.push_back(P->vertices[6]);
-    if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
-      face4.id = faces.size();
-      face4.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face4.normale * Vector_3(face4.centre, vertex[P->vertices[2]].pos) < 0.)
-	face4.normale = -face4.normale;
-      faces.push_back(face4);
-    }
+      //face 4
+      Face face4;
+      face4.vertex.push_back(P->vertices[5]);
+      face4.vertex.push_back(P->vertices[1]);
+      face4.vertex.push_back(P->vertices[2]);
+      face4.vertex.push_back(P->vertices[6]);
+      face4.type = 3;
+      if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
+	face4.id = faces.size();
+	face4.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+	if(face4.normale * Vector_3(face4.centre, vertex[P->vertices[2]].pos) < 0.)
+	  face4.normale = -face4.normale;
+	faces.push_back(face4);
+      }
 
-    //face 5
-    Face face5;
-    face5.vertex.push_back(P->vertices[7]);
-    face5.vertex.push_back(P->vertices[6]);
-    face5.vertex.push_back(P->vertices[2]);
-    face5.vertex.push_back(P->vertices[3]);
-    if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
-      face5.id = faces.size();
-      face5.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face5.normale * Vector_3(face5.centre, vertex[P->vertices[2]].pos) < 0.)
-	face5.normale = -face5.normale;
-      faces.push_back(face5);
-    }
+      //face 5
+      Face face5;
+      face5.vertex.push_back(P->vertices[7]);
+      face5.vertex.push_back(P->vertices[6]);
+      face5.vertex.push_back(P->vertices[2]);
+      face5.vertex.push_back(P->vertices[3]);
+      face5.type = 3;
+      if(not(face_existe(face5))) { //Ajout de la face dans l'ensemble des faces du Solide
+	face5.id = faces.size();
+	face5.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+	if(face5.normale * Vector_3(face5.centre, vertex[P->vertices[2]].pos) < 0.)
+	  face5.normale = -face5.normale;
+	faces.push_back(face5);
+      }
 
-    //face 6
-    Face face6;
-    face6.vertex.push_back(P->vertices[0]);
-    face6.vertex.push_back(P->vertices[1]);
-    face6.vertex.push_back(P->vertices[5]);
-    face6.vertex.push_back(P->vertices[4]);
-    if(not(face_existe(face6))) { //Ajout de la face dans l'ensemble des faces du Solide
-      face6.id = faces.size();
-      face6.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-      if(face6.normale * Vector_3(face6.centre, vertex[P->vertices[4]].pos) < 0.)
-	face6.normale = -face6.normale;
-      faces.push_back(face6);
+      //face 6
+      Face face6;
+      face6.vertex.push_back(P->vertices[0]);
+      face6.vertex.push_back(P->vertices[1]);
+      face6.vertex.push_back(P->vertices[5]);
+      face6.vertex.push_back(P->vertices[4]);
+      face6.type = 3;
+      if(not(face_existe(face6))) { //Ajout de la face dans l'ensemble des faces du Solide
+	face6.id = faces.size();
+	face6.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+	if(face6.normale * Vector_3(face6.centre, vertex[P->vertices[4]].pos) < 0.)
+	  face6.normale = -face6.normale;
+	faces.push_back(face6);
+      }
     }
+  }
+  else if(type == 4) { //Pour Tetra
+    //face1.type = 2;
+    //face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+
   }
 
   //Création des connectivités entre éléments
@@ -756,7 +770,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   int compteur_vertex = 0;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
-      vtk << faces[*F].vertex.size(); //Vaut 3
+      vtk << faces[*F].vertex.size();
       for(int k=0 ; k<faces[*F].vertex.size() ; k++)
 	vtk << " " << compteur_vertex + k; //(faces[*F].vertex)[k];
       vtk << endl;
