@@ -86,10 +86,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 
   //Dx = Dx + u * dt;
 
-  if(id == 45) { //Pour éviter translation en x ou y...
+  /*if(id == 45) { //Pour éviter translation en x ou y...
     Dx.vec[0] = 0.;
     Dx.vec[1] = 0.;
-  }
+    }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
