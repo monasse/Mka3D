@@ -474,16 +474,18 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
 
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
-  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
-    if(F->BC == 0) {
-      //cout << "Face : " << F->id << endl;
-      bool test = voisins_face(F->id);
-      if(not(test)) {
-	//cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	throw std::invalid_argument( "Pas de tetra associe a une face" );
+  if(type == 4) { //Seulement pour tetra
+    for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
+      if(F->BC == 0) {
+	//cout << "Face : " << F->id << endl;
+	bool test = voisins_face(F->id);
+	if(not(test)) {
+	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
+	  throw std::invalid_argument( "Pas de tetra associe a une face" );
+	}
       }
     }
-  }*/
+  }
 }
 
 bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
