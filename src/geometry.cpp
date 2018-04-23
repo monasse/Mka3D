@@ -30,11 +30,6 @@
 #ifndef GEOMETRY_CPP
 #define GEOMETRY_CPP
 
-//Function absolute value
-double abs(const double &x)
-{
-  return max(x,-x);
-}
 
 //////////////////////////////////////////////
 //  Class Bbox                              //
