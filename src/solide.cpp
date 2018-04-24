@@ -797,7 +797,7 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 
 	//P->Fi = P->Fi +  2 * mu * (solide[voisin].Dx - P->Dx); //OK flux à 2 points
 	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
-	P->Fi = P->Fi + faces[num_face].S * (c_aux_1 * solide[aux_1].contrainte + c_aux_2 * solide[aux_2].contrainte + c_aux_3 * solide[aux_3].contrainte + c_aux_4 * solide[aux_4].contrainte) * nIJ;
+	P->Fi = P->Fi + faces[num_face].S * P->contrainte * nIJ;
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
 	solide[aux_3].Fi = solide[aux_3].Fi - faces[num_face].S * c_aux_3 * P->contrainte * nIJ;
