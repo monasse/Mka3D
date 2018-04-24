@@ -497,69 +497,73 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       int ele1,ele2,ele3,ele4;
       stm >> ele1 >> ele2 >> ele3 >> ele4;
       Particule P;
-      P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
-      P.vertices.push_back(ele2);
-      P.vertices.push_back(ele3);
-      P.vertices.push_back(ele4);
+      P.vertices.push_back(ele1 - 1); //Numéros des Elements du solide qui forment chacun des tetra
+      P.vertices.push_back(ele2 - 1);
+      P.vertices.push_back(ele3 - 1);
+      P.vertices.push_back(ele4 - 1);
       tetra_delau.push_back(P);
     }
     //Recherche du tetraèdre associé à chaque face
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-      for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
-	int part_1, part_2, voisin1, voisin2; //S'assure que part_1 et part_2 sont bien les 2 particules qui partagent la face
-	if(F->voisins[0] == P->vertices[0])
-	  part_1 = P->vertices[0];
-	else if(F->voisins[0] == P->vertices[1])
-	  part_1 = P->vertices[1];
-	else if(F->voisins[0] == P->vertices[2])
-	  part_1 = P->vertices[2];
-	else if(F->voisins[0] == P->vertices[3])
-	  part_1 = P->vertices[3];
+      if(F->BC == 0) {
+	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
+	  int part_1, part_2, voisin1, voisin2; //S'assure que part_1 et part_2 sont bien les 2 particules qui partagent la face
+	  if(F->voisins[0] == P->vertices[0])
+	    part_1 = P->vertices[0];
+	  else if(F->voisins[0] == P->vertices[1])
+	    part_1 = P->vertices[1];
+	  else if(F->voisins[0] == P->vertices[2])
+	    part_1 = P->vertices[2];
+	  else if(F->voisins[0] == P->vertices[3])
+	    part_1 = P->vertices[3];
 
-        if(F->voisins[1] == P->vertices[0])
-	  part_2 = P->vertices[0];
-	else if(F->voisins[1] == P->vertices[1])
-	  part_2 = P->vertices[1];
-	else if(F->voisins[1] == P->vertices[2])
-	  part_2 = P->vertices[2];
-	else if(F->voisins[1] == P->vertices[3])
-	  part_2 = P->vertices[3];
+	  if(F->voisins[1] == P->vertices[0])
+	    part_2 = P->vertices[0];
+	  else if(F->voisins[1] == P->vertices[1])
+	    part_2 = P->vertices[1];
+	  else if(F->voisins[1] == P->vertices[2])
+	    part_2 = P->vertices[2];
+	  else if(F->voisins[1] == P->vertices[3])
+	    part_2 = P->vertices[3];
 
-	if(part_1 != P->vertices[0] && part_2 != P->vertices[0])
-	  voisin1 = P->vertices[0];
-	else if(part_1 != P->vertices[1] && part_2 != P->vertices[1])
-	  voisin1 = P->vertices[1];
-	else if(part_1 != P->vertices[2] && part_2 != P->vertices[2])
-	  voisin1 = P->vertices[2];
-	else if(part_1 != P->vertices[3] && part_2 != P->vertices[3])
-	  voisin1 = P->vertices[3];
+	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0])
+	    voisin1 = P->vertices[0];
+	  else if(part_1 != P->vertices[1] && part_2 != P->vertices[1])
+	    voisin1 = P->vertices[1];
+	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2])
+	    voisin1 = P->vertices[2];
+	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3])
+	    voisin1 = P->vertices[3];
 
-	if(part_1 != P->vertices[0] && part_2 != P->vertices[0] && voisin1 != P->vertices[0])
-	  voisin2 = P->vertices[0];
-	else if(part_1 != P->vertices[1] && part_2 != P->vertices[1] && voisin1 != P->vertices[1])
-	  voisin2 = P->vertices[1];
-	else if(part_1 != P->vertices[2] && part_2 != P->vertices[2] && voisin1 != P->vertices[2])
-	  voisin2 = P->vertices[2];
-	else if(part_1 != P->vertices[3] && part_2 != P->vertices[3] && voisin1 != P->vertices[3])
-	  voisin2 = P->vertices[3];
+	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0] && voisin1 != P->vertices[0])
+	    voisin2 = P->vertices[0];
+	  else if(part_1 != P->vertices[1] && part_2 != P->vertices[1] && voisin1 != P->vertices[1])
+	    voisin2 = P->vertices[1];
+	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2] && voisin1 != P->vertices[2])
+	    voisin2 = P->vertices[2];
+	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3] && voisin1 != P->vertices[3])
+	    voisin2 = P->vertices[3];
 
 	
-	double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
-	double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
+	  double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
+	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	if( c1 > 0. && c2 > 0. && c3 > 0. && c4 > 0.) {
-	  F->voisins.push_back(voisin1);
-	  F->voisins.push_back(voisin2);
-	  F->c_voisins.push_back(c1);
-	  F->c_voisins.push_back(c2);
-	  F->c_voisins.push_back(c3);
-	  F->c_voisins.push_back(c4);
-	  break;
+	  if( c1 > 0. && c2 > 0. && c3 > 0. && c4 > 0.) {
+	    F->voisins.push_back(voisin1);
+	    F->voisins.push_back(voisin2);
+	    F->c_voisins.push_back(c1);
+	    F->c_voisins.push_back(c2);
+	    F->c_voisins.push_back(c3);
+	    F->c_voisins.push_back(c4);
+	    cout << F->id << endl;
+	    break;
+	  } 
 	}
-	    
       }
+      else
+	cout << F->id << " : au bord" << endl;
     }
   }
 }
