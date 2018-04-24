@@ -508,8 +508,13 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
       bool tetra_ok = false;
       if(F->BC == 0) {
+	cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
-	  int part_1, part_2, voisin1, voisin2; //S'assure que part_1 et part_2 sont bien les 2 particules qui partagent la face
+	  int part_1 = -1;
+	  int part_2 = -1;
+	  int voisin1 = -1;
+	  int voisin2 = -1; //Sert à vérifier qu'on a trouvé un bon tetra de Delaunay
+	  
 	  if(F->voisins[0] == P->vertices[0])
 	    part_1 = P->vertices[0];
 	  else if(F->voisins[0] == P->vertices[1])
@@ -526,7 +531,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  else if(F->voisins[1] == P->vertices[2])
 	    part_2 = P->vertices[2];
 	  else if(F->voisins[1] == P->vertices[3])
-	    part_2 = P->vertices[3];
+	  part_2 = P->vertices[3];
 
 	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0])
 	    voisin1 = P->vertices[0];
@@ -545,6 +550,11 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    voisin2 = P->vertices[2];
 	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3] && voisin1 != P->vertices[3])
 	    voisin2 = P->vertices[3];
+
+	  if(part_1 == -1 || part_2 == -1 || voisin1 == -1 || voisin2 == -1) //Ca risque pas de fonctionner dans ce cas
+	    break;
+	  
+	  cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl; //Ce sont les tétras testés !
 
 	
 	  double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
