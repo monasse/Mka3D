@@ -45,8 +45,8 @@ Face & Face:: operator=(const Face &F){
   for(int i= 0; i<F.voisins.size(); i++){
     voisins[i] = F.voisins[i];
   }
-  for(int i= 0; i<F.c_voisins.size(); i++){
-    c_voisins[i] = F.c_voisins[i];
+  for(int i= 0; i<F.c_reconstruction.size(); i++){
+    c_reconstruction[i] = F.c_reconstruction[i];
   }
 }
 

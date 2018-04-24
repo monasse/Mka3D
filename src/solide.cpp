@@ -441,7 +441,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	P->faces.push_back(F->id);
 	(F->voisins).push_back(P->id);
 	if(type == 5)
-	  (F->c_voisins).push_back(0.5); //Maillage de Voronoi
+	  (F->c_reconstruction).push_back(0.5); //Maillage de Voronoi
 	if(F->voisins.size() > 2) {
 	  cout << "Numéro face : " << F->id << endl;
 	  throw std::invalid_argument("Face a trop de voisins !");
@@ -510,12 +510,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(F->BC == 0) {
 	cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
-	  int part_1 = -1;
-	  int part_2 = -1;
-	  int voisin1 = -1;
-	  int voisin2 = -1; //Sert à vérifier qu'on a trouvé un bon tetra de Delaunay
+	  int p1 = P->vertices[0];
+	  int p2 = P->vertices[1];
+	  int p3 = P->vertices[2];
+	  int p4 = P->vertices[3]; //Sert à vérifier qu'on a trouvé un bon tetra de Delaunay
 	  
-	  if(F->voisins[0] == P->vertices[0])
+	  /*if(F->voisins[0] == P->vertices[0])
 	    part_1 = P->vertices[0];
 	  else if(F->voisins[0] == P->vertices[1])
 	    part_1 = P->vertices[1];
@@ -549,26 +549,28 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2] && voisin1 != P->vertices[2])
 	    voisin2 = P->vertices[2];
 	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3] && voisin1 != P->vertices[3])
-	    voisin2 = P->vertices[3];
+	  voisin2 = P->vertices[3];
 
 	  if(part_1 == -1 || part_2 == -1 || voisin1 == -1 || voisin2 == -1) //Ca risque pas de fonctionner dans ce cas
-	    break;
+	  break;*/
 	  
-	  cout << "Particules : " << part_1 << " " << part_2 << " " << voisin1 << " " << voisin2 << endl; //Ce sont les tétras testés !
+	  //cout << "Particules : " << p1 << " " << p2 << " " << p3 << " " << p4 << endl; //Ce sont les tétras testés !
 
 	
-	  double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	  double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
-	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
+	  double c1 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p1].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
+	  double c2 = (Vector_3(solide[p1].x0, F->centre) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0)) ) / (Vector_3(solide[p1].x0, solide[p2].x0) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0) ));
+	  double c3 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p3].x0) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
+	  double c4 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0)) ) / (Vector_3(solide[p2].x0, solide[p4].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0) ));
 
 	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
-	    F->voisins.push_back(voisin1);
-	    F->voisins.push_back(voisin2);
-	    F->c_voisins.push_back(c1);
-	    F->c_voisins.push_back(c2);
-	    F->c_voisins.push_back(c3);
-	    F->c_voisins.push_back(c4);
+	    F->reconstruction.push_back(p1);
+	    F->reconstruction.push_back(p2);
+	    F->reconstruction.push_back(p3);
+	    F->reconstruction.push_back(p4);
+	    F->c_reconstruction.push_back(c1);
+	    F->c_reconstruction.push_back(c2);
+	    F->c_reconstruction.push_back(c3);
+	    F->c_reconstruction.push_back(c4);
 	    //cout << F->id << endl;
 	    tetra_ok = true;
 	    break;
@@ -631,12 +633,13 @@ bool Solide::voisins_face(int num_face) {
 	double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
+	//A reprendre avec nouvelle reconstruction des faces !!!
 	faces[num_face].voisins.push_back(voisin1);
 	faces[num_face].voisins.push_back(voisin2);
-	faces[num_face].c_voisins.push_back(c_part_1);
-	faces[num_face].c_voisins.push_back(c_part_2);
-	faces[num_face].c_voisins.push_back(c_voisin1);
-	faces[num_face].c_voisins.push_back(c_voisin2);
+	faces[num_face].c_reconstruction.push_back(c_part_1);
+	faces[num_face].c_reconstruction.push_back(c_part_2);
+	faces[num_face].c_reconstruction.push_back(c_voisin1);
+	faces[num_face].c_reconstruction.push_back(c_voisin2);
 	tetra_ok = true;
 	break;	
       }
@@ -693,11 +696,10 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
-      for(int j=0; j<faces[i].voisins.size() ; j++) {
-	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_voisins[j] * solide[faces[i].voisins[j]].Dx;
-	//test_pos = test_pos + faces[i].c_voisins[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].voisins[j]].x0);
+      for(int j=0; j<faces[i].reconstruction.size() ; j++) {
+	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_reconstruction[j] * solide[faces[i].reconstruction[j]].Dx;
+	//test_pos = test_pos + faces[i].c_reconstruction[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].reconstruction[j]].x0);
       }
-      //faces[i].I_Dx = faces[i].c_voisins[0] * solide[faces[i].voisins[0]].Dx + faces[i].c_voisins[1] * solide[faces[i].voisins[1]].Dx;
       //faces[i].I_Dx = (solide[faces[i].voisins[0]].Dx + solide[faces[i].voisins[1]].Dx) / 2.;
 
       /*if(abs(faces[i].I_Dx[2] - 4. / 3. * faces[i].centre.z()) > 0.00001)
@@ -770,38 +772,36 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     for(int i=0 ; i<P->faces.size() ; i++){
       int num_face = P->faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
-      int part_1 = faces[num_face].voisins[0];
-      int part_2 = faces[num_face].voisins[1];
+      /*int part_1 = faces[num_face].voisins[0];
+	int part_2 = faces[num_face].voisins[1];*/
       if(faces[num_face].BC == 0) { // && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
-	double c_part_1 = faces[num_face].c_voisins[0];
-	double c_part_2 = faces[num_face].c_voisins[1];
-	/*int aux_1 = faces[num_face].voisins[2];
-	double c_aux_1 = faces[num_face].c_voisins[2];
-	int aux_2 = faces[num_face].voisins[3];
-	double c_aux_2 = faces[num_face].c_voisins[3];*/
+        int aux_1 = faces[num_face].reconstruction[0];
+	double c_aux_1 = faces[num_face].c_reconstruction[0];
+	int aux_2 = faces[num_face].voisins[1];
+	double c_aux_2 = faces[num_face].c_reconstruction[1];
+	int aux_3 = faces[num_face].reconstruction[2];
+	double c_aux_3 = faces[num_face].c_reconstruction[2];
+	int aux_4 = faces[num_face].voisins[3];
+	double c_aux_4 = faces[num_face].c_reconstruction[3];
 	//cout << "coords bary : " <<c_part_1 << " " << c_part_2 << " " << c_aux_1 << " " << c_aux_2 << endl;
 	
 	//Sortir le sens de toutes les forces comme il faut...
 	Vector_3 nIJ = faces[num_face].normale;
-	int voisin;
+	/*int voisin;
 	if(P->id == faces[num_face].voisins[0])
 	  voisin = faces[num_face].voisins[1];
 	else if(P->id == faces[num_face].voisins[1])
-	  voisin = faces[num_face].voisins[0];
+	voisin = faces[num_face].voisins[0];*/
 	if(nIJ * Vector_3(P->x0, faces[num_face].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
 	//P->Fi = P->Fi +  2 * mu * (solide[voisin].Dx - P->Dx); //OK flux à 2 points
-	P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
-	/*P->Fi = P->Fi + faces[num_face].S * (c_part_2 * solide[part_1].contrainte + c_part_1 * solide[part_2].contrainte) * nIJ + faces[num_face].S * c_aux_1 * P->contrainte * nIJ + faces[num_face].S * c_aux_2 *P->contrainte * nIJ;
+	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
+	P->Fi = P->Fi + faces[num_face].S * (c_aux_1 * solide[aux_1].contrainte + c_aux_2 * solide[aux_2].contrainte + c_aux_3 * solide[aux_3].contrainte + c_aux_4 * solide[aux_4].contrainte) * nIJ;
 	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
-	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;*/
-      }
-      else if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
-	int part = faces[num_face].voisins[0];
-	Vector_3 nIJ = faces[num_face].normale;
-	//P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
-	//faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
+	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
+	solide[aux_3].Fi = solide[aux_3].Fi - faces[num_face].S * c_aux_3 * P->contrainte * nIJ;
+	solide[aux_4].Fi = solide[aux_4].Fi - faces[num_face].S * c_aux_4 * P->contrainte * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;
