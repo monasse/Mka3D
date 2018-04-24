@@ -777,11 +777,11 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
       if(faces[num_face].BC == 0) { // && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
         int aux_1 = faces[num_face].reconstruction[0];
 	double c_aux_1 = faces[num_face].c_reconstruction[0];
-	int aux_2 = faces[num_face].voisins[1];
+	int aux_2 = faces[num_face].reconstruction[1];
 	double c_aux_2 = faces[num_face].c_reconstruction[1];
 	int aux_3 = faces[num_face].reconstruction[2];
 	double c_aux_3 = faces[num_face].c_reconstruction[2];
-	int aux_4 = faces[num_face].voisins[3];
+	int aux_4 = faces[num_face].reconstruction[3];
 	double c_aux_4 = faces[num_face].c_reconstruction[3];
 	//cout << "coords bary : " <<c_part_1 << " " << c_part_2 << " " << c_aux_1 << " " << c_aux_2 << endl;
 	
