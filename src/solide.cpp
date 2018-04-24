@@ -440,7 +440,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	//cout << "Particule : " << P->id << endl;
 	P->faces.push_back(F->id);
 	(F->voisins).push_back(P->id);
-	(F->c_voisins).push_back(0.5); //Maillage de Voronoi
+	if(type == 5)
+	  (F->c_voisins).push_back(0.5); //Maillage de Voronoi
 	if(F->voisins.size() > 2) {
 	  cout << "Numéro face : " << F->id << endl;
 	  throw std::invalid_argument("Face a trop de voisins !");
@@ -505,6 +506,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
     //Recherche du tetraèdre associé à chaque face
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+      bool tetra_ok = false;
       if(F->BC == 0) {
 	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
 	  int part_1, part_2, voisin1, voisin2; //S'assure que part_1 et part_2 sont bien les 2 particules qui partagent la face
@@ -550,20 +552,25 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	  if( c1 > 0. && c2 > 0. && c3 > 0. && c4 > 0.) {
+	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
 	    F->voisins.push_back(voisin1);
 	    F->voisins.push_back(voisin2);
 	    F->c_voisins.push_back(c1);
 	    F->c_voisins.push_back(c2);
 	    F->c_voisins.push_back(c3);
 	    F->c_voisins.push_back(c4);
-	    cout << F->id << endl;
+	    //cout << F->id << endl;
+	    tetra_ok = true;
 	    break;
-	  } 
+	  }
+	}
+	if( not(tetra_ok)) {
+	  cout << "Face : " << F->id;
+	  throw std::invalid_argument( " pas de tetra associe a la face !" );
 	}
       }
-      else
-	cout << F->id << " : au bord" << endl;
+      /*else
+	cout << F->id << " : au bord" << endl;*/
     }
   }
 }

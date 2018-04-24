@@ -281,9 +281,9 @@ int main(){
   int nb_part = S.size();
 
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
-    if(P->BC == 1 && (P->x0).z() <= 0.2)
+    if((P->x0).z() <= 0.2) //P->BC == 1 && 
       (P->u).vec[2] = 0.5;
-    else if(P->BC == 1 && (P->x0).z() >= 2.8)
+    else if((P->x0).z() >= 2.8) //P->BC == 1 && 
       (P->u).vec[2] = -0.5;
     P->u_prev = P->u;
   }
