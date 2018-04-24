@@ -508,7 +508,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
       bool tetra_ok = false;
       if(F->BC == 0) {
-	cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
+	//cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
 	  int p1 = P->vertices[0];
 	  int p2 = P->vertices[1];
