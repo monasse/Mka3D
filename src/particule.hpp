@@ -27,8 +27,12 @@
 #define PARTICULE_HPP
 
 #include "geometry.hpp"
+#include "solide.hpp"
 #include "face.hpp"
-#include <map>
+
+class Solide;
+
+class Face;
 
 class Particule
 {
@@ -50,12 +54,13 @@ class Particule
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);
 
-  void barycentre(); //Calcul le barycentre d'une particule
-  void volume(); //calcul le volume d'une particule
+  void barycentre(Solide* Sol, const int& cell_type); //Calcul le barycentre d'une particule
+  void volume(Solide* Sol, const int& cell_type); //calcul le volume d'une particule
+  bool contient_face(Face f); //Renvoie vraie si particule contient les 3 vertex de la face
 
   //Attributs
   std::vector<int> faces; //!< liste de faces de la particule
-  std::vector<Point_3> vertices; //Utile pour retrouver les faces lors de l'imortation de la connectivité
+  std::vector<int> vertices; //Utile pour retrouver les faces lors de l'importation de la connectivité
   int fixe; //!< =true si la particule est fixe, false sinon
   double m; //!< Masse de la particule
   double V; //!< Volume de la particule

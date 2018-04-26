@@ -27,8 +27,11 @@
 #define FACE_HPP
 
 #include "geometry.hpp"
+#include "solide.hpp"
 #include "vertex.hpp"
 #include <vector>
+
+class Solide;
 
 class Face
 {
@@ -39,9 +42,7 @@ public:
   int size(){
 	return vertex.size();
   }
-  void comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3); //, const Point_3& ext); //Computes the outward normal, the surface and the barycentre of the face
-  void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  void solve_vitesse(const double &dt, const bool &flag_2d, const double& t, const double& T);
+  void comp_quantities(Solide* Sol); //Computes the outward normal, the surface and the barycentre of the face
 
   //Attributs
   Point_3 centre; //!< Centre de la face
@@ -51,13 +52,15 @@ public:
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
   std::vector<int> voisins; //Donne le numéro des 2 voisins de la face puis celui des 2 autres particules pour avoir le tétra associé à la face et calculer le gradient
-  std::vector<double> c_voisins; //Coordonnées barycentriques des centres des particules pour calcul du gradient
+  std::vector<int> reconstruction; //Donne le numéro des 4 particules pour la reconstruction sur la face
+  std::vector<double> c_reconstruction; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
   Vector_3 I_u; //u calculé sur la face. Interpolation dans bulk. Intégration forces au bord
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
   Vector_3 Fi; //Forces sur la face
 
-  double D0; //Distance à l'equilibre entre les 2 particules voisines
+  int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
+  double D0; //Distance centre face. Sera utile pour CFL...
 };
 
 bool operator==(const Face &F1, const Face &F2); //Compare les faces

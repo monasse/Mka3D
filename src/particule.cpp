@@ -86,10 +86,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 
   //Dx = Dx + u * dt;
 
-  if(id == 45) { //Pour éviter translation en x ou y...
+  /*if(id == 45) { //Pour éviter translation en x ou y...
     Dx.vec[0] = 0.;
     Dx.vec[1] = 0.;
-  }
+    }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
@@ -112,12 +112,68 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
 }
 
-void Particule::barycentre() {
-  x0 = centroid(vertices.begin(), vertices.end());
+void Particule::barycentre(Solide* Sol, const int& cell_type) {
+  std::vector<Point_3> aux;
+  aux.push_back(Sol->vertex[vertices[0]].pos);
+  aux.push_back(Sol->vertex[vertices[1]].pos);
+  aux.push_back(Sol->vertex[vertices[2]].pos);
+  aux.push_back(Sol->vertex[vertices[3]].pos);
+
+  if(cell_type == 5) { //Hexa
+    aux.push_back(Sol->vertex[vertices[4]].pos);
+    aux.push_back(Sol->vertex[vertices[5]].pos);
+    aux.push_back(Sol->vertex[vertices[6]].pos);
+    aux.push_back(Sol->vertex[vertices[7]].pos);
+  }
+  x0 = centroid(aux.begin(), aux.end());
 }
 
-void Particule::volume() {
-  V = abs(cross_product(Vector_3(vertices[0],vertices[1]),Vector_3(vertices[0],vertices[2]))*Vector_3(vertices[0],vertices[3]))/6.;
+void Particule::volume(Solide* Sol, const int& cell_type) {
+  if(cell_type == 4) //Tetra
+    V = cross_product(Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[1]].pos),Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[2]].pos))*Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[3]].pos)/6.;
+  else if(cell_type == 5) {//Hexa
+    const Point_3 v0 = Sol->vertex[vertices[0]].pos;
+    const Point_3 v1 = Sol->vertex[vertices[1]].pos;
+    const Point_3 v2 = Sol->vertex[vertices[2]].pos;
+    const Point_3 v3 = Sol->vertex[vertices[3]].pos;
+    const Point_3 v6 = Sol->vertex[vertices[6]].pos;
+    double S1 = 1./2. * sqrt(cross_product(Vector_3(v0,v1),Vector_3(v0,v2)).squared_length()) + 1./2. * sqrt(cross_product(Vector_3(v0,v2),Vector_3(v0,v3)).squared_length());
+    V = S1 * sqrt(Vector_3(v2,v6).squared_length());
+  }
+}
+
+bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les 3 vertex de la face
+  if(f.type == 3) { //Pour quad
+    if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3] || f.vertex[0] == vertices[4] || f.vertex[0] == vertices[5] || f.vertex[0] == vertices[6] || f.vertex[0] == vertices[7]) {
+      if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3] || f.vertex[1] == vertices[4] || f.vertex[1] == vertices[5] || f.vertex[1] == vertices[6] || f.vertex[1] == vertices[7]) {
+	if(f.vertex[2] == vertices[0] || f.vertex[2] == vertices[1] || f.vertex[2] == vertices[2] || f.vertex[2] == vertices[3] || f.vertex[2] == vertices[4] || f.vertex[2] == vertices[5] || f.vertex[2] == vertices[6] || f.vertex[2] == vertices[7]) {
+	  //cout << "Numéro vertex : " << f.vertex[0] << " " << f.vertex[1] << " " << f.vertex[2] << " " << endl;
+	  return true;
+	}
+	else
+	  return false;
+      }
+      else
+	return false;
+    }
+    else
+      return false;
+  }
+  else if(f.type == 2) { //Pour triangle
+    if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3]) {
+      if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3]) {
+	if(f.vertex[2] == vertices[0] || f.vertex[2] == vertices[1] || f.vertex[2] == vertices[2] || f.vertex[2] == vertices[3]) {
+	  return true;
+	}
+	else
+	  return false;
+      }
+      else
+	return false;
+    }
+    else
+      return false;
+  }
 }
 
 #endif

@@ -30,12 +30,14 @@ Face::Face() : I_Dx(), I_u()
   normale = Vector_3(1.,0.,0.);
   S = 0.;
   m = 0.;
+  type = 0;
 }
 
 Face & Face:: operator=(const Face &F){
   assert(this != &F);
   centre = F.centre;
   normale = F.normale;
+  type = F.type;
   vertex.resize(F.vertex.size());
   for(int i= 0; i<F.vertex.size(); i++){
     vertex[i] = F.vertex[i];
@@ -43,62 +45,61 @@ Face & Face:: operator=(const Face &F){
   for(int i= 0; i<F.voisins.size(); i++){
     voisins[i] = F.voisins[i];
   }
-  for(int i= 0; i<F.c_voisins.size(); i++){
-    c_voisins[i] = F.c_voisins[i];
+  for(int i= 0; i<F.c_reconstruction.size(); i++){
+    c_reconstruction[i] = F.c_reconstruction[i];
   }
 }
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
-  if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2])
-    return false;
-  else {
-    if(F1.vertex[1] != F2.vertex[0] && F1.vertex[1] != F2.vertex[1] && F1.vertex[1] != F2.vertex[2])
+  if(F1.type == 2) { //Triangle
+    if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2])
       return false;
     else {
-      if(F1.vertex[2] != F2.vertex[0] && F1.vertex[2] != F2.vertex[1] && F1.vertex[2] != F2.vertex[2])
+      if(F1.vertex[1] != F2.vertex[0] && F1.vertex[1] != F2.vertex[1] && F1.vertex[1] != F2.vertex[2])
+	return false;
+      else {
+	if(F1.vertex[2] != F2.vertex[0] && F1.vertex[2] != F2.vertex[1] && F1.vertex[2] != F2.vertex[2])
+	  return false;
+	else
+	  return true;
+      }
+    }
+  }
+  else if(F1.type == 3) {//Quad
+    if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2] && F1.vertex[0] != F2.vertex[3])
       return false;
-      else
-	return true;
+    else {
+      if(F1.vertex[1] != F2.vertex[0] && F1.vertex[1] != F2.vertex[1] && F1.vertex[1] != F2.vertex[2] && F1.vertex[1] != F2.vertex[3])
+	return false;
+      else {
+	if(F1.vertex[2] != F2.vertex[0] && F1.vertex[2] != F2.vertex[1] && F1.vertex[2] != F2.vertex[2] && F1.vertex[2] != F2.vertex[3])
+	  return false;
+	else
+	  return true;
+      }
     }
   }
 }
 
-void Face::comp_quantities(const Point_3 &v1, const Point_3 &v2, const Point_3 &v3) { //, const Point_3& ext) {
+void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
+  const Point_3 v1 = Sol->vertex[vertex[0]].pos;
+  const Point_3 v2 = Sol->vertex[vertex[1]].pos;
+  const Point_3 v3 = Sol->vertex[vertex[2]].pos;
   std::vector<Point_3> aux;
   aux.push_back(v1);
   aux.push_back(v2);
   aux.push_back(v3);
+  if(type == 3)
+    aux.push_back(Sol->vertex[vertex[2]].pos);
   centre = centroid(aux.begin(),aux.end());
-  S = 1./2. * sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length());
+  if(type == 2)
+    S = 1./2. * sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length());
+  else if(type == 3)
+    S = 1./2. * sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length()) + 1./2. * sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,Sol->vertex[vertex[2]].pos)).squared_length());
   normale = orthogonal_vector(aux[0], aux[1], aux[2]);
   double norm = sqrt((normale.squared_length()));
   normale = normale / norm;
-  D0 = 100000000000.;
-  /*if(Vector_3(aux[0], ext) * normale < 0.)
-    normale = -1. * normale;
-  double aux2 = Vector_3(centre, v1) * normale;
-  pt_face = centre + aux2 * normale;*/
-}
-
-void Face::solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  /*Dxprev = Dx;
-  err_Dx = err_Dx + u * dt;
-  Dx = Dx+ err_Dx;
-  err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
-  */
-
-  I_Dx = I_Dx + I_u * dt;
-  /*if(I_Dx.squared_length() > 0.0000001)
-    cout << "Pos face : " << I_Dx << endl;*/ 
-}
-
-void Face::solve_vitesse(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  /*u_prev = u;
-  err_u= err_u + Fi * dt / m;
-  u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
-  err_u = err_u + (u_prev - u); //Version compensation erreur sommation
-  */
-  I_u = I_u + Fi / m * dt;
+  D0 = 1000000000.;
 }
 
 #endif
