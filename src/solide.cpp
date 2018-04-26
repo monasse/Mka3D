@@ -563,6 +563,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  double c4 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0)) ) / (Vector_3(solide[p2].x0, solide[p4].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0) ));
 
 	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
+	    if(abs(c1 + c2 + c3 + c4 - 1.) > pow(10., -10.))
+	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
 	    F->reconstruction.push_back(p1);
 	    F->reconstruction.push_back(p2);
 	    F->reconstruction.push_back(p3);
