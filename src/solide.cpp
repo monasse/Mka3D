@@ -696,10 +696,10 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
-      /*for(int j=0; j<faces[i].reconstruction.size() ; j++) {
+      for(int j=0; j<faces[i].reconstruction.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_reconstruction[j] * solide[faces[i].reconstruction[j]].Dx;
-	}*/
-      faces[i].I_Dx = (solide[faces[i].voisins[0]].Dx + solide[faces[i].voisins[1]].Dx) / 2.;
+      }
+      //faces[i].I_Dx = (solide[faces[i].voisins[0]].Dx + solide[faces[i].voisins[1]].Dx) / 2.;
 
       /*if(abs(faces[i].I_Dx[2] - 4. / 3. * faces[i].centre.z()) > 0.00001)
 	cout << "Problème reconstruction sur face : " << i << endl;*/
@@ -771,8 +771,8 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     for(int i=0 ; i<P->faces.size() ; i++){
       int num_face = P->faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
-      int part_1 = faces[num_face].voisins[0];
-      int part_2 = faces[num_face].voisins[1];
+      /*int part_1 = faces[num_face].voisins[0];
+	int part_2 = faces[num_face].voisins[1];*/
       if(faces[num_face].BC == 0) { // && not(part_1 == -1 || part_2 == -1)){ //On prend pas les faces au bord car il n'y a pas de forces internes dedans
         int aux_1 = faces[num_face].reconstruction[0];
 	double c_aux_1 = faces[num_face].c_reconstruction[0];
@@ -795,12 +795,12 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 
 	//P->Fi = P->Fi +  2 * mu * (solide[voisin].Dx - P->Dx); //OK flux à 2 points
-	P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
-	/*P->Fi = P->Fi + faces[num_face].S * P->contrainte * nIJ;
-	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
+	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
+	P->Fi = P->Fi + faces[num_face].S * P->contrainte * nIJ; //Force sur la particule sommée sur toutes les faces. Pour Tetra !
+	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ; //Force sur autres particules en interaction avec P
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
 	solide[aux_3].Fi = solide[aux_3].Fi - faces[num_face].S * c_aux_3 * P->contrainte * nIJ;
-	solide[aux_4].Fi = solide[aux_4].Fi - faces[num_face].S * c_aux_4 * P->contrainte * nIJ;*/
+	solide[aux_4].Fi = solide[aux_4].Fi - faces[num_face].S * c_aux_4 * P->contrainte * nIJ;
       }
       else if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
