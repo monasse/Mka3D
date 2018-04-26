@@ -498,12 +498,20 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       int ele1,ele2,ele3,ele4;
       stm >> ele1 >> ele2 >> ele3 >> ele4;
       Particule P;
-      P.vertices.push_back(ele1 - 1); //Numéros des Elements du solide qui forment chacun des tetra
-      P.vertices.push_back(ele2 - 1);
-      P.vertices.push_back(ele3 - 1);
-      P.vertices.push_back(ele4 - 1);
+      /*if(ele1 == 0 || ele2 == 0 || ele3 == 0 || ele4 == 0) {
+	cout << "ele1 : " << ele1 << endl;
+	cout << "ele2 : " << ele2 << endl;
+	cout << "ele3 : " << ele3 << endl;
+	cout << "ele4 : " << ele4 << endl;
+	throw std::invalid_argument( "Probleme dans delaunay.txt !" );
+	}*/
+      P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetras
+      P.vertices.push_back(ele2);
+      P.vertices.push_back(ele3);
+      P.vertices.push_back(ele4); // - 1
       tetra_delau.push_back(P);
     }
+    
     //Recherche du tetraèdre associé à chaque face
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
       bool tetra_ok = false;
@@ -514,45 +522,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  int p2 = P->vertices[1];
 	  int p3 = P->vertices[2];
 	  int p4 = P->vertices[3]; //Sert à vérifier qu'on a trouvé un bon tetra de Delaunay
-	  
-	  /*if(F->voisins[0] == P->vertices[0])
-	    part_1 = P->vertices[0];
-	  else if(F->voisins[0] == P->vertices[1])
-	    part_1 = P->vertices[1];
-	  else if(F->voisins[0] == P->vertices[2])
-	    part_1 = P->vertices[2];
-	  else if(F->voisins[0] == P->vertices[3])
-	    part_1 = P->vertices[3];
-
-	  if(F->voisins[1] == P->vertices[0])
-	    part_2 = P->vertices[0];
-	  else if(F->voisins[1] == P->vertices[1])
-	    part_2 = P->vertices[1];
-	  else if(F->voisins[1] == P->vertices[2])
-	    part_2 = P->vertices[2];
-	  else if(F->voisins[1] == P->vertices[3])
-	  part_2 = P->vertices[3];
-
-	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0])
-	    voisin1 = P->vertices[0];
-	  else if(part_1 != P->vertices[1] && part_2 != P->vertices[1])
-	    voisin1 = P->vertices[1];
-	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2])
-	    voisin1 = P->vertices[2];
-	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3])
-	    voisin1 = P->vertices[3];
-
-	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0] && voisin1 != P->vertices[0])
-	    voisin2 = P->vertices[0];
-	  else if(part_1 != P->vertices[1] && part_2 != P->vertices[1] && voisin1 != P->vertices[1])
-	    voisin2 = P->vertices[1];
-	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2] && voisin1 != P->vertices[2])
-	    voisin2 = P->vertices[2];
-	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3] && voisin1 != P->vertices[3])
-	  voisin2 = P->vertices[3];
-
-	  if(part_1 == -1 || part_2 == -1 || voisin1 == -1 || voisin2 == -1) //Ca risque pas de fonctionner dans ce cas
-	  break;*/
+	  //cout << "ok particules delaunay" << endl;
+	  /*if(p1 < 0 || p1 >= 14765 || p2 < 0 || p2 >= 14765 || p2 < 0 || p2 >= 14765 || p2 < 0 || p2 >= 14765) {
+	    cout << "p1 : " << p1 << endl;
+	    cout << "p2 : " << p1 << endl;
+	    cout << "p3 : " << p1 << endl;
+	    cout << "p4 : " << p1 << endl;
+	    throw std::invalid_argument( "Problème importation du Delaunay !" );
+	    }*/
 	  
 	  //cout << "Particules : " << p1 << " " << p2 << " " << p3 << " " << p4 << endl; //Ce sont les tétras testés !
 
@@ -561,6 +538,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  double c2 = (Vector_3(solide[p1].x0, F->centre) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0)) ) / (Vector_3(solide[p1].x0, solide[p2].x0) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0) ));
 	  double c3 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p3].x0) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
 	  double c4 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0)) ) / (Vector_3(solide[p2].x0, solide[p4].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0) ));
+	  //cout << "ok coords bary" << endl;
 
 	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
 	    F->reconstruction.push_back(p1);
@@ -577,8 +555,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  }
 	}
 	if( not(tetra_ok)) {
-	  cout << "Face : " << F->id;
-	  throw std::invalid_argument( " pas de tetra associe a la face !" );
+	  //cout << "Face : " << F->id;
+	  throw std::invalid_argument( " pas de tetra associe a une face !" );
 	}
       }
       /*else
@@ -677,16 +655,16 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
-    if(faces[i].BC == 1) {
+    if(faces[i].BC == -1) { //Remttre -1 ensuite...
       //if(t > 0.)
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
-      faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
@@ -753,8 +731,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      //P->def_plas_cumulee += delta_p;
-      //P->epsilon_p += delta_p * n_elas;
+      P->def_plas_cumulee += delta_p;
+      P->epsilon_p += delta_p * n_elas;
     }
   }
 }
@@ -802,12 +780,6 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
 	//P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
-      }
-      else if(faces[num_face].BC == -1) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
-	int part = faces[num_face].voisins[0];
-	Vector_3 nIJ = faces[num_face].normale;
-	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
-	faces[num_face].Fi = faces[num_face].Fi - faces[num_face].S * solide[part].contrainte * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;

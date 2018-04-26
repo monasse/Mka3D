@@ -85,11 +85,13 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   }
   else
   return Dx;*/
-  if(p.z() <= 0.2) {
+  if(p.z() <= 0.01) {
     return Vector_3(0., 0., -0.01 * t);
   }
-  else if(p.z() >= 2.8)
+  else if(p.z() >= 2.99)
     return Vector_3(0., 0., 0.);
+  else
+    return Dx;
 }
 
 double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
