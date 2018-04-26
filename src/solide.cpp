@@ -498,10 +498,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       int ele1,ele2,ele3,ele4;
       stm >> ele1 >> ele2 >> ele3 >> ele4;
       Particule P;
-      P.vertices.push_back(ele1 - 1); //Numéros des Elements du solide qui forment chacun des tetra
-      P.vertices.push_back(ele2 - 1);
-      P.vertices.push_back(ele3 - 1);
-      P.vertices.push_back(ele4 - 1);
+      P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
+      P.vertices.push_back(ele2);
+      P.vertices.push_back(ele3); // - 1
+      P.vertices.push_back(ele4);
       tetra_delau.push_back(P);
     }
     //Recherche du tetraèdre associé à chaque face
