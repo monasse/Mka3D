@@ -656,7 +656,6 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
       F->solve_position(dt, flag_2d, t, T);
     /*else if(F->BC == 1 && t > 0.) //Modifier après test conservation énergie
       F->solve_position(dt, flag_2d, t, T);*/
-  }
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
