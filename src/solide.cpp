@@ -510,65 +510,23 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(F->BC == 0) {
 	//cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
-	  int p1 = P->vertices[0];
-	  int p2 = P->vertices[1];
-	  int p3 = P->vertices[2];
-	  int p4 = P->vertices[3]; //Sert à vérifier qu'on a trouvé un bon tetra de Delaunay
+	  int part_1 = P->vertices[0];
+	  int part_2 = P->vertices[1];
+	  int voisin1 = P->vertices[2];
+	  int voisin2 = P->vertices[3];
 	  
-	  /*if(F->voisins[0] == P->vertices[0])
-	    part_1 = P->vertices[0];
-	  else if(F->voisins[0] == P->vertices[1])
-	    part_1 = P->vertices[1];
-	  else if(F->voisins[0] == P->vertices[2])
-	    part_1 = P->vertices[2];
-	  else if(F->voisins[0] == P->vertices[3])
-	    part_1 = P->vertices[3];
-
-	  if(F->voisins[1] == P->vertices[0])
-	    part_2 = P->vertices[0];
-	  else if(F->voisins[1] == P->vertices[1])
-	    part_2 = P->vertices[1];
-	  else if(F->voisins[1] == P->vertices[2])
-	    part_2 = P->vertices[2];
-	  else if(F->voisins[1] == P->vertices[3])
-	  part_2 = P->vertices[3];
-
-	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0])
-	    voisin1 = P->vertices[0];
-	  else if(part_1 != P->vertices[1] && part_2 != P->vertices[1])
-	    voisin1 = P->vertices[1];
-	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2])
-	    voisin1 = P->vertices[2];
-	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3])
-	    voisin1 = P->vertices[3];
-
-	  if(part_1 != P->vertices[0] && part_2 != P->vertices[0] && voisin1 != P->vertices[0])
-	    voisin2 = P->vertices[0];
-	  else if(part_1 != P->vertices[1] && part_2 != P->vertices[1] && voisin1 != P->vertices[1])
-	    voisin2 = P->vertices[1];
-	  else if(part_1 != P->vertices[2] && part_2 != P->vertices[2] && voisin1 != P->vertices[2])
-	    voisin2 = P->vertices[2];
-	  else if(part_1 != P->vertices[3] && part_2 != P->vertices[3] && voisin1 != P->vertices[3])
-	  voisin2 = P->vertices[3];
-
-	  if(part_1 == -1 || part_2 == -1 || voisin1 == -1 || voisin2 == -1) //Ca risque pas de fonctionner dans ce cas
-	  break;*/
-	  
-	  //cout << "Particules : " << p1 << " " << p2 << " " << p3 << " " << p4 << endl; //Ce sont les tétras testés !
-
-	
-	  double c1 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p1].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
-	  double c2 = (Vector_3(solide[p1].x0, F->centre) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0)) ) / (Vector_3(solide[p1].x0, solide[p2].x0) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0) ));
-	  double c3 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p3].x0) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
-	  double c4 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0)) ) / (Vector_3(solide[p2].x0, solide[p4].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0) ));
+	  double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
+	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
 	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
-	    if(abs(c1 + c2 + c3 + c4 - 1.) > pow(10., -10.))
+	    //if(abs(c1 + c2 + c3 + c4 - 1.) > pow(10., -10.)) {
 	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
-	    F->reconstruction.push_back(p1);
-	    F->reconstruction.push_back(p2);
-	    F->reconstruction.push_back(p3);
-	    F->reconstruction.push_back(p4);
+	    F->reconstruction.push_back(part_1);
+	    F->reconstruction.push_back(part_2);
+	    F->reconstruction.push_back(voisin1);
+	    F->reconstruction.push_back(voisin2);
 	    F->c_reconstruction.push_back(c1);
 	    F->c_reconstruction.push_back(c2);
 	    F->c_reconstruction.push_back(c3);
