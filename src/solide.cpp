@@ -520,9 +520,11 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
+	  /*if(F->id == 59 && c1 >= 0.&& c2 >= 0. && c3 >= 0.)
+	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << endl; //" " << c1 + c2 + c3 + c4 - 1. << endl;
+	  */
+
 	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
-	    //if(abs(c1 + c2 + c3 + c4 - 1.) > pow(10., -10.)) {
-	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
 	    F->reconstruction.push_back(part_1);
 	    F->reconstruction.push_back(part_2);
 	    F->reconstruction.push_back(voisin1);
@@ -537,12 +539,20 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  }
 	}
 	if( not(tetra_ok)) {
-	  cout << "Face : " << F->id;
-	  throw std::invalid_argument( " pas de tetra associe a la face !" );
+	  cout << "Face : " << F->id << endl;
+	  cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
+	  cout << "BC : " << F->BC << endl;
+	  cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;
+	  //throw std::invalid_argument( " pas de tetra associe a la face !" );
+	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
+	  if(not(test)) {
+	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
+	  throw std::invalid_argument( "Pas de tetra associe a une face" );
+	  }
 	}
-      }
       /*else
 	cout << F->id << " : au bord" << endl;*/
+      }
     }
   }
 }
@@ -594,12 +604,14 @@ bool Solide::voisins_face(int num_face) {
 	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
 	//A reprendre avec nouvelle reconstruction des faces !!!
-	faces[num_face].voisins.push_back(voisin1);
-	faces[num_face].voisins.push_back(voisin2);
 	faces[num_face].c_reconstruction.push_back(c_part_1);
 	faces[num_face].c_reconstruction.push_back(c_part_2);
 	faces[num_face].c_reconstruction.push_back(c_voisin1);
 	faces[num_face].c_reconstruction.push_back(c_voisin2);
+        faces[num_face].reconstruction.push_back(part_1);
+	faces[num_face].reconstruction.push_back(part_2);
+	faces[num_face].reconstruction.push_back(voisin1);
+        faces[num_face].reconstruction.push_back(voisin2);
 	tetra_ok = true;
 	break;	
       }
