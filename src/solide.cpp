@@ -504,6 +504,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       P.vertices.push_back(ele4);
       tetra_delau.push_back(P);
     }
+    std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
     //Recherche du tetraèdre associé à chaque face
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
       bool tetra_ok = false;
@@ -539,15 +540,16 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  }
 	}
 	if( not(tetra_ok)) {
-	  cout << "Face : " << F->id << endl;
+	  /*cout << "Face : " << F->id << endl;
 	  cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	  cout << "BC : " << F->BC << endl;
-	  cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;
+	  cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
+	  face_pb << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
 	  //throw std::invalid_argument( " pas de tetra associe a la face !" );
 	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	  if(not(test)) {
 	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	  throw std::invalid_argument( "Pas de tetra associ\'e \`a une face" );
+	  throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
 	  }
 	}
       /*else
@@ -655,8 +657,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) {
-      if(t > 0.)
-	faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //if(t > 0.)
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
