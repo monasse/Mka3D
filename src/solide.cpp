@@ -547,7 +547,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	  if(not(test)) {
 	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	  throw std::invalid_argument( "Pas de tetra associe a une face" );
+	  throw std::invalid_argument( "Pas de tetra associ\'e \`a une face" );
 	  }
 	}
       /*else
