@@ -235,7 +235,27 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     istringstream  stm(ligne);
     int id,nbr_tag,tag_1,tag_2;
     stm >> id >> type;
-    if(type == 4) { //Tetra
+
+    //Importation des faces au bord pour avoir les BC !
+    if(type == 2) { //Triangle donc sur bord
+      int v1,v2,v3;
+      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3; //tag_2 est la BC
+      Face F;
+      F.vertex.push_back(v1 - 1);
+      F.vertex.push_back(v2 - 1);
+      F.vertex.push_back(v3 - 1);
+      F.type = 2;
+      if(tag_2 == 1) //Dirichlet
+	F.BC = 1;
+      else if(tag_2 == 2) //Neumann
+	F.BC = -1;
+      F.id = faces.size();
+      F.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+      if(F.normale * Vector_3(F.centre, vertex[0].pos) < 0.)
+	  F.normale = -F.normale;
+      faces.push_back(F);
+    }
+    else if(type == 4) { //Tetra
       int v1,v2,v3,v4;
       stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3 >> v4;
       //Ajout des vertex de la particule
@@ -656,7 +676,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
-    if(faces[i].BC == 1) {
+    if(faces[i].BC == 1) { //Dirichlet
       //if(t > 0.)
       faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
@@ -664,7 +684,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //if(t < pow(10., -8.))
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
-    else if(faces[i].BC == -1) {
+    else if(faces[i].BC == -1) { //Neumann
       faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
@@ -731,8 +751,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      //P->def_plas_cumulee += delta_p;
-      //P->epsilon_p += delta_p * n_elas;
+      P->def_plas_cumulee += delta_p;
+      P->epsilon_p += delta_p * n_elas;
     }
   }
 }
