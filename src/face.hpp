@@ -49,7 +49,6 @@ public:
   Vector_3 normale; //!< Normale sortante à la face
   Vector_3 vec_tangent_1; //Vecteur tangent 1 à la face
   Vector_3 vec_tangent_2; //Dernier vecteur tangent à la face formant une base orthonormale
-  double m; //Masse du diamant associé à la face
   double S; //Surface de la face
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
