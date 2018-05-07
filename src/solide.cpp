@@ -498,53 +498,38 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       int ele1,ele2,ele3,ele4;
       stm >> ele1 >> ele2 >> ele3 >> ele4;
       Particule P;
-      /*if(ele1 == 0 || ele2 == 0 || ele3 == 0 || ele4 == 0) {
-	cout << "ele1 : " << ele1 << endl;
-	cout << "ele2 : " << ele2 << endl;
-	cout << "ele3 : " << ele3 << endl;
-	cout << "ele4 : " << ele4 << endl;
-	throw std::invalid_argument( "Probleme dans delaunay.txt !" );
-	}*/
-      P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetras
+      P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
       P.vertices.push_back(ele2);
-      P.vertices.push_back(ele3);
-      P.vertices.push_back(ele4); // - 1
+      P.vertices.push_back(ele3); // - 1
+      P.vertices.push_back(ele4);
       tetra_delau.push_back(P);
     }
-    
+    std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
     //Recherche du tetraèdre associé à chaque face
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
       bool tetra_ok = false;
       if(F->BC == 0) {
 	//cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
-	  int p1 = P->vertices[0];
-	  int p2 = P->vertices[1];
-	  int p3 = P->vertices[2];
-	  int p4 = P->vertices[3]; //Sert à vérifier qu'on a trouvé un bon tetra de Delaunay
-	  //cout << "ok particules delaunay" << endl;
-	  /*if(p1 < 0 || p1 >= 14765 || p2 < 0 || p2 >= 14765 || p2 < 0 || p2 >= 14765 || p2 < 0 || p2 >= 14765) {
-	    cout << "p1 : " << p1 << endl;
-	    cout << "p2 : " << p1 << endl;
-	    cout << "p3 : " << p1 << endl;
-	    cout << "p4 : " << p1 << endl;
-	    throw std::invalid_argument( "Problème importation du Delaunay !" );
-	    }*/
+	  int part_1 = P->vertices[0];
+	  int part_2 = P->vertices[1];
+	  int voisin1 = P->vertices[2];
+	  int voisin2 = P->vertices[3];
 	  
-	  //cout << "Particules : " << p1 << " " << p2 << " " << p3 << " " << p4 << endl; //Ce sont les tétras testés !
+	  double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
+	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	
-	  double c1 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p1].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
-	  double c2 = (Vector_3(solide[p1].x0, F->centre) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0)) ) / (Vector_3(solide[p1].x0, solide[p2].x0) * cross_product(Vector_3(solide[p1].x0, solide[p3].x0), Vector_3(solide[p1].x0, solide[p4].x0) ));
-	  double c3 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0)) ) / (Vector_3(solide[p2].x0, solide[p3].x0) * cross_product(Vector_3(solide[p2].x0, solide[p1].x0), Vector_3(solide[p2].x0, solide[p4].x0) ));
-	  double c4 = (Vector_3(solide[p2].x0, F->centre) * cross_product(Vector_3(solide[2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0)) ) / (Vector_3(solide[p2].x0, solide[p4].x0) * cross_product(Vector_3(solide[p2].x0, solide[p3].x0), Vector_3(solide[p2].x0, solide[p1].x0) ));
-	  //cout << "ok coords bary" << endl;
+	  /*if(F->id == 59 && c1 >= 0.&& c2 >= 0. && c3 >= 0.)
+	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << endl; //" " << c1 + c2 + c3 + c4 - 1. << endl;
+	  */
 
 	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
-	    F->reconstruction.push_back(p1);
-	    F->reconstruction.push_back(p2);
-	    F->reconstruction.push_back(p3);
-	    F->reconstruction.push_back(p4);
+	    F->reconstruction.push_back(part_1);
+	    F->reconstruction.push_back(part_2);
+	    F->reconstruction.push_back(voisin1);
+	    F->reconstruction.push_back(voisin2);
 	    F->c_reconstruction.push_back(c1);
 	    F->c_reconstruction.push_back(c2);
 	    F->c_reconstruction.push_back(c3);
@@ -557,10 +542,21 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	if( not(tetra_ok)) {
 	  //cout << "Face : " << F->id;
 	  throw std::invalid_argument( " pas de tetra associe a une face !" );
+	  /*cout << "Face : " << F->id << endl;
+	  cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
+	  cout << "BC : " << F->BC << endl;
+	  cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
+	  face_pb << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
+	  //throw std::invalid_argument( " pas de tetra associe a la face !" );
+	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
+	  if(not(test)) {
+	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
+	  throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
+	  }
 	}
-      }
       /*else
 	cout << F->id << " : au bord" << endl;*/
+      }
     }
   }
 }
@@ -612,12 +608,14 @@ bool Solide::voisins_face(int num_face) {
 	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
 	//A reprendre avec nouvelle reconstruction des faces !!!
-	faces[num_face].voisins.push_back(voisin1);
-	faces[num_face].voisins.push_back(voisin2);
 	faces[num_face].c_reconstruction.push_back(c_part_1);
 	faces[num_face].c_reconstruction.push_back(c_part_2);
 	faces[num_face].c_reconstruction.push_back(c_voisin1);
 	faces[num_face].c_reconstruction.push_back(c_voisin2);
+        faces[num_face].reconstruction.push_back(part_1);
+	faces[num_face].reconstruction.push_back(part_2);
+	faces[num_face].reconstruction.push_back(voisin1);
+        faces[num_face].reconstruction.push_back(voisin2);
 	tetra_ok = true;
 	break;	
       }
@@ -655,9 +653,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
-    if(faces[i].BC == -1) { //Remttre -1 ensuite...
+    if(faces[i].BC == 1) {
       //if(t > 0.)
-      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
@@ -671,7 +669,6 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].reconstruction.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_reconstruction[j] * solide[faces[i].reconstruction[j]].Dx;
-	//test_pos = test_pos + faces[i].c_reconstruction[j] * Vector_3(Point_3(0., 0., 0.), solide[faces[i].reconstruction[j]].x0);
       }
       //faces[i].I_Dx = (solide[faces[i].voisins[0]].Dx + solide[faces[i].voisins[1]].Dx) / 2.;
 
@@ -770,8 +767,8 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 
 	//P->Fi = P->Fi +  2 * mu * (solide[voisin].Dx - P->Dx); //OK flux à 2 points
 	//P->Fi = P->Fi + faces[num_face].S * (solide[part_1].contrainte + solide[part_2].contrainte) / 2. * nIJ; //OK Voronoi
-	P->Fi = P->Fi + faces[num_face].S * P->contrainte * nIJ;
-	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ;
+	P->Fi = P->Fi + faces[num_face].S * P->contrainte * nIJ; //Force sur la particule sommée sur toutes les faces. Pour Tetra !
+	solide[aux_1].Fi = solide[aux_1].Fi - faces[num_face].S * c_aux_1 * P->contrainte * nIJ; //Force sur autres particules en interaction avec P
 	solide[aux_2].Fi = solide[aux_2].Fi - faces[num_face].S * c_aux_2 * P->contrainte * nIJ;
 	solide[aux_3].Fi = solide[aux_3].Fi - faces[num_face].S * c_aux_3 * P->contrainte * nIJ;
 	solide[aux_4].Fi = solide[aux_4].Fi - faces[num_face].S * c_aux_4 * P->contrainte * nIJ;
