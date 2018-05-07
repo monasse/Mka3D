@@ -47,6 +47,8 @@ public:
   //Attributs
   Point_3 centre; //!< Centre de la face
   Vector_3 normale; //!< Normale sortante à la face
+  Vector_3 vec_tangent_1; //Vecteur tangent 1 à la face
+  Vector_3 vec_tangent_2; //Dernier vecteur tangent à la face formant une base orthonormale
   double m; //Masse du diamant associé à la face
   double S; //Surface de la face
   std::vector<int> vertex; //Les sommets de la face.
@@ -55,9 +57,7 @@ public:
   std::vector<int> reconstruction; //Donne le numéro des 4 particules pour la reconstruction sur la face
   std::vector<double> c_reconstruction; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
-  Vector_3 I_u; //u calculé sur la face. Interpolation dans bulk. Intégration forces au bord
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
-  Vector_3 Fi; //Forces sur la face
 
   int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
   double D0; //Distance centre face. Sera utile pour CFL...

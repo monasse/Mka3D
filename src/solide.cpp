@@ -711,8 +711,14 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //Test
     /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
       cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
+    int num_face; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
+    bool test_face_neumann = false;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
+      if(faces[f].BC != 0) { //Remettre ==-1 après test !
+	num_face = f;
+	test_face_neumann = true;
+      }
       Vector_3 nIJ = faces[f].normale;
       if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
@@ -729,15 +735,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
       Matrix Dij_n(tens_sym(faces[f].I_Dx - P->Dx,  nIJ) ); //Tetra
       P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-	//}
-      //P->discrete_gradient += tens_sym(solide[voisin].Dx - P->Dx, nIJ);
-      //test = test + faces[f].S /  P->V * tens(Vector_3(P->x0,faces[f].centre),  nIJ);
-      //test_vec = test_vec + faces[f].S * nIJ;
-      /*if(P->faces.size() != 4)
-      cout << "Nbr faces : " << P->faces.size() << endl;
-      if(faces[f].S<0.){
-      cout << "S=" << faces[f].S << endl;*/
     }
+      
     
 /*if(sqrt(contraction_double(test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)), test - Matrix(Vector_3(1.,0.,0.), Vector_3(0.,1.,0.), Vector_3(0.,0.,1.)))) > pow(10.,-5.))
       cout << "Problème sur tenseur identité !" << endl;
@@ -746,6 +745,17 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     cout << test.col3 << endl;
     cout << "V=" << P->V <<  endl;*/
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
+
+    if(test_face_neumann){  // == -1 à mettre après le test !)
+	//Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
+      faces[num_face].I_Dx = -((P->contrainte * faces[num_face].normale) * faces[num_face].normale / (lambda + 2* mu) ) * faces[num_face].normale;
+      faces[num_face].I_Dx = faces[num_face].I_Dx - ((P->contrainte * faces[num_face].vec_tangent_1) * faces[num_face].vec_tangent_1 / mu ) * faces[num_face].vec_tangent_1;
+      faces[num_face].I_Dx = faces[num_face].I_Dx - ((P->contrainte * faces[num_face].vec_tangent_2) * faces[num_face].vec_tangent_2 / mu ) * faces[num_face].vec_tangent_2;
+      }
+
+
+
+    
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
@@ -796,10 +806,10 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	solide[aux_3].Fi = solide[aux_3].Fi - faces[num_face].S * c_aux_3 * P->contrainte * nIJ;
 	solide[aux_4].Fi = solide[aux_4].Fi - faces[num_face].S * c_aux_4 * P->contrainte * nIJ;
       }
-      else if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
+      else { // if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
-	//P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
       }
     }
     /*cout << "Particule :" << P->first << endl;

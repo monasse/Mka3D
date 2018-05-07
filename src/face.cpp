@@ -24,7 +24,7 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx(), I_u()
+Face::Face() : I_Dx(), I_u(), vec_tangent_1(), vec_tangent_2()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
@@ -100,6 +100,8 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   double norm = sqrt((normale.squared_length()));
   normale = normale / norm;
   D0 = 1000000000.;
+
+  //Calculer les 2 vecteurs tangents ! Comment faire ?
 }
 
 #endif
