@@ -746,15 +746,17 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     cout << "V=" << P->V <<  endl;*/
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
 
+    //Que faire s'il y a 2 faces de Neumann sur la particule ???
     if(test_face_neumann){  // == -1 à mettre après le test !)
-	//Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
+      //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
       faces[num_face].I_Dx = -((P->contrainte * faces[num_face].normale) * faces[num_face].normale / (lambda + 2* mu) ) * faces[num_face].normale;
       faces[num_face].I_Dx = faces[num_face].I_Dx - ((P->contrainte * faces[num_face].vec_tangent_1) * faces[num_face].vec_tangent_1 / mu ) * faces[num_face].vec_tangent_1;
       faces[num_face].I_Dx = faces[num_face].I_Dx - ((P->contrainte * faces[num_face].vec_tangent_2) * faces[num_face].vec_tangent_2 / mu ) * faces[num_face].vec_tangent_2;
-      }
 
-
-
+      Matrix Dij_n(tens_sym(faces[num_face].I_Dx - P->Dx,  faces[num_face].normale) ); //Tetra
+      P->discrete_gradient += faces[num_face].S /  P->V * Dij_n;
+    }
+    
     
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
