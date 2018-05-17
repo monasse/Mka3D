@@ -663,10 +663,6 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
-  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->BC != 0) //Mettre que Neumann après test conservation énergie
-      F->solve_vitesse(dt, flag_2d, t, T);
-      }*/
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
@@ -684,8 +680,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
-      //if(t > 0.)
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      if(t > 0.) //Enlever la valeur imposée après le test de conservation de l'énergie
+	faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
