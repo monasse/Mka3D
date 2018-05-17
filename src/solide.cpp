@@ -682,6 +682,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if(faces[i].BC == 1) { //Dirichlet
       if(t > 0.) //Enlever la valeur imposée après le test de conservation de l'énergie
 	faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
@@ -718,7 +719,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     int test_face_neumann = 0;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      if(faces[f].BC != 0) { //Remettre ==-1 après test !
+      if(faces[f].BC == -1) { //Remettre != 0  après test ! Ensuite mettre == -1 car on ne fait ces calcul que pour les faces de Neumann
 	num_face.push_back(f);
 	test_face_neumann++;
       }
@@ -737,7 +738,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
       Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
-      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      if(faces[f].BC >= 0) //Cad qu'on ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
     }
       
     
@@ -752,9 +754,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if(test_face_neumann == 1){  //Solution directe sans inversion de matrice
       //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
       int F = num_face[0];
-      faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale;
-      faces[F].I_Dx = faces[F].I_Dx - ((P->contrainte * faces[F].vec_tangent_1) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
-      faces[F].I_Dx = faces[F].I_Dx - ((P->contrainte * faces[F].vec_tangent_2) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
+      faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
+      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].vec_tangent_1) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
+      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].vec_tangent_2) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
 
       Matrix Dij_n(tens_sym(faces[F].I_Dx - P->Dx,  faces[F].normale) ); //Tetra
       P->discrete_gradient += faces[F].S /  P->V * Dij_n;
