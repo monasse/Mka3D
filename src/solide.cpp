@@ -946,6 +946,8 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
       else { // if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
+	if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
+	  cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;
 	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
       }
     }
