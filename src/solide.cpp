@@ -241,7 +241,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     //Importation des faces au bord pour avoir les BC !
     if(type == 2) { //Triangle donc sur bord
       int v1,v2,v3;
-      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3; //tag_2 est la BC
+      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3; //tag_1 est la BC
       Face F;
       F.vertex.push_back(v1 - 1);
       F.vertex.push_back(v2 - 1);
@@ -584,8 +584,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(*F == f) {
-      if(F->BC == 1)
-	cout << "Face : " << f.id << " existe deja !" << endl;
       return true;
     }
   }

@@ -30,6 +30,7 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2()
   normale = Vector_3(1.,0.,0.);
   S = 0.;
   type = 0;
+  id = -1; //Face pas remplie
 }
 
 Face & Face:: operator=(const Face &F){
@@ -51,37 +52,20 @@ Face & Face:: operator=(const Face &F){
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
   if(F1.type == 2) { //Triangle
-    int v1=-1,v2=-1,v3=-1;
-    if(F1.vertex[0] == F2.vertex[0])
-      v1 = F2.vertex[0];
-    else if(F1.vertex[0] == F2.vertex[1])
-      v1 = F2.vertex[1];
-    else if(F1.vertex[0] == F2.vertex[2])
-      v1 = F2.vertex[2];
-    else if(v1 == -1)
+    if(F1.vertex[0] == F2.vertex[0] && F1.vertex[1] == F2.vertex[1]  && F1.vertex[2] == F2.vertex[2])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[0] && F1.vertex[1] == F2.vertex[2]  && F1.vertex[2] == F2.vertex[1])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[1] && F1.vertex[1] == F2.vertex[0]  && F1.vertex[2] == F2.vertex[2])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[1] && F1.vertex[1] == F2.vertex[2]  && F1.vertex[2] == F2.vertex[0])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[2] && F1.vertex[1] == F2.vertex[0]  && F1.vertex[2] == F2.vertex[1])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[2] && F1.vertex[1] == F2.vertex[1]  && F1.vertex[2] == F2.vertex[0])
+      return true;
+    else
       return false;
-    else {
-      if(F1.vertex[1] == F2.vertex[0] && F1.vertex[1] != v1)
-	v2 = F2.vertex[0];
-      else if(F1.vertex[1] == F2.vertex[1] && F1.vertex[1] != v1)
-	v2 = F2.vertex[1];
-      else if(F1.vertex[1] == F2.vertex[2] && F1.vertex[1] != v1)
-	v2 = F2.vertex[2];
-      else if(v2 == -1)
-	return false;
-      else {
-        if(F1.vertex[2] == F2.vertex[0] && F1.vertex[2] != v1 && F1.vertex[2] != v2)
-	  v3 = F2.vertex[0];
-	else if(F1.vertex[2] == F2.vertex[1] && F1.vertex[2] != v1 && F1.vertex[2] != v2)
-	  v3 = F2.vertex[1];
-	else if(F1.vertex[2] == F2.vertex[2] && F1.vertex[2] != v1 && F1.vertex[2] != v2)
-	  v3 = F2.vertex[2];
-	else if(v3 == -1)
-	  return false;
-	else
-	  return true;
-      }
-    }
   }
   else if(F1.type == 3) {//Quad. Reprendre cette version !
     if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2] && F1.vertex[0] != F2.vertex[3])
