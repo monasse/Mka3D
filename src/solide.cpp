@@ -887,7 +887,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale));
       Matrix D_Fp(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale));
       Matrix D_Fpp(tens_sym(faces[Fpp].I_Dx,  faces[Fpp].normale));
-      P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp + faces[Fpp].S / P->V * D_Fpp;
+      //P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp + faces[Fpp].S / P->V * D_Fpp;
     }
 
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
