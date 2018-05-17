@@ -680,9 +680,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
-      if(t > 0.) //Enlever la valeur imposée après le test de conservation de l'énergie
-	faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
-      faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
+      //if(t > 0.) //Enlever la valeur imposée après le test de conservation de l'énergie
+      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
@@ -719,7 +719,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     int test_face_neumann = 0;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      if(faces[f].BC == -1) { //Remettre != 0  après test ! Ensuite mettre == -1 car on ne fait ces calcul que pour les faces de Neumann
+      if(faces[f].BC != 0) { //Ensuite mettre == -1 car on ne fait ces calcul que pour les faces de Neumann
 	num_face.push_back(f);
 	test_face_neumann++;
       }
@@ -738,7 +738,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
       Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
-      if(faces[f].BC >= 0) //Cad qu'on ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face
+      if(faces[f].BC == 0) //Remettre >= 0 après test !!!!! Cad qu'on ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face
 	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
     }
       
@@ -749,7 +749,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     cout << test.col2 << endl;
     cout << test.col3 << endl;
     cout << "V=" << P->V <<  endl;*/
-    P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p);
+    P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
 
     if(test_face_neumann == 1){  //Solution directe sans inversion de matrice
       //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
@@ -791,11 +791,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Mat.block<3,3>(3,0) = A_FpF;
 
       //Assemblage du second membre
-      Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
+      /*Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
       Matrix C_Fp(faces[Fp].S /  P->V * tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) ); //pour première partie du second membre
       C_F = lambda * C_F.tr() * unit() + 2*mu * C_F;
-      C_Fp = lambda * C_Fp.tr() * unit() + 2*mu * C_Fp;
-      b << ((-P->contrainte + C_F) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte + C_F) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte + C_F) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte + C_Fp) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte + C_Fp) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte + C_Fp) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      C_Fp = lambda * C_Fp.tr() * unit() + 2*mu * C_Fp;*/
+      b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
       
       //Inversion du système !
       /*if( not(Mat.lu().solve(b, &x)))
@@ -803,6 +803,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       x = Mat.lu().solve(b);
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+
+      //Ajout des compostantes calculées à la déformation
+      Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale) );
+      Matrix D_Fp(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) );
+      P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp;
 
     }
     else if(test_face_neumann == 3) { //Inversion d'un système linéaire de 9 équations avec Eigen
@@ -863,30 +868,36 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Mat.block<3,3>(6,6) = A_FppFpp;
 
       //Assemblage du second membre
-      Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
+      /*Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
       Matrix C_Fp(faces[Fp].S /  P->V * tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) ); //pour deuxième partie du second membre
       Matrix C_Fpp(faces[Fpp].S /  P->V * tens_sym(faces[Fpp].I_Dx,  faces[Fpp].normale) ); //pour troisième partie du second membre
-
       C_F = lambda * C_F.tr() * unit() + 2*mu * C_F;
       C_Fp = lambda * C_Fp.tr() * unit() + 2*mu * C_Fp;
-      C_Fpp = lambda * C_Fpp.tr() * unit() + 2*mu * C_Fpp;
-      b << ((-P->contrainte + C_F) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte + C_F) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte + C_F) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte + C_Fp) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte + C_Fp) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte + C_Fp) * faces[Fp].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte + C_Fpp) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte + C_Fpp) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte + C_Fpp) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
+      C_Fpp = lambda * C_Fpp.tr() * unit() + 2*mu * C_Fpp;*/
+      
+      b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
       
       //Inversion du système !
       x = Mat.lu().solve(b);
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
       faces[Fpp].I_Dx.vec[0] = x(6); faces[Fpp].I_Dx.vec[1] = x(7); faces[Fpp].I_Dx.vec[2] = x(8); //Deuxième face de Neumann
+
+      //Ajout des compostantes calculées à la déformation
+      Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale));
+      Matrix D_Fp(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale));
+      Matrix D_Fpp(tens_sym(faces[Fpp].I_Dx,  faces[Fpp].normale));
+      P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp + faces[Fpp].S / P->V * D_Fpp;
     }
-    
-    
+
+    P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      P->def_plas_cumulee += delta_p;
-      P->epsilon_p += delta_p * n_elas;
+      //P->def_plas_cumulee += delta_p;
+      //P->epsilon_p += delta_p * n_elas;
     }
   }
 }
