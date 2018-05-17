@@ -387,6 +387,11 @@ Matrix& Matrix::operator+=(const Matrix &mat) {
   return *this;
 }
 
+Matrix& operator*=(const double &rel) {
+  *this = rel * *this;
+  return *this;
+}
+
 
 Matrix operator*(const double& rel, const Matrix& vec) {
   return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);

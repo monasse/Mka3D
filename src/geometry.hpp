@@ -124,6 +124,7 @@ class Matrix {
   Matrix operator/(const double& rel);
   double norme() const; //Norme 2 au sens des matrices
   Matrix& operator+=(const Matrix &mat);
+  Matrix& operator*=(const double &rel);
 
  public:
   Vector_3 col1;
