@@ -203,7 +203,7 @@ public:
 };
 
 //Function absolute value
-double abs(const double &x);
+//double abs(const double &x);
 
 
 

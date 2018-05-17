@@ -31,10 +31,10 @@
 #define GEOMETRY_CPP
 
 //Function absolute value
-double abs(const double &x)
+/*double abs(const double &x)
 {
   return max(x,-x);
-}
+  }*/
 
 //////////////////////////////////////////////
 //  Class Bbox                              //
@@ -387,7 +387,7 @@ Matrix& Matrix::operator+=(const Matrix &mat) {
   return *this;
 }
 
-Matrix& operator*=(const double &rel) {
+Matrix& Matrix::operator*=(const double &rel) {
   *this = rel * *this;
   return *this;
 }
