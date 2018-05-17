@@ -142,7 +142,7 @@ void Particule::volume(Solide* Sol, const int& cell_type) {
   }
 }
 
-bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les 3 vertex de la face
+bool Particule::contient_face(const Face& f){ //Renvoie vraie si particule contient les 3 vertex de la face
   if(f.type == 3) { //Pour quad
     if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3] || f.vertex[0] == vertices[4] || f.vertex[0] == vertices[5] || f.vertex[0] == vertices[6] || f.vertex[0] == vertices[7]) {
       if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3] || f.vertex[1] == vertices[4] || f.vertex[1] == vertices[5] || f.vertex[1] == vertices[6] || f.vertex[1] == vertices[7]) {
@@ -174,6 +174,18 @@ bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les
     else
       return false;
   }
+    /*bool test = false;
+    for(std::vector<int>::iterator F=faces.begin() ; F!=faces.end(); F++) {
+      if(S.faces[*F] == f) {
+	test = true;
+	break;
+      }
+    }
+    if(test)
+      return true;
+    else
+      false;
+      }*/
 }
 
 #endif

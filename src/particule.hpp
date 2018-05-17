@@ -56,7 +56,7 @@ class Particule
 
   void barycentre(Solide* Sol, const int& cell_type); //Calcul le barycentre d'une particule
   void volume(Solide* Sol, const int& cell_type); //calcul le volume d'une particule
-  bool contient_face(Face f); //Renvoie vraie si particule contient les 3 vertex de la face
+  bool contient_face(const Face& f); //Renvoie vraie si particule contient les 3 vertex de la face
 
   //Attributs
   std::vector<int> faces; //!< liste de faces de la particule

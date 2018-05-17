@@ -403,6 +403,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face1.vertex.push_back(P->vertices[3]);
       face1.vertex.push_back(P->vertices[2]);
       face1.type = 2;
+      face1.BC = 0;
       if(not(face_existe(face1))) { //Ajout de la face dans l'ensemble des faces du Solide
 	face1.id = faces.size();
 	face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -416,6 +417,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face2.vertex.push_back(P->vertices[3]);
       face2.vertex.push_back(P->vertices[1]);
       face2.vertex.push_back(P->vertices[2]);
+      face2.BC = 0;
       face2.type = 2;
       if(not(face_existe(face2))) { //Ajout de la face dans l'ensemble des faces du Solide
 	face2.id = faces.size();
@@ -430,6 +432,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face3.vertex.push_back(P->vertices[1]);
       face3.vertex.push_back(P->vertices[0]);
       face3.vertex.push_back(P->vertices[2]);
+      face3.BC = 0;
       face3.type = 2;
       if(not(face_existe(face3))) { //Ajout de la face dans l'ensemble des faces du Solide
 	face3.id = faces.size();
@@ -444,6 +447,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       face4.vertex.push_back(P->vertices[0]);
       face4.vertex.push_back(P->vertices[1]);
       face4.vertex.push_back(P->vertices[3]);
+      face4.BC = 0;
       face4.type = 2;
       if(not(face_existe(face4))) { //Ajout de la face dans l'ensemble des faces du Solide
 	face4.id = faces.size();
@@ -471,12 +475,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
     }
 
-    if(F->voisins.size() == 1) {
+    /*if(F->voisins.size() == 1) {
       F->voisins.push_back(-1); // Cad face au bord
       F->BC = -1;
     }
     else
-      F->BC = 0;
+    F->BC = 0;*/
 
     int part_1 = F->voisins[0];
     int part_2 = -1;

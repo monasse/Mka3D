@@ -291,7 +291,6 @@ int main(){
   for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     if(F->BC == 1 && (F->centre).z() <= 0.2) {
       (F->I_Dx).vec[2] = 0.01;
-      cout << "OK BC !" << endl;
     }
     else if(F->BC == 1 && (F->centre).z() >= 2.8)
       (F->I_Dx).vec[2] = -0.01;
