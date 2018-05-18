@@ -754,12 +754,31 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if(test_face_neumann == 1){  //Solution directe sans inversion de matrice
       //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
       int F = num_face[0];
-      faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
-      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].vec_tangent_1) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
-      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].vec_tangent_2) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
+      /*faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
+      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
+      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;*/
 
-      Matrix Dij_n(tens_sym(faces[F].I_Dx - P->Dx,  faces[F].normale) ); //Tetra
+      //Test avec inversion de la matrice
+      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
+      Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
+      Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
+      
+      Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
+      Mat *= faces[F].S / P->V;
+
+      b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
+
+      x = Mat.lu().solve(b);
+      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);    
+
+      //Ajout de la composante calculée au gradient
+      Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale) ); //Tetra
       P->discrete_gradient += faces[F].S /  P->V * Dij_n;
+
+      //Test pour voir si c'est bon ici ou pas...
+      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+      if((faces[F].S * P->contrainte * faces[F].normale).squared_length() > 100.)
+	cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
       int F = num_face[0];
@@ -811,6 +830,13 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Matrix D_Fp(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) );
       P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp;
 
+      //Test pour voir si c'est bon ici ou pas...
+      /*P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+      if((faces[F].S * P->contrainte * faces[F].normale).squared_length() > 100.)
+	  cout << "Pb avec force sur bord de Neumann : " << (faces[F].S * P->contrainte * faces[F].normale).squared_length() << endl;
+      if((faces[Fp].S * P->contrainte * faces[Fp].normale).squared_length() > 1.)
+      cout << "Pb avec force sur bord de Neumann : " << (faces[F].S * P->contrainte * faces[F].normale).squared_length() << endl;*/
+
     }
     else if(test_face_neumann == 3) { //Inversion d'un système linéaire de 9 équations avec Eigen
       int F = num_face[0];
@@ -855,8 +881,6 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Eigen::MatrixXd A_FppFpp(3,3); //Troisième bloc diagonal
       A_FppFpp << (lambda + mu) * faces[Fpp].normale.x() * faces[Fpp].normale.x() + mu, (lambda + mu) * faces[Fpp].normale.x() * faces[Fpp].normale.y(),  (lambda + mu) * faces[Fpp].normale.x() * faces[Fpp].normale.z(),  (lambda + mu) * faces[Fpp].normale.x() * faces[Fpp].normale.y(),  (lambda + mu) * faces[Fpp].normale.y() * faces[Fpp].normale.y() + mu, (lambda + mu) * faces[Fpp].normale.y() * faces[Fpp].normale.z(), (lambda + mu) * faces[Fpp].normale.x() * faces[Fpp].normale.z(), (lambda + mu) * faces[Fpp].normale.y() * faces[Fpp].normale.z(), (lambda + mu) * faces[Fpp].normale.z() * faces[Fpp].normale.z() + mu;
       A_FppFpp *= faces[Fpp].S / P->V;
-
-      
 
       //Assemblage de la matrice
       Mat.block<3,3>(0,0) = A_FF;
@@ -946,8 +970,8 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
       else { // if(t > 0.) { //pow(10., -8.)) { //Calcul forces sur DDL sur face avec BC de Neuman homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
-	if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
-	  cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;
+	/*if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
+	  cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;*/
 	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
       }
     }
@@ -1105,6 +1129,22 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
     vtk << faces[*F].normale << endl;
+  }
+  vtk << "\n";
+  //Tangent 1
+  vtk << "VECTORS tan_1 double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
+    vtk << faces[*F].vec_tangent_1 << endl;
+  }
+  vtk << "\n";
+  //Tangent 2
+  vtk << "VECTORS tan_2 double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
+    vtk << faces[*F].vec_tangent_2 << endl;
   }
   vtk << "\n";
   //Contrainte
