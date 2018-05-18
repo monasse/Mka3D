@@ -775,6 +775,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale) ); //Tetra
       P->discrete_gradient += faces[F].S /  P->V * Dij_n;
 
+      /*cout << "Marche !!!" << endl;
+	cout << Mat << endl;*/
+
       //Test pour voir si c'est bon ici ou pas...
       /*P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
       if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
@@ -804,10 +807,18 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       A_FpFp *= faces[Fp].S / P->V;
 
       //Assemblage de la matrice
-      Mat.block<3,3>(0,0) = A_FF;
+      /*Mat.block<3,3>(0,0) = A_FF;
       Mat.block<3,3>(3,3) = A_FpFp;
       Mat.block<3,3>(0,3) = A_FFp; //FFp
       Mat.block<3,3>(3,0) = A_FpF; //FpF
+      */
+      Mat.topLeftCorner<3,3>() = A_FF;
+      Mat.topRightCorner<3,3>() = A_FFp;
+      Mat.bottomLeftCorner<3,3>() = A_FpF;
+      Mat.bottomRightCorner<3,3>() = A_FpFp;
+      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+      Eigen::FullPivLU<Matrix6x6> lu(Mat);
+      cout << "Marche pas ! Rang : " << lu.rank() << endl;
 
       //Assemblage du second membre
       /*Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
