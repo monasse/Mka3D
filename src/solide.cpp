@@ -816,27 +816,41 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Mat.topRightCorner<3,3>() = A_FFp;
       Mat.bottomLeftCorner<3,3>() = A_FpF;
       Mat.bottomRightCorner<3,3>() = A_FpFp;
-      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+      /*typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
       Eigen::FullPivLU<Matrix6x6> lu(Mat);
-      cout << "Marche pas ! Rang : " << lu.rank() << endl;
+      cout << "Marche pas ! Rang : " << lu.rank() << endl;*/
 
       //Assemblage du second membre
       /*Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
       Matrix C_Fp(faces[Fp].S /  P->V * tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) ); //pour première partie du second membre
       C_F = lambda * C_F.tr() * unit() + 2*mu * C_F;
       C_Fp = lambda * C_Fp.tr() * unit() + 2*mu * C_Fp;*/
-      b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+
+      //Test autre inversion du système (sans termes couplés)
+      Eigen::Matrix<double, 3, 1> x_F; //Contient les valeurs aux faces
+      Eigen::Matrix<double, 3, 1> x_Fp; //Contient les valeurs aux faces
+      Eigen::Matrix<double, 3, 1> b_F; //Vecteur second membre. Neumann homogène pour l'instant
+      Eigen::Matrix<double, 3, 1> b_Fp; //Vecteur second membre. Neumann homogène pour l'instant
+      b_F << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
+      b_Fp <<  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+
+      //b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
       
       //Inversion du système !
       /*if( not(Mat.lu().solve(b, &x)))
 	throw std::invalid_argument("Inversion matrice sur une face. Pb !");*/
-      x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
+      //x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
       //cout << A_FF.lu().inverse()(0,0) << endl;
       //cout << A_FpF.lu().inverse()(0,0) << endl;
       //x = Mat.inverse() * b;
       //cout << x(0) << endl;
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
-      faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+      x_F = A_FF.lu().solve(b_F); //Test autre inversion
+      x_Fp = A_FpFp.lu().solve(b_Fp); //Test autre inversion
+
+      //faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      //faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+      faces[F].I_Dx.vec[0] = x_F(0); faces[F].I_Dx.vec[1] = x_F(1); faces[F].I_Dx.vec[2] = x_F(2); //Première face de Neumann
+      faces[Fp].I_Dx.vec[0] = x_Fp(0); faces[Fp].I_Dx.vec[1] = x_Fp(1); faces[Fp].I_Dx.vec[2] = x_Fp(2); //Première face de Neumann
 
       //Ajout des compostantes calculées à la déformation
       Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale) );
