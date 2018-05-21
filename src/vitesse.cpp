@@ -85,11 +85,40 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   }
   else
   return Dx;*/
-  if(p.z() <= 0.2) {
+  /*if(p.z() <= 0.2) {
     return Vector_3(0., 0., -0.05 * t);
   }
   else if(p.z() >= 2.8)
-    return Vector_3(0., 0., 0.001);
+  return Vector_3(0., 0., 0.001);*/
+  double T_p = 1.;
+  double pos_x = p.x() + Dx.x();
+  double pos_y = p.y() + Dx.y();
+  double pos_z = p.z() + Dx.z();
+  //return Vector_3(0,0,0);
+
+  double alpha_pt = 3.1416 / 180. * 20. / T_p; //Rotation de 20° sur [0, T]
+  double r = sqrt((pos_y)*(pos_y) + (pos_x)*(pos_x));
+  double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
+
+  //Ecrit comme pour une vitesse pour l'instant. Ecrire comme un déplacement
+  if(pos_x <= 0. && pos_y < 0.) {
+    theta = atan((-pos_y) / (-pos_x)) ;
+    return r * Vector_3(sin(theta), -cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x <= 0. && pos_y > 0.) {
+    theta = atan((pos_y) / (-pos_x));
+    return r * Vector_3(-sin(theta), -cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x >= 0. && pos_y < 0.) {
+    theta = atan((-pos_y) / (pos_x)) ;
+    return r * Vector_3(sin(theta), cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x >= 0. && pos_y > 0.) {
+    theta = atan((pos_y) / (pos_x));
+    return r * Vector_3(-sin(theta), cos(theta), 0.) * alpha_pt;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else
+    return Vector_3(0,0,0); //Point milieu du cylindre donc bouge pas.
 }
 
 double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)
