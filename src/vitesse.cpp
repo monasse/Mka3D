@@ -96,7 +96,7 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
   double pos_z = p.z() + Dx.z();
   //return Vector_3(0,0,0);
 
-  double alpha_max = 5.; //2. deg
+  double alpha_max = 0.5; //2. deg
   double alpha = 3.1416 / 180. * alpha_max / T_p * t; //Rotation de 2° sur [0, T]
   double r = sqrt((pos_y)*(pos_y) + (pos_x)*(pos_x));
   double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
