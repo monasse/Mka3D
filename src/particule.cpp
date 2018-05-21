@@ -109,7 +109,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T, const Solide& S){
   u_prev = u;
   err_u = err_u + Fi * dt / m;
-  u = u + err_u - 5000. *u*dt; //- Amort*u*dt; //Avec amortissement pour calcul quasi-statique  // E = 124000000000. // 2. * sqrt(2. * S.mu * m * (S.faces[faces[0]]).S / 5.)
+  u = u + err_u - Amort*u*dt; //- Amort*u*dt; //Avec amortissement pour calcul quasi-statique  // E = 124000000000. // 2. * sqrt(2. * S.mu * m * (S.faces[faces[0]]).S / 5.)
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
   //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC

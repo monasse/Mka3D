@@ -686,7 +686,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
       faces[i].I_Dx = displacement_BC(faces[i].centre, faces[i].I_Dx, t, 0.); //Pour torsion
-      //cout << "On impose bien les BC : " << faces[i].I_Dx << endl;
+      //cout << "On impose bien les BC : " << faces[i].centre << " " << faces[i].I_Dx <<  endl;
       //if(t < pow(10., -8.))
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
@@ -770,6 +770,10 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
 
+      /*typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+      Eigen::FullPivLU<Matrix3x3> lu(Mat);
+      cout << "Rang : " << lu.rank() << endl;*/
+      
       x = Mat.lu().solve(b);
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);    
 
@@ -818,9 +822,12 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Mat.topRightCorner<3,3>() = A_FFp;
       Mat.bottomLeftCorner<3,3>() = A_FpF;
       Mat.bottomRightCorner<3,3>() = A_FpFp;
-      /*typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
       Eigen::FullPivLU<Matrix6x6> lu(Mat);
-      cout << "Marche pas ! Rang : " << lu.rank() << endl;*/
+      cout << "Rang : " << lu.rank() << endl;
+      if( lu.rank() < 6)
+	throw std::invalid_argument("Inversion matrice sur une face. Pb !");
+      //cout << "Marche pas ! Rang : " << lu.rank() << endl;
 
       //Assemblage du second membre
       /*Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
@@ -839,8 +846,6 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
       
       //Inversion du système !
-      /*if( not(Mat.lu().solve(b, &x)))
-	throw std::invalid_argument("Inversion matrice sur une face. Pb !");*/
       x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
       //cout << A_FF.lu().inverse()(0,0) << endl;
       //cout << A_FpF.lu().inverse()(0,0) << endl;
