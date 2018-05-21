@@ -247,10 +247,11 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.vertex.push_back(v2 - 1);
       F.vertex.push_back(v3 - 1);
       F.type = 2;
-      if(tag_1 == 1) //Dirichlet
+      /*if(tag_1 == 1) //Dirichlet
 	F.BC = 1;
       else if(tag_1 == 2) //Neumann
-	F.BC = -1;
+      F.BC = -1;*/
+      F.BC = -1; //Neumann partout
       F.id = faces.size();
       F.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
       if(F.normale * Vector_3(F.centre, vertex[0].pos) < 0.)

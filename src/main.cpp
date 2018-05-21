@@ -282,9 +282,9 @@ int main(){
 
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     if((P->x0).z() <= 0.2) //P->BC == 1 && 
-      (P->u).vec[2] = 0.5;
-    else if((P->x0).z() >= 2.8) //P->BC == 1 && 
-      (P->u).vec[2] = -0.5;
+      (P->u).vec[2] = 0.005;
+    else if((P->x0).z() >= 4.8) //P->BC == 1 && 
+      (P->u).vec[2] = -0.005;
     P->u_prev = P->u;
     }
 
