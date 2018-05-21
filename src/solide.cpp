@@ -663,7 +663,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
-    P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
@@ -686,6 +686,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
       faces[i].I_Dx = displacement_BC(faces[i].centre, faces[i].I_Dx, t, 0.); //Pour torsion
+      //cout << "On impose bien les BC : " << faces[i].I_Dx << endl;
       //if(t < pow(10., -8.))
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
@@ -720,7 +721,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     int test_face_neumann = 0;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      if(faces[f].BC != 0) { //Ensuite mettre == -1 car on ne fait ces calcul que pour les faces de Neumann
+      if(faces[f].BC == -1) { //car on ne fait ces calcul que pour les faces de Neumann
 	num_face.push_back(f);
 	test_face_neumann++;
       }
