@@ -84,7 +84,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
 
-  //Dx = Dx + u * dt;
+  /*if(pos.z() <= 0.2)
+    Dx = displacement_BC;
+  else if(pos.z() >= 4.8)
+  Dx = diplacement_BC;*/
 
   /*if(id == 45) { //Pour éviter translation en x ou y...
     Dx.vec[0] = 0.;
