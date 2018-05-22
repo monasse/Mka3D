@@ -119,10 +119,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
     //Ajout de la particule dans le solide
     solide.push_back(p);
   }
-
-  //cout << solide.begin()->first <<" " << solide.end()->first << endl;
-  //Comment fixer BC ? Voir comment les gérer en tetgen ! Fichier en plus surement
-
+  
   //Importation des faces et des connectivités
   getline(import_faces, ligne);
   istringstream stdf(ligne);
@@ -241,7 +238,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     //Importation des faces au bord pour avoir les BC !
     if(type == 2) { //Triangle donc sur bord
       int v1,v2,v3;
-      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3; //tag_1 est la BC
+      stm >> nbr_tag >> tag_1 >> tag_2 >> v1 >> v2 >> v3; //tag_2 est la BC
       Face F;
       F.vertex.push_back(v1 - 1);
       F.vertex.push_back(v2 - 1);
@@ -301,6 +298,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       solide.push_back(p);
     }
   }
+
+  cout << "nombre faces sur bords : " << faces.size() << endl;
 
   //Création des faces
   if(type == 5) { //Hexa
@@ -460,6 +459,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
+  cout << "Nombre total de faces : " << faces.size() << endl;
+
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -548,11 +549,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	  /*if(F->id == 59 && c1 >= 0.&& c2 >= 0. && c3 >= 0.)
-	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << endl; //" " << c1 + c2 + c3 + c4 - 1. << endl;
-	  */
-
-	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0.) {
+	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0. && c1 < 1. && c2 < 1. && c3 < 1. && c4 < 1.) {
 	    F->reconstruction.push_back(part_1);
 	    F->reconstruction.push_back(part_2);
 	    F->reconstruction.push_back(voisin1);
@@ -562,6 +559,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    F->c_reconstruction.push_back(c3);
 	    F->c_reconstruction.push_back(c4);
 	    //cout << F->id << endl;
+	    //if(c1 >= 0.&& c2 >= 0. && c3 >= 0.)
+	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
 	    tetra_ok = true;
 	    break;
 	  }
@@ -576,7 +575,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	  if(not(test)) {
 	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	  throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
+	    throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
 	  }
 	}
       /*else
@@ -584,6 +583,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
     }
   }
+  cout << "ok faces" << endl;
 }
 
 bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
@@ -698,6 +698,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].reconstruction.size() ; j++) {
 	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_reconstruction[j] * solide[faces[i].reconstruction[j]].Dx;
+	//cout << "Interpolation : " << faces[i].I_Dx << endl;
       }
       //faces[i].I_Dx = (solide[faces[i].voisins[0]].Dx + solide[faces[i].voisins[1]].Dx) / 2.;
 
@@ -752,6 +753,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     cout << test.col3 << endl;
     cout << "V=" << P->V <<  endl;*/
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
+    //cout << " contrainte : " << P->contrainte.c1() << endl;
 
     if(test_face_neumann == 1){  //Solution directe sans inversion de matrice
       //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
@@ -770,12 +772,14 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
 
-      /*typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+      typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
       Eigen::FullPivLU<Matrix3x3> lu(Mat);
-      cout << "Rang : " << lu.rank() << endl;*/
+      /*cout << "Rang : " << lu.rank() << endl;
+	cout << "Second membre : " << b << endl;*/
       
       x = Mat.lu().solve(b);
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);    
+      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      //cout << faces[F].I_Dx << endl;
 
       //Ajout de la composante calculée au gradient
       Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale) ); //Tetra
@@ -790,6 +794,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
+      cout << "2 faces sur bord de Neumann !" << endl;
       int F = num_face[0];
       int Fp = num_face[1];
       Eigen::Matrix<double, 6, 6> Mat; //Matrice à inverser
@@ -826,8 +831,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       Eigen::FullPivLU<Matrix6x6> lu(Mat);
       cout << "Rang : " << lu.rank() << endl;
       if( lu.rank() < 6)
-	throw std::invalid_argument("Inversion matrice sur une face. Pb !");
+	throw std::invalid_argument("Pb Inversion matrice sur une face avec 2 bords de Neumann");
       //cout << "Marche pas ! Rang : " << lu.rank() << endl;
+      //Sortir un plan de backup avec minimisation pour ce cas là !
 
       //Assemblage du second membre
       /*Matrix C_F(faces[F].S /  P->V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
