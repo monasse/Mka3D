@@ -92,6 +92,37 @@ Vector_3 displacement_BC(const Point_3 &p, const Vector_3 &Dx, const double& t, 
     return Vector_3(0., 0., 0.);
   else
     return Dx;
+  //Torsion
+  /*double T_p = 10.;
+  double pos_x = p.x() + Dx.x();
+  double pos_y = p.y() + Dx.y();
+  double pos_z = p.z() + Dx.z();
+  //return Vector_3(0,0,0);
+
+  double alpha_max = 0.5; //2. deg
+  double alpha = 3.1416 / 180. * alpha_max / T_p * t; //Rotation de 2° sur [0, T]
+  double r = sqrt((pos_y)*(pos_y) + (pos_x)*(pos_x));
+  double theta = 0.; //atan((p.y() - 0.5) / (p.x() - 0.5)); //0.;
+
+  //Deplacement imposé sur bord
+  if(pos_x <= 0. && pos_y < 0. && p.z() >= 4.8) {
+    theta = atan((-pos_y) / (-pos_x)) ;
+    return r * Vector_3(sin(theta), -cos(theta), 0.) * alpha;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x <= 0. && pos_y > 0. && p.z() >= 4.8) {
+    theta = atan((pos_y) / (-pos_x));
+    return r * Vector_3(-sin(theta), -cos(theta), 0.) * alpha;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x >= 0. && pos_y < 0. && p.z() >= 4.8) {
+    theta = atan((-pos_y) / (pos_x)) ;
+    return r * Vector_3(sin(theta), cos(theta), 0.) * alpha;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else if(pos_x >= 0. && pos_y > 0. && p.z() >= 4.8) {
+    theta = atan((pos_y) / (pos_x));
+    return r * Vector_3(-sin(theta), cos(theta), 0.) * alpha;// + Vector_3(0.5, 0.5, 0.); //En m.s^-1 //Origine au milieu du cylindre
+  }
+  else
+  return Vector_3(0.,0.,0.); //Point milieu du cylindre donc bouge pas. Ou encore face en bas */
 }
 
 double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t, const double& T)

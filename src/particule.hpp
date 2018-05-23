@@ -49,14 +49,14 @@ class Particule
   ~Particule();
   Particule & operator=(const Particule &P); // opérateur = surcharge pour l'affectation
   void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
+  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T, const Solide& S);
 
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);
 
   void barycentre(Solide* Sol, const int& cell_type); //Calcul le barycentre d'une particule
   void volume(Solide* Sol, const int& cell_type); //calcul le volume d'une particule
-  bool contient_face(Face f); //Renvoie vraie si particule contient les 3 vertex de la face
+  bool contient_face(const Face& f); //Renvoie vraie si particule contient les 3 vertex de la face
 
   //Attributs
   std::vector<int> faces; //!< liste de faces de la particule

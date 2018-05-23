@@ -24,13 +24,13 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx(), I_u()
+Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
   S = 0.;
-  m = 0.;
   type = 0;
+  id = -1; //Face pas remplie
 }
 
 Face & Face:: operator=(const Face &F){
@@ -52,20 +52,22 @@ Face & Face:: operator=(const Face &F){
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
   if(F1.type == 2) { //Triangle
-    if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2])
+    if(F1.vertex[0] == F2.vertex[0] && F1.vertex[1] == F2.vertex[1]  && F1.vertex[2] == F2.vertex[2])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[0] && F1.vertex[1] == F2.vertex[2]  && F1.vertex[2] == F2.vertex[1])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[1] && F1.vertex[1] == F2.vertex[0]  && F1.vertex[2] == F2.vertex[2])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[1] && F1.vertex[1] == F2.vertex[2]  && F1.vertex[2] == F2.vertex[0])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[2] && F1.vertex[1] == F2.vertex[0]  && F1.vertex[2] == F2.vertex[1])
+      return true;
+    else if(F1.vertex[0] == F2.vertex[2] && F1.vertex[1] == F2.vertex[1]  && F1.vertex[2] == F2.vertex[0])
+      return true;
+    else
       return false;
-    else {
-      if(F1.vertex[1] != F2.vertex[0] && F1.vertex[1] != F2.vertex[1] && F1.vertex[1] != F2.vertex[2])
-	return false;
-      else {
-	if(F1.vertex[2] != F2.vertex[0] && F1.vertex[2] != F2.vertex[1] && F1.vertex[2] != F2.vertex[2])
-	  return false;
-	else
-	  return true;
-      }
-    }
   }
-  else if(F1.type == 3) {//Quad
+  else if(F1.type == 3) {//Quad. Reprendre cette version !
     if(F1.vertex[0] != F2.vertex[0] && F1.vertex[0] != F2.vertex[1] && F1.vertex[0] != F2.vertex[2] && F1.vertex[0] != F2.vertex[3])
       return false;
     else {
@@ -100,6 +102,61 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   double norm = sqrt((normale.squared_length()));
   normale = normale / norm;
   D0 = 1000000000.;
+
+  if(BC != 0) { //Pour les faces au bord, on calcule les vecteurs tangents
+    double eps = 1e-14;//std::numeric_limits<double>::epsilon();
+    //Choix initial d'un repere orthonorme de la face
+    Vector_3 s,t;
+    if(normale[0]!=0. || normale[1]!=0.){
+      s = Vector_3(-normale[1],normale[0],0.);
+      s = s/(sqrt((s.squared_length())));
+      t = cross_product(normale,s);
+    } else {
+      s = Vector_3(0.,0.,1.);
+      s = s/(sqrt((s.squared_length())));
+      t = cross_product(normale,s);
+    }
+    //Calcul de la matrice d'inertie de la face dans les deux axes a l'origine centre
+    double Tss = 0.;
+    double Ttt = 0.;
+    double Tst = 0.;
+    for(int i=0; i<vertex.size() ;i++){
+      int ip = (i+1)%(vertex.size());
+      Vector_3 V1(centre,Sol->vertex[vertex[i]].pos);
+      Vector_3 V2(centre,Sol->vertex[vertex[ip]].pos);
+      double As = (V1*s);
+      double At = (V1*t);
+      double Bs = (V2*s);
+      double Bt = (V2*t);
+      Tss += 1./12.*(As*As+As*Bs+Bs*Bs);
+      Ttt += 1./12.*(At*At+At*Bt+Bt*Bt);
+      Tst += 1./24.*(2.*As*At+As*Bt+At*Bs+2.*Bs*Bt);
+    }
+    //Calcul des moments d'inertie
+    double Delta = pow(Tss-Ttt,2)+4.*Tst*Tst;
+    double Is,It; //Ce sont les 2 interties liées aux 2 vecs tangents dans le repère d'inertie de la face
+    Is = (Tss+Ttt+sqrt(Delta))/2.;
+    It = (Tss+Ttt-sqrt(Delta))/2.;
+    //Diagonalisation
+    if(abs(Tss-Ttt)>eps){
+      if(abs(Tss-Is)>eps){
+	Vector_3 stemp = -Tst*s+(Tss-Is)*t;
+	s = stemp/(sqrt((stemp.squared_length())));
+	t = cross_product(normale,s);
+      } else {
+	Vector_3 stemp = -Tst*t+(Ttt-Is)*s;
+	s = stemp/(sqrt((stemp.squared_length())));
+	t = cross_product(normale,s);
+      }
+    } else {
+      if(abs(Tst)>eps){
+	Vector_3 stemp = s+t;
+	Vector_3 ttemp = -s+t;
+	vec_tangent_1 = stemp/(sqrt((stemp.squared_length())));
+	vec_tangent_2 = stemp/(sqrt((ttemp.squared_length())));
+      }
+    }
+  }
 }
 
 #endif

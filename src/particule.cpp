@@ -84,7 +84,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
 
-  //Dx = Dx + u * dt;
+  /*if(pos.z() <= 0.2)
+    Dx = displacement_BC;
+  else if(pos.z() >= 4.8)
+  Dx = diplacement_BC;*/
 
   /*if(id == 45) { //Pour éviter translation en x ou y...
     Dx.vec[0] = 0.;
@@ -103,9 +106,9 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   //cout<<"position du centre de la particule "<<x0+Dx<<endl;
 }
 
-void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T, const Solide& S){
   u_prev = u;
-  err_u = err_u + Fi * dt / m; //  - Amort*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
+  err_u = err_u + Fi * dt / m - Amort*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
@@ -142,7 +145,7 @@ void Particule::volume(Solide* Sol, const int& cell_type) {
   }
 }
 
-bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les 3 vertex de la face
+bool Particule::contient_face(const Face& f){ //Renvoie vraie si particule contient les 3 vertex de la face
   if(f.type == 3) { //Pour quad
     if(f.vertex[0] == vertices[0] || f.vertex[0] == vertices[1] || f.vertex[0] == vertices[2] || f.vertex[0] == vertices[3] || f.vertex[0] == vertices[4] || f.vertex[0] == vertices[5] || f.vertex[0] == vertices[6] || f.vertex[0] == vertices[7]) {
       if(f.vertex[1] == vertices[0] || f.vertex[1] == vertices[1] || f.vertex[1] == vertices[2] || f.vertex[1] == vertices[3] || f.vertex[1] == vertices[4] || f.vertex[1] == vertices[5] || f.vertex[1] == vertices[6] || f.vertex[1] == vertices[7]) {
@@ -174,6 +177,18 @@ bool Particule::contient_face(Face f){ //Renvoie vraie si particule contient les
     else
       return false;
   }
+    /*bool test = false;
+    for(std::vector<int>::iterator F=faces.begin() ; F!=faces.end(); F++) {
+      if(S.faces[*F] == f) {
+	test = true;
+	break;
+      }
+    }
+    if(test)
+      return true;
+    else
+      false;
+      }*/
 }
 
 #endif
