@@ -530,6 +530,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       P.vertices.push_back(ele4);
       tetra_delau.push_back(P);
     }
+    cout << "ok Delaunay" << endl;
     std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
     //Recherche du tetraèdre associé à chaque face
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
@@ -583,6 +584,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
     }
   }
+  cout << "ok tetras associés aux faces" << endl;
 }
 
 bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
