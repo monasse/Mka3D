@@ -84,7 +84,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dx = Dx+ err_Dx;
   err_Dx = err_Dx + (Dxprev - Dx); //Version compensation de l'erreur de sommation
 
-  //Dx = Dx + u * dt;
+  /*if(pos.z() <= 0.2)
+    Dx = displacement_BC;
+  else if(pos.z() >= 4.8)
+  Dx = diplacement_BC;*/
 
   /*if(id == 45) { //Pour éviter translation en x ou y...
     Dx.vec[0] = 0.;
@@ -103,10 +106,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   //cout<<"position du centre de la particule "<<x0+Dx<<endl;
 }
 
-void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T, const Solide& S){
   u_prev = u;
   err_u = err_u + Fi * dt / m;
-  u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
+  u = u + err_u - Amort*u*dt; //- Amort*u*dt; //Avec amortissement pour calcul quasi-statique  // E = 124000000000. // 2. * sqrt(2. * S.mu * m * (S.faces[faces[0]]).S / 5.)
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
   //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC

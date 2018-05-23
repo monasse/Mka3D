@@ -280,13 +280,13 @@ int main(){
   S.Solve_vitesse(dt, false, 1.0, 0., 45.);*/
   int nb_part = S.size();
 
-  for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
+  /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     if((P->x0).z() <= 0.2) //P->BC == 1 && 
-      (P->u).vec[2] = 0.5;
-    else if((P->x0).z() >= 2.8) //P->BC == 1 && 
-      (P->u).vec[2] = -0.5;
+      (P->u).vec[2] = 0.005;
+    else if((P->x0).z() >= 4.8) //P->BC == 1 && 
+      (P->u).vec[2] = -0.005;
     P->u_prev = P->u;
-    }
+    }*/
 
   /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     if(F->BC == 1 && (F->centre).z() <= 0.2) {
@@ -326,7 +326,7 @@ int main(){
     cout<< "Energy variation: "<< S.Energie() - E0 << endl;
     //Time step
     if(dt < pow(10., -10.))
-      dt = pow(10., -8.); //8.
+      dt = pow(10., -9.); //8. ref 6. ok pour ce calcul
       //dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //First half-step of the Verlet+RATTLE Scheme
     S.Solve_position(dt,flag_2d, t, T);

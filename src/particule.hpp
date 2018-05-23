@@ -49,7 +49,7 @@ class Particule
   ~Particule();
   Particule & operator=(const Particule &P); // opérateur = surcharge pour l'affectation
   void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
-  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
+  void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T, const Solide& S);
 
   Vector_3 vitesse_parois(const Point_3& X_f);  
   Vector_3 vitesse_parois_prev(const Point_3& X_f);
