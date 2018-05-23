@@ -833,20 +833,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       A_FpFp *= faces[Fp].S / P->V;
 
       //Assemblage de la matrice
-      /*Mat.block<3,3>(0,0) = A_FF;
-      Mat.block<3,3>(3,3) = A_FpFp;
-      Mat.block<3,3>(0,3) = A_FFp; //FFp
-      Mat.block<3,3>(3,0) = A_FpF; //FpF
-      */
       Mat.topLeftCorner<3,3>() = A_FF;
       Mat.topRightCorner<3,3>() = A_FFp;
       Mat.bottomLeftCorner<3,3>() = A_FpF;
       Mat.bottomRightCorner<3,3>() = A_FpFp;
-      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-      Eigen::FullPivLU<Matrix6x6> lu(Mat);
-      cout << "Rang : " << lu.rank() << endl;
-      if( lu.rank() < 6)
-	throw std::invalid_argument("Pb Inversion matrice sur une face avec 2 bords de Neumann");
+      
       //cout << "Marche pas ! Rang : " << lu.rank() << endl;
       //Sortir un plan de backup avec minimisation pour ce cas là !
 
@@ -867,7 +858,15 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
       
       //Inversion du système !
-      x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
+      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+      Eigen::FullPivLU<Matrix6x6> lu(Mat);
+      if( lu.rank() == 6) //Test voir si système inversible...
+	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
+      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Mat);
+	x = mat.solve(b);
+      }
+
       //cout << A_FF.lu().inverse()(0,0) << endl;
       //cout << A_FpF.lu().inverse()(0,0) << endl;
       //x = Mat.inverse() * b;
@@ -1024,7 +1023,7 @@ void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des fo
 	solide[aux_3].Fi = solide[aux_3].Fi - faces[num_face].S * c_aux_3 * P->contrainte * nIJ;
 	solide[aux_4].Fi = solide[aux_4].Fi - faces[num_face].S * c_aux_4 * P->contrainte * nIJ;
       }
-      else { //Calcul forces sur DDL aux bords
+      else if(faces[num_face == 1) { //Calcul forces sur DDL bords Dirichlet. Vaut 0 exactement en Neumann Homogène
 	int part = faces[num_face].voisins[0];
 	Vector_3 nIJ = faces[num_face].normale;
 	/*if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
