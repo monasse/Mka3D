@@ -106,7 +106,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   //cout<<"position du centre de la particule "<<x0+Dx<<endl;
 }
 
-void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T, const Solide& S){
+void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   u_prev = u;
   err_u = err_u + Fi * dt / m - Amort*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
