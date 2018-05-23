@@ -536,12 +536,13 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    F->c_reconstruction.push_back(c4);
 	    //cout << F->id << endl;
 	    tetra_ok = true;
+	    //cout << "Face : " << F->id << " ok !" << endl;
 	    break;
 	  }
 	}
 	if( not(tetra_ok)) {
 	  //cout << "Face : " << F->id;
-	  throw std::invalid_argument( " pas de tetra associe a une face !" );
+	  //throw std::invalid_argument( " pas de tetra associe a une face !" );
 	  /*cout << "Face : " << F->id << endl;
 	  cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	  cout << "BC : " << F->BC << endl;
@@ -550,8 +551,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  //throw std::invalid_argument( " pas de tetra associe a la face !" );
 	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	  if(not(test)) {
-	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	  throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
+	    //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
+	    throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
 	  }
 	}
       /*else
@@ -659,12 +660,12 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //if(t < pow(10., -8.))
-      //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
       faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
-      //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
+      faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].reconstruction.size() ; j++) {

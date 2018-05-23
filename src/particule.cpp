@@ -105,7 +105,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   u_prev = u;
-  err_u = err_u + Fi * dt / m  - Amort*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
+  err_u = err_u + Fi * dt / m; //  - Amort*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
   u = u + err_u; //*Amort; // + velocity_BC(x0, t, T, Dx); //Conditions aux limites en vitesse ajoutées ici
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
