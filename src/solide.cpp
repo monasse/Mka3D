@@ -33,7 +33,8 @@
 #include <iostream>
 #include <string>
 //#include <eigen3/Eigen/LU> //Sert pour inversion systeème linéaire pour condition Neumann
-#include <eigen3/Eigen/Dense> 
+#include <eigen3/Eigen/Dense>
+#include <cmath>
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
@@ -250,6 +251,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	F.BC = -1;
 	//F.BC = -1; //Neumann partout
       F.id = faces.size();
+      //F.voisins.push_back(F.id); F.voisins.push_back(-1); //Car face au bord
       F.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
       if(F.normale * Vector_3(F.centre, vertex[0].pos) < 0.)
 	  F.normale = -F.normale;
@@ -298,8 +300,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       solide.push_back(p);
     }
   }
-
-  cout << "nombre faces sur bords : " << faces.size() << endl;
 
   //Création des faces
   if(type == 5) { //Hexa
@@ -459,7 +459,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  cout << "Nombre total de faces : " << faces.size() << endl;
+  cout << "nombre particules : " << solide.size() << endl;
+
+  //cout << "Nombre total de faces : " << faces.size() << endl;
 
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
@@ -468,6 +470,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	//cout << "Particule : " << P->id << endl;
 	P->faces.push_back(F->id);
 	(F->voisins).push_back(P->id);
+	if(F->BC == 1 || F->BC == -1)
+	  (F->voisins).push_back(-1); //Car face au bord
 	if(type == 5)
 	  (F->c_reconstruction).push_back(0.5); //Maillage de Voronoi
 	if(F->voisins.size() > 2) {
@@ -560,7 +564,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    F->c_reconstruction.push_back(c4);
 	    //cout << F->id << endl;
 	    //if(c1 >= 0.&& c2 >= 0. && c3 >= 0.)
-	    cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
+	    //cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
+	    cout << "face : " << F->id << " ok !" << endl;
 	    tetra_ok = true;
 	    break;
 	  }
@@ -570,9 +575,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
 	  cout << "BC : " << F->BC << endl;
 	  cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
-	  face_pb << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
+	  face_pb << F->id << " " << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
 	  //throw std::invalid_argument( " pas de tetra associe a la face !" );
 	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
+	  cout << "face ok !" << endl;
 	  if(not(test)) {
 	  //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
 	    throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
@@ -598,7 +604,7 @@ bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà da
 bool Solide::voisins_face(int num_face) {
   int part_1 = faces[num_face].voisins[0];
   int part_2 = faces[num_face].voisins[1];
-  //cout << part_1 << " " << part_2 << endl;
+  cout << part_1 << " " << part_2 << endl;
 
   vector<int> tous_voisins; //Va être rempli des voisins des 2 particules qui peuvent être candidats pour former le tetra associé à la face !
 
@@ -619,21 +625,30 @@ bool Solide::voisins_face(int num_face) {
   }
   //Tous_voisins rempli a priori
 
+  //cout << "liste potentielle remplie. Taille : " << tous_voisins.size() << endl;
+  for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end();G++)
+  cout << "Contient : " << *G << endl;
+
   bool tetra_ok = false;
   for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end()-1;G++){
     if(tetra_ok)
       break;
+    cout << "ok 1" << endl;
     for(std::vector<int>::iterator I=G + 1;I!=tous_voisins.end();I++){
       int voisin1 = *G;
       int voisin2 = *I;
-      double vol = abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
+      cout << "ok 2" << endl;
+      cout << solide[part_1].id << " " << solide[part_2].id << " " << solide[voisin1].id << " " << solide[voisin2].id << " " << endl;
+      double vol = std::abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
+      cout << vol << endl;
       if(vol > pow(10., -8.)) {
 	double c_part_1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_part_2 = (Vector_3(solide[part_1].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
 	double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	//A reprendre avec nouvelle reconstruction des faces !!!
+	cout << "Calcul coords bary ok !" << endl;
+
 	faces[num_face].c_reconstruction.push_back(c_part_1);
 	faces[num_face].c_reconstruction.push_back(c_part_2);
 	faces[num_face].c_reconstruction.push_back(c_voisin1);

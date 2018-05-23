@@ -24,7 +24,7 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2()
+Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
