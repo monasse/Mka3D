@@ -521,26 +521,15 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   if(type == 4) { //Utilisation du Delaunay pour trouver les tétras associés à chaque face
     bool calcul_pre_traitement = false;
-    std::ofstream pre_traitement;
-    if(not(pre_traitement.is_open()))
-      calcul_pre_traitement = true;
+    std::ifstream pre_traitement("tetra_faces.txt"); //,ios::in);
 
+    bool test = getline(pre_traitement, ligne);
+    //cout << "test : " << test << endl;
     //Si pas de pretraitement
-    if(not(calcul_pre_traitement)) {
-      int nb_part = solide.size();
-      std::ostringstream oss;
-      oss << "solide" << n << ".vtk";
-      string s = oss.str();
-      const char* const solidevtk = s.c_str();
-    
-      //Ouverture des flux en donne en ecriture
-      std::ofstream vtk;
-      vtk.open(solidevtk,ios::out);
-      std::ifstream tetra_faces("tetra_faces.txt",ios::in); //Reprendre tout ça !
-
-      
+    if(test) {
+      bool aux = true;
       for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-	if(getline(delaunay, ligne)) { //Importation des tetras associés aux faces
+	if(aux && F->BC == 0) { //Importation des tetras associés aux faces internes
 	  istringstream  stm(ligne);
 	  int ele1,ele2,ele3,ele4;
 	  double c1,c2,c3,c4;
@@ -553,9 +542,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  F->c_reconstruction.push_back(c2);
 	  F->c_reconstruction.push_back(c3);
 	  F->c_reconstruction.push_back(c4);
+	  //cout << "face : " << F->id << endl;
+
+	  aux = getline(pre_traitement, ligne);
 	}
-	else
-	  throw std::invalid_argument("Pas de tetra associ\'e a une face" ;
+	/*else {
+	  cout << "Fin fichier tetras associes faces !" << endl;
+	  break;
+	  }*/
       }
     }
     else {
@@ -575,6 +569,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	tetra_delau.push_back(P);
       }
       //cout << "ok Delaunay" << endl;
+      std::ofstream tetra_faces("tetra_faces.txt",ios::out); //Sortie pour stocker tetras associés aux faces
       std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
       //Recherche du tetraèdre associé à chaque face
       for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
@@ -628,12 +623,11 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  }
 	  /*else
 	    cout << F->id << " : au bord" << endl;*/
-	}
       
 	//Sortie contenant les éléments associés à chaque face pour faire le pré-traitement une seule fois
-	std::ifstream tetra_faces("tetra_faces.txt",ios::out);
-	tetra_faces << F->reconstruction[0] << " " << F->reconstruction[1] << " " << F->reconstruction[2] << " " << F->reconstruction[3] << F->c_reconstruction[0] << " " << F->c_reconstruction[1] << " " << F->c_reconstruction[2] << " " << F->c_reconstruction[3] << endl;
-      
+	//cout << "Enregistrement pret !" << endl;
+	tetra_faces << F->reconstruction[0] << " " << F->reconstruction[1] << " " << F->reconstruction[2] << " " << F->reconstruction[3] << " " << F->c_reconstruction[0] << " " << F->c_reconstruction[1] << " " << F->c_reconstruction[2] << " " << F->c_reconstruction[3] << endl;
+	}
       }
     }
   }
