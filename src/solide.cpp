@@ -520,75 +520,120 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }*/
 
   if(type == 4) { //Utilisation du Delaunay pour trouver les tétras associés à chaque face
-    std::ifstream delaunay("delaunay.txt",ios::in);
-    if(not(delaunay))
-      throw std::invalid_argument( "Pas de terahedrisation de Delaunay !" );
-    std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
-    while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
-      istringstream  stm(ligne);
-      int ele1,ele2,ele3,ele4;
-      stm >> ele1 >> ele2 >> ele3 >> ele4;
-      Particule P;
-      P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
-      P.vertices.push_back(ele2);
-      P.vertices.push_back(ele3); // - 1
-      P.vertices.push_back(ele4);
-      tetra_delau.push_back(P);
-    }
-    //cout << "ok Delaunay" << endl;
-    std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
-    //Recherche du tetraèdre associé à chaque face
-    for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-      bool tetra_ok = false;
-      if(F->BC == 0) {
-	//cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
-	for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
-	  int part_1 = P->vertices[0];
-	  int part_2 = P->vertices[1];
-	  int voisin1 = P->vertices[2];
-	  int voisin2 = P->vertices[3];
-	  
-	  double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	  double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
-	  double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	  double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
+    bool calcul_pre_traitement = false;
+    std::ofstream pre_traitement;
+    if(not(pre_traitement.is_open()))
+      calcul_pre_traitement = true;
 
-	  if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0. && c1 < 1. && c2 < 1. && c3 < 1. && c4 < 1.) {
-	    F->reconstruction.push_back(part_1);
-	    F->reconstruction.push_back(part_2);
-	    F->reconstruction.push_back(voisin1);
-	    F->reconstruction.push_back(voisin2);
-	    F->c_reconstruction.push_back(c1);
-	    F->c_reconstruction.push_back(c2);
-	    F->c_reconstruction.push_back(c3);
-	    F->c_reconstruction.push_back(c4);
-	    //cout << F->id << endl;
-	    //if(c1 >= 0.&& c2 >= 0. && c3 >= 0.)
-	    //cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
-	    //cout << "face : " << F->id << " ok !" << endl;
-	    tetra_ok = true;
-	    //cout << "Face : " << F->id << " ok !" << endl;
-	    break;
-	  }
+    //Si pas de pretraitement
+    if(not(calcul_pre_traitement)) {
+      int nb_part = solide.size();
+      std::ostringstream oss;
+      oss << "solide" << n << ".vtk";
+      string s = oss.str();
+      const char* const solidevtk = s.c_str();
+    
+      //Ouverture des flux en donne en ecriture
+      std::ofstream vtk;
+      vtk.open(solidevtk,ios::out);
+      std::ifstream tetra_faces("tetra_faces.txt",ios::in); //Reprendre tout ça !
+
+      
+      for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+	if(getline(delaunay, ligne)) { //Importation des tetras associés aux faces
+	  istringstream  stm(ligne);
+	  int ele1,ele2,ele3,ele4;
+	  double c1,c2,c3,c4;
+	  stm >> ele1 >> ele2 >> ele3 >> ele4 >> c1 >> c2 >> c3 >> c4;
+	  F->reconstruction.push_back(ele1);
+	  F->reconstruction.push_back(ele2);
+	  F->reconstruction.push_back(ele3);
+	  F->reconstruction.push_back(ele4);
+	  F->c_reconstruction.push_back(c1);
+	  F->c_reconstruction.push_back(c2);
+	  F->c_reconstruction.push_back(c3);
+	  F->c_reconstruction.push_back(c4);
 	}
-	if( not(tetra_ok)) {
-	  //cout << "Face : " << F->id;
-	  //throw std::invalid_argument( " pas de tetra associe a une face !" );
-	  /*cout << "Face : " << F->id << endl;
-	  cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
-	  cout << "BC : " << F->BC << endl;
-	  cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
-	  face_pb << F->id << " " << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
-	  //throw std::invalid_argument( " pas de tetra associe a la face !" );
-	  bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
-	  //cout << "face ok !" << endl;
-	  if(not(test)) {
-	    //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	    throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
+	else
+	  throw std::invalid_argument("Pas de tetra associ\'e a une face" ;
+      }
+    }
+    else {
+      std::ifstream delaunay("delaunay.txt",ios::in);
+      if(not(delaunay))
+	throw std::invalid_argument( "Pas de terahedrisation de Delaunay !" );
+      std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
+      while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
+	istringstream  stm(ligne);
+	int ele1,ele2,ele3,ele4;
+	stm >> ele1 >> ele2 >> ele3 >> ele4;
+	Particule P;
+	P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
+	P.vertices.push_back(ele2);
+	P.vertices.push_back(ele3); // - 1
+	P.vertices.push_back(ele4);
+	tetra_delau.push_back(P);
+      }
+      //cout << "ok Delaunay" << endl;
+      std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
+      //Recherche du tetraèdre associé à chaque face
+      for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+	bool tetra_ok = false;
+	if(F->BC == 0) {
+	  //cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
+	  for(std::vector<Particule>::iterator P=tetra_delau.begin();P!=tetra_delau.end();P++){
+	    int part_1 = P->vertices[0];
+	    int part_2 = P->vertices[1];
+	    int voisin1 = P->vertices[2];
+	    int voisin2 = P->vertices[3];
+	  
+	    double c1 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	    double c2 = (Vector_3(solide[part_1].x0, F->centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
+	    double c3 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	    double c4 = (Vector_3(solide[part_2].x0, F->centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
+
+	    if( c1 >= 0. && c2 >= 0. && c3 >= 0. && c4 >= 0. && c1 < 1. && c2 < 1. && c3 < 1. && c4 < 1.) {
+	      F->reconstruction.push_back(part_1);
+	      F->reconstruction.push_back(part_2);
+	      F->reconstruction.push_back(voisin1);
+	      F->reconstruction.push_back(voisin2);
+	      F->c_reconstruction.push_back(c1);
+	      F->c_reconstruction.push_back(c2);
+	      F->c_reconstruction.push_back(c3);
+	      F->c_reconstruction.push_back(c4);
+	      //cout << F->id << endl;
+	      //if(c1 >= 0.&& c2 >= 0. && c3 >= 0.)
+	      //cout << c1 << " " << c2 << " " << c3 << " " << c4 << " " << c1 + c2 + c3 + c4 - 1. << endl;
+	      //cout << "face : " << F->id << " ok !" << endl;
+	      tetra_ok = true;
+	      //cout << "Face : " << F->id << " ok !" << endl;
+	      break;
+	    }
 	  }
+	  if( not(tetra_ok)) {
+	    //cout << "Face : " << F->id;
+	    //throw std::invalid_argument( " pas de tetra associe a une face !" );
+	    /*cout << "Face : " << F->id << endl;
+	      cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
+	      cout << "BC : " << F->BC << endl;
+	      cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
+	    face_pb << F->id << " " << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
+	    //throw std::invalid_argument( " pas de tetra associe a la face !" );
+	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
+	    //cout << "face ok !" << endl;
+	    if(not(test)) {
+	      //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
+	      throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
+	    }
+	  }
+	  /*else
+	    cout << F->id << " : au bord" << endl;*/
 	}
-      /*else
-	cout << F->id << " : au bord" << endl;*/
+      
+	//Sortie contenant les éléments associés à chaque face pour faire le pré-traitement une seule fois
+	std::ifstream tetra_faces("tetra_faces.txt",ios::out);
+	tetra_faces << F->reconstruction[0] << " " << F->reconstruction[1] << " " << F->reconstruction[2] << " " << F->reconstruction[3] << F->c_reconstruction[0] << " " << F->c_reconstruction[1] << " " << F->c_reconstruction[2] << " " << F->c_reconstruction[3] << endl;
+      
       }
     }
   }
