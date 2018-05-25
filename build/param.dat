@@ -5,15 +5,15 @@ FLAG2D 			0
 DENSITY  		8960. 
 POISSON_RATIO		0.3
 YOUNG_MODULUS		124000000000.
-SIMULATION_TIME		0.00001
+SIMULATION_TIME		0.001
 CFL 			0.1
 N_PRINTS  		10
 MAX_STEPS		1000000000
-AMORTISSEMENT		1000000.
+AMORTISSEMENT		10000.
 B_ecrouissage_JC 	292000000.
 n_ecrouissage_JC	.31
 A_limite_elas		90000000.
 H_ecrouissage_lineaire	0.
 mesh_type		1
-nom_fichier		poutre
+nom_fichier		petite_poutre
 

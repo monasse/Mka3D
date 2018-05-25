@@ -135,10 +135,10 @@ double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t
   return 0.001;*/
   /*else
     return Dx.vec[2];*/
-  if(p.z() <= 0.2) {
-    return -0.0005 * t; //Faire par pallier comme disait Alexandre ?
+  if(p.z() <= 0.0005) {
+    return -0.00005 * t; //Faire par pallier comme disait Alexandre ?
   }
-  else if(p.z() >= 2.8)
+  else if(p.z() >= 0.0025)
     return 0.;
 }
 
