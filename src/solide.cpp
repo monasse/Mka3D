@@ -827,7 +827,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	cout << "Second membre : " << b << endl;*/
       
       x = Mat.lu().solve(b);
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      //faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
       //cout << faces[F].I_Dx << endl;
 
       //Ajout de la composante calculée au gradient
@@ -839,8 +839,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       //Test pour voir si c'est bon ici ou pas...
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-      if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
-      cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
+      //if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
+	//cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
       //cout << "2 faces sur bord de Neumann !" << endl;
@@ -908,10 +908,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //x_F = A_FF.lu().solve(b_F); //Test autre inversion
       //x_Fp = A_FpFp.lu().solve(b_Fp); //Test autre inversion
 
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      /*faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
-      /*faces[F].I_Dx.vec[0] = x_F(0); faces[F].I_Dx.vec[1] = x_F(1); faces[F].I_Dx.vec[2] = x_F(2); //Première face de Neumann
-      faces[Fp].I_Dx.vec[0] = x_Fp(0); faces[Fp].I_Dx.vec[1] = x_Fp(1); faces[Fp].I_Dx.vec[2] = x_Fp(2); //Deuxième face de Neumann
       */
 
       //Ajout des compostantes calculées à la déformation
@@ -921,10 +919,10 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       //Test pour voir si c'est bon ici ou pas...
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-      if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 0.0001)
-	cout << "Contrainte sur bord 1 de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
-      if(sqrt((P->contrainte * faces[Fp].normale).squared_length()) > 0.0001)
-      cout << "Contrainte sur bord 2 de Neumann : " << sqrt((P->contrainte * faces[Fp].normale).squared_length()) << endl;
+      //if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 0.0001)
+	//cout << "Contrainte sur bord 1 de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
+      //if(sqrt((P->contrainte * faces[Fp].normale).squared_length()) > 0.0001)
+	//cout << "Contrainte sur bord 2 de Neumann : " << sqrt((P->contrainte * faces[Fp].normale).squared_length()) << endl;
 
     }
     else if(test_face_neumann == 3) { //Inversion d'un système linéaire de 9 équations avec Eigen
