@@ -735,7 +735,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, faces[i].I_Dx, t, 0.); //Pour torsion
       //cout << "On impose bien les BC : " << faces[i].centre << " " << faces[i].I_Dx <<  endl;
-      //if(t < pow(10., -8.))
+      //if(faces[i].id == 0) //Test pour essayer de limiter la rotation...
+	  //faces[i].I_Dx = Vector_3(0., 0., 0.);;
       faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
@@ -827,7 +828,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	cout << "Second membre : " << b << endl;*/
       
       x = Mat.lu().solve(b);
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      //faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      faces[F].I_Dx.vec[0] = x(1); faces[F].I_Dx.vec[1] = x(0); faces[F].I_Dx.vec[2] = x(2); //Test au cas où ca fonctionne
+
       //cout << faces[F].I_Dx << endl;
 
       //Ajout de la composante calculée au gradient
@@ -893,8 +896,12 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	x = mat.solve(b);
       }
 
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
-      faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+      //faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      //faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+
+      //Test au cas où ca fonctionne
+      faces[F].I_Dx.vec[0] = x(1); faces[F].I_Dx.vec[1] = x(0); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      faces[Fp].I_Dx.vec[0] = x(4); faces[Fp].I_Dx.vec[1] = x(3); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
 
       //Ajout des compostantes calculées à la déformation
       Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale) );
