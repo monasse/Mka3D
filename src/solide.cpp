@@ -772,7 +772,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     int test_face_neumann = 0;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      if(faces[f].BC == -1) { //car on ne fait ces calcul que pour les faces de Neumann
+      if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann ==-1
 	num_face.push_back(f);
 	test_face_neumann++;
       }
@@ -829,6 +829,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       
       x = Mat.lu().solve(b);
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      if(faces[F].BC == 1)
+	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+
       //cout << faces[F].I_Dx << endl;
 
       //Ajout de la composante calculée au gradient
@@ -840,8 +843,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       //Test pour voir si c'est bon ici ou pas...
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-      if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
-	cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
+      /*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
+	cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
       //cout << "2 faces sur bord de Neumann !" << endl;
@@ -896,6 +899,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+      if(faces[F].BC == 1)
+	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      else if(faces[Fp].BC == 1)
+	faces[Fp].I_Dx.vec[2] = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      
 
       //Ajout des compostantes calculées à la déformation
       Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale) );
@@ -904,14 +912,14 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       //Test pour voir si c'est bon ici ou pas...
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-      if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 0.0001)
+      /*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 0.0001)
 	cout << "Contrainte sur bord 1 de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
       if(sqrt((P->contrainte * faces[Fp].normale).squared_length()) > 0.0001)
-      cout << "Contrainte sur bord 2 de Neumann : " << sqrt((P->contrainte * faces[Fp].normale).squared_length()) << endl;
+      cout << "Contrainte sur bord 2 de Neumann : " << sqrt((P->contrainte * faces[Fp].normale).squared_length()) << endl;*/
 
     }
     else if(test_face_neumann == 3) { //Inversion d'un système linéaire de 9 équations avec Eigen
-      cout << "Particule à 3 faces de Neumann !" << endl;
+      cout << "Particule à 3 faces de Neumann !" << endl; //Reprendre l'écriture des matrices !
       int F = num_face[0];
       int Fp = num_face[1];
       int Fpp = num_face[2];
@@ -968,12 +976,26 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       //Assemblage du second membre
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
-      
+
       //Inversion du système !
-      x = Mat.lu().solve(b);
+      typedef Eigen::Matrix<double, 9, 9> Matrix9x9;
+      Eigen::FullPivLU<Matrix9x9> lu(Mat);
+      if( lu.rank() == 9) //Test voir si système inversible...
+	x = Mat.lu().solve(b); 
+      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	Eigen::CompleteOrthogonalDecomposition<Matrix9x9> mat(Mat);
+	x = mat.solve(b);
+      }
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
       faces[Fpp].I_Dx.vec[0] = x(6); faces[Fpp].I_Dx.vec[1] = x(7); faces[Fpp].I_Dx.vec[2] = x(8); //Deuxième face de Neumann
+      if(faces[F].BC == 1)
+	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      else if(faces[Fp].BC == 1)
+	faces[Fp].I_Dx.vec[2] = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      else if(faces[Fpp].BC == 1)
+	faces[Fpp].I_Dx.vec[2] = displacement_BC_bis(faces[Fpp].centre, solide[faces[Fpp].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      
 
       //Ajout des compostantes calculées à la déformation
       Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale));
@@ -982,13 +1004,13 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp + faces[Fpp].S / P->V * D_Fpp;
 
       //Test pour voir si c'est bon ici ou pas...
-      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+      /*P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
       if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 0.0001)
 	cout << "Contrainte sur bord 1 de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
       if(sqrt((P->contrainte * faces[Fp].normale).squared_length()) > 0.0001)
 	cout << "Contrainte sur bord 2 de Neumann : " << sqrt((P->contrainte * faces[Fp].normale).squared_length()) << endl;
       if(sqrt((P->contrainte * faces[Fpp].normale).squared_length()) > 0.0001)
-	cout << "Contrainte sur bord 3 de Neumann : " << sqrt((P->contrainte * faces[Fpp].normale).squared_length()) << endl;
+      cout << "Contrainte sur bord 3 de Neumann : " << sqrt((P->contrainte * faces[Fpp].normale).squared_length()) << endl;*/
     }
 
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
