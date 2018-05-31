@@ -772,7 +772,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     int test_face_neumann = 0;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann ==-1
+      if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann == -1
 	num_face.push_back(f);
 	test_face_neumann++;
       }
@@ -989,12 +989,13 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
       faces[Fpp].I_Dx.vec[0] = x(6); faces[Fpp].I_Dx.vec[1] = x(7); faces[Fpp].I_Dx.vec[2] = x(8); //Deuxième face de Neumann
-      if(faces[F].BC == 1)
+      /*if(faces[F].BC == 1)
 	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
       else if(faces[Fp].BC == 1)
 	faces[Fp].I_Dx.vec[2] = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.); //BC de Dirichlet
       else if(faces[Fpp].BC == 1)
 	faces[Fpp].I_Dx.vec[2] = displacement_BC_bis(faces[Fpp].centre, solide[faces[Fpp].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      */
       
 
       //Ajout des compostantes calculées à la déformation
