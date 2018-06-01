@@ -824,27 +824,31 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
 
+      //Inversion du système !
       typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
       Eigen::FullPivLU<Matrix3x3> lu(Mat);
-      /*cout << "Rang : " << lu.rank() << endl;
-	cout << "Second membre : " << b << endl;*/
+      if( lu.rank() == 3) //Test voir si système inversible...
+	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
+      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
+	x = mat.solve(b);
+      }
       
-      x = Mat.lu().solve(b);
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-      /*if(faces[F].BC == 1)
-	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
-      */
-      //cout << faces[F].I_Dx << endl;
+      if(faces[F].BC == 1) {
+	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+	cout << faces[F].I_Dx << endl;
+      }
 
       //Ajout de la composante calculée au gradient
       Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale)); //Tetra
-      P->discrete_gradient += faces[F].S /  P->V * Dij_n;
+      //P->discrete_gradient += faces[F].S /  P->V * Dij_n; //Test pout l'instant
 
       /*cout << "Marche !!!" << endl;
 	cout << Mat << endl;*/
 
       //Test pour voir si c'est bon ici ou pas...
-      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+      //P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
       /*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
 	cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
     }
@@ -911,10 +915,10 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       //Ajout des compostantes calculées à la déformation
       Matrix D_F(tens_sym(faces[F].I_Dx,  faces[F].normale) );
       Matrix D_Fp(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) );
-      P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp;
+      //P->discrete_gradient += faces[F].S /  P->V * D_F + faces[Fp].S / P->V * D_Fp; //Test pour l'instant on fait sans
 
       //Test pour voir si c'est bon ici ou pas...
-      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+      //P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
       /*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 0.0001)
 	cout << "Contrainte sur bord 1 de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;
       if(sqrt((P->contrainte * faces[Fp].normale).squared_length()) > 0.0001)
@@ -1016,6 +1020,19 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       if(sqrt((P->contrainte * faces[Fpp].normale).squared_length()) > 0.0001)
       cout << "Contrainte sur bord 3 de Neumann : " << sqrt((P->contrainte * faces[Fpp].normale).squared_length()) << endl;*/
     }
+
+    P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
+    P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+    for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
+      int f = P->faces[i];
+      Vector_3 nIJ = faces[f].normale;
+      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
+	  nIJ = -nIJ; //Normale pas dans le bon sens...
+      Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
+      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+    }
+
 
     P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
