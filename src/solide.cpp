@@ -808,9 +808,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if(test_face_neumann == 1){  //Solution directe sans inversion de matrice
       //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
       int F = num_face[0];
-      /*faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
-      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
-      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;*/
+      /*if(faces[F].BC == 1) { //Cad Dirichlet
+	//faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
+      faces[F].I_Dx = -P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
+      faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
+      }*/
 
       //Test avec inversion de la matrice
       Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
@@ -829,9 +831,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       
       x = Mat.lu().solve(b);
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-      if(faces[F].BC == 1)
+      /*if(faces[F].BC == 1)
 	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
-
+      */
       //cout << faces[F].I_Dx << endl;
 
       //Ajout de la composante calculée au gradient
@@ -899,10 +901,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
-      if(faces[F].BC == 1)
+      /*if(faces[F].BC == 1)
 	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
       else if(faces[Fp].BC == 1)
 	faces[Fp].I_Dx.vec[2] = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      */
       
 
       //Ajout des compostantes calculées à la déformation
