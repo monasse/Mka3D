@@ -791,7 +791,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
       Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
-      if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face
+      if(faces[f].BC == 0) //On ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face // >= 0 avant mais pose pb. On essaie differement
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      else if(faces[f].BC == 1) //Test avec un - en-dessous
 	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
     }
       
@@ -814,7 +816,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
       }*/
 
-      if(faces[F].BC == -1) { //Cas Neumann Complet
+      //if(faces[F].BC == -1) { //Cas Neumann Complet
 
 	//Test avec inversion de la matrice
 	Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
@@ -837,6 +839,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	}
       
 	faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 	double erreur_dir = abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.));
 	/*if(faces[F].BC == 1 && erreur_dir > pow(10., -12.)) {
 	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
@@ -854,13 +857,13 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	//P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
 	/*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
 	  cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
-      }
-      else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
+	// }
+      /*else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
 	faces[F].I_Dx = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * Vector_3(0., 0., 1.);
 	//faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
 	faces[F].I_Dx = faces[F].I_Dx -P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
 	faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
-      }
+	}*/
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
       //cout << "2 faces sur bord de Neumann !" << endl;

@@ -144,7 +144,7 @@ double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t
     return -0.0005 * t;
   }
   else if(p.z() >= 0.0025)
-  return 0.;
+    return 0.;
 }
 
 double velocity_BC_bis(const Point_3 &p, const double& t, const double& T, const Vector_3& Dx, const Vector_3& u, const int& BC) {
