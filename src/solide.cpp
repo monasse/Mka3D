@@ -835,10 +835,10 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       }
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-      if(faces[F].BC == 1) {
+      /*if(faces[F].BC == 1) {
 	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 	cout << faces[F].I_Dx << endl;
-      }
+	}*/
 
       //Ajout de la composante calculée au gradient
       Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale)); //Tetra
@@ -1040,8 +1040,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      //P->def_plas_cumulee += delta_p;
-      //P->epsilon_p += delta_p * n_elas;
+      P->def_plas_cumulee += delta_p;
+      P->epsilon_p += delta_p * n_elas;
     }
   }
 }
