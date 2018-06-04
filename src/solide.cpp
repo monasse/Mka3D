@@ -835,10 +835,11 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       }
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-      /*if(faces[F].BC == 1) {
+      double erreur_dir = abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.));
+	if(faces[F].BC == 1 && erreur_dir > pow(10., -12.)) {
 	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
-	cout << faces[F].I_Dx << endl;
-	}*/
+	  cout << "Erreur : " << abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.))   << " pos en z : " << faces[F].centre.z() << endl;
+      }
 
       //Ajout de la composante calculée au gradient
       Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale)); //Tetra
