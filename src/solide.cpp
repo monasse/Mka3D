@@ -816,8 +816,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
       }*/
 
-      //if(faces[F].BC == -1) { //Cas Neumann Complet
-
+      if(faces[F].BC == -1) { //Cas Neumann Complet
 	//Test avec inversion de la matrice
 	Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
 	Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
@@ -839,7 +838,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	}
       
 	faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-	faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 	double erreur_dir = abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.));
 	/*if(faces[F].BC == 1 && erreur_dir > pow(10., -12.)) {
 	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
@@ -857,13 +856,39 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	//P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
 	/*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
 	  cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
-	// }
-      /*else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
-	faces[F].I_Dx = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * Vector_3(0., 0., 1.);
+      }
+      else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
+	/*faces[F].I_Dx = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * Vector_3(0., 0., 1.);
 	//faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
 	faces[F].I_Dx = faces[F].I_Dx -P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
 	faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
 	}*/
+
+	//Test avec inversion de la matrice
+	Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
+	Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
+	Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
+      
+	Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
+	Mat *= faces[F].S / P->V;
+	Mat(2,0) = 0.;
+	Mat(2,1) = 0.;
+	Mat(2,2) = 1.;
+
+	b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+
+	//Inversion du système !
+	typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+	Eigen::FullPivLU<Matrix3x3> lu(Mat);
+	if( lu.rank() == 3) //Test voir si système inversible...
+	  x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
+	else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	  Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
+	  x = mat.solve(b);
+	}
+      
+	faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      }
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
       //cout << "2 faces sur bord de Neumann !" << endl;
@@ -905,6 +930,25 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       C_Fp = lambda * C_Fp.tr() * unit() + 2*mu * C_Fp;*/
 
       b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+
+      if(faces[F].BC == 1) {
+	Mat(2,0) = 0.;
+	Mat(2,1) = 0.;
+	Mat(2,2) = 1.;
+	Mat(2,3) = 0.;
+	Mat(2,4) = 0.;
+	Mat(2,5) = 0.;
+	b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      }
+      else if(faces[Fp].BC == 1) {
+	Mat(5,0) = 0.;
+	Mat(5,1) = 0.;
+	Mat(5,2) = 0.;
+	Mat(5,3) = 0.;
+	Mat(5,4) = 0.;
+	Mat(5,5) = 1.;
+	b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-P->contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
+      }
       
       //Inversion du système !
       typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
