@@ -814,44 +814,53 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
       }*/
 
-      //Test avec inversion de la matrice
-      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
-      Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
-      Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
-      
-      Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
-      Mat *= faces[F].S / P->V;
+      if(faces[F].BC == -1) { //Cas Neumann Complet
 
-      b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
-
-      //Inversion du système !
-      typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
-      Eigen::FullPivLU<Matrix3x3> lu(Mat);
-      if( lu.rank() == 3) //Test voir si système inversible...
-	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
-      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-	Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
-	x = mat.solve(b);
-      }
+	//Test avec inversion de la matrice
+	Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
+	Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
+	Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
       
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-      double erreur_dir = abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.));
-	if(faces[F].BC == 1 && erreur_dir > pow(10., -12.)) {
+	Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
+	Mat *= faces[F].S / P->V;
+
+	b << ((-P->contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-P->contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
+
+	//Inversion du système !
+	typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+	Eigen::FullPivLU<Matrix3x3> lu(Mat);
+	if( lu.rank() == 3) //Test voir si système inversible...
+	  x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
+	else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	  Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
+	  x = mat.solve(b);
+	}
+      
+	faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+	double erreur_dir = abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.));
+	/*if(faces[F].BC == 1 && erreur_dir > pow(10., -12.)) {
 	//faces[F].I_Dx.vec[2] = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
-	  cout << "Erreur : " << abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.))   << " pos en z : " << faces[F].centre.z() << endl;
+	cout << "Erreur : " << abs(faces[F].I_Dx.vec[2] - displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.))   << " pos en z : " << faces[F].centre.z() << endl;
+	}*/
+
+	//Ajout de la composante calculée au gradient
+	Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale)); //Tetra
+	//P->discrete_gradient += faces[F].S /  P->V * Dij_n; //Test pout l'instant
+
+	/*cout << "Marche !!!" << endl;
+	  cout << Mat << endl;*/
+
+	//Test pour voir si c'est bon ici ou pas...
+	//P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+	/*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
+	  cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
       }
-
-      //Ajout de la composante calculée au gradient
-      Matrix Dij_n(tens_sym(faces[F].I_Dx,  faces[F].normale)); //Tetra
-      //P->discrete_gradient += faces[F].S /  P->V * Dij_n; //Test pout l'instant
-
-      /*cout << "Marche !!!" << endl;
-	cout << Mat << endl;*/
-
-      //Test pour voir si c'est bon ici ou pas...
-      //P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-      /*if(sqrt((P->contrainte * faces[F].normale).squared_length()) > 1.)
-	cout << "Pb avec contrainte sur bord de Neumann : " << sqrt((P->contrainte * faces[F].normale).squared_length()) << endl;*/
+      else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
+	faces[F].I_Dx = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * Vector_3(0., 0., 1.);
+	//faces[F].I_Dx = -((P->contrainte * faces[F].normale) * faces[F].normale / (lambda + 2* mu) ) * faces[F].normale * P->V / faces[F].S;
+	faces[F].I_Dx = faces[F].I_Dx -P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_1 / mu ) * faces[F].vec_tangent_1;
+	faces[F].I_Dx = faces[F].I_Dx - P->V / faces[F].S * ((P->contrainte * faces[F].normale) * faces[F].vec_tangent_2 / mu ) * faces[F].vec_tangent_2;
+      }
     }
     else if(test_face_neumann == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
       //cout << "2 faces sur bord de Neumann !" << endl;
@@ -1251,7 +1260,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     vtk << faces[*F].normale << endl;
   }
   vtk << "\n";
-  /*//Tangent 1
+  //Tangent 1
   vtk << "VECTORS tan_1 double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -1266,7 +1275,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
     vtk << faces[*F].vec_tangent_2 << endl;
   }
-  vtk << "\n";*/
+  vtk << "\n";
   //Contrainte
   vtk << "TENSORS contraintes double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
