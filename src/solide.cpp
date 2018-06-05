@@ -1308,7 +1308,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   }
   vtk << "\n";
   //Tangent 1
-  vtk << "VECTORS tan_1 double" << endl;
+  /*vtk << "VECTORS tan_1 double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
@@ -1322,7 +1322,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
     vtk << faces[*F].vec_tangent_2 << endl;
   }
-  vtk << "\n";
+  vtk << "\n";*/
   //Contrainte
   vtk << "TENSORS contraintes double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
