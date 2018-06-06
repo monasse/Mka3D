@@ -759,7 +759,9 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
   }
   
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    bool test_continuer;
     do {
+      test_continuer = false;
       P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
       P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
       P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
@@ -806,7 +808,15 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
       }
-    } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas);
+      if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
+	for(int i=0 ; i < num_faces.size() ; i++) {
+	  if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
+	    test_continuer = true;
+	    break;
+	  }
+	}
+      }
+    } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
   }
 }
 
