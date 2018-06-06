@@ -103,7 +103,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   normale = normale / norm;
   D0 = 1000000000.;
 
-  if(BC != 0) { //Pour les faces au bord, on calcule les vecteurs tangents
+  /*if(BC != 0) { //Pour les faces au bord, on calcule les vecteurs tangents
     double eps = pow(10., -14.);//std::numeric_limits<double>::epsilon(); //1e-14
     //Choix initial d'un repere orthonorme de la face
     Vector_3 s,t;
@@ -173,11 +173,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 	vec_tangent_2 = stemp/(sqrt((ttemp.squared_length())));
       }
     }
-    /*if(vec_tangent_1.squared_length() < 1e-14 || vec_tangent_2.squared_length() < 1e-14) {
-      cout << "Num face : " << id << endl;
-      throw std::invalid_argument( "Pas de vecs tangents associes a une face" );
-      }*/
-  }
+    }*/
 }
 
 #endif
