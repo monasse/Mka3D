@@ -759,73 +759,54 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
   }
   
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
-    P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
-    P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
-    //Test
-    /*if(abs(P->Dx[2] - 4. / 3. * P->x0.z()) > pow(10., -5.))
-      cout << "Problème reconstruction sur cellule : " << P->id << endl;*/
-    std::vector<int> num_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
-    //int test_face_neumann = 0;
-    for(int i=0 ; i < P->faces.size() ; i++){
-      int f = P->faces[i];
-      if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann == -1
-	num_faces.push_back(f);
-	//test_face_neumann++;
-      }
-      Vector_3 nIJ = faces[f].normale;
-      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
-	  nIJ = -nIJ; //Normale pas dans le bon sens...
-      /*Vector_3 nIJ = Vector_3(P->x0, faces[f].centre);
-	nIJ = nIJ / sqrt(nIJ.squared_length());*/
-      /*if(abs(nIJ.squared_length() - 1.) > pow(10., -10.))
-	cout << "Pas la bonne norme !!!!" << endl;*/
-      //if(faces[f].BC >= 0) { //Car conditions de Neumann homogènes sur bord en -1
-	/*int voisin;
-	if(P->id == faces[f].voisins[0])
-	  voisin = faces[f].voisins[1];
-	else if(P->id == faces[f].voisins[1])
-	voisin = faces[f].voisins[0];*/
-	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
-      Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
-      if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face // >= 0 avant mais pose pb. On essaie differement
-	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-    }
-      
-    P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
-    //cout << " contrainte : " << P->contrainte.c1() << endl;
-
-    //while( (P->contrainte).VM() > A) {
-      //Appel à la fonction reconstrution_faces_neumann !
-    reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V); //Il va falloir boucler dessus dans la phase de plasticité !
-
+    do {
       P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
       P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
       P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
-      for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
+      std::vector<int> num_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
+      for(int i=0 ; i < P->faces.size() ; i++){
 	int f = P->faces[i];
+	if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann == -1
+	  num_faces.push_back(f);
+	}
 	Vector_3 nIJ = faces[f].normale;
 	if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
-	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
-	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
+	if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face
+	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       }
 
+      //On reconstruit la valeur du déplacement sur les faces de Neumann
+      if(num_faces.size() > 0) {
+	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V); //Calcul la valeur des déplacements sur faces de Neumann
+	//On recalcul le gradient discret
+	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+	P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
+	P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+	for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
+	  int f = P->faces[i];
+	  Vector_3 nIJ = faces[f].normale;
+	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
+	    nIJ = -nIJ; //Normale pas dans le bon sens...
+	  Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
+	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	}
+      }
+      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
 
-      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+      //Plastification si on dépasse le critère  
       P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
-
       if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
+	//while( (P->contrainte).VM() > A) { //On dépasse le critère plastique on refait un return mapping pour essayer de converger
+	//Plastification
 	Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
-	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes
-	//Quand on recalcul les contraintes, il faudrait vérifier qu'on a toujours les bonnes BC de Neumannn !!!
-	/*if((P->contrainte).VM() > A)
-	  cout << "Problème contrainte : " << (P->contrainte).VM() << " numéro particule : " << P->id << endl;*/
+	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
       }
-      //}
+    } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas);
   }
 }
 
