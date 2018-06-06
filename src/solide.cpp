@@ -814,7 +814,6 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
   if(num_faces.size() == 1){  //Solution directe sans inversion de matrice
     //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
     int F = num_faces[0];
-
     if(faces[F].BC == -1) { //Cas Neumann Complet
       //Test avec inversion de la matrice
       Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
@@ -893,16 +892,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     Mat.topRightCorner<3,3>() = A_FFp;
     Mat.bottomLeftCorner<3,3>() = A_FpF;
     Mat.bottomRightCorner<3,3>() = A_FpFp;
-      
-    //cout << "Marche pas ! Rang : " << lu.rank() << endl;
-    //Sortir un plan de backup avec minimisation pour ce cas là !
 
     //Assemblage du second membre
-    /*Matrix C_F(faces[F].S /  V * tens_sym(faces[F].I_Dx,  faces[F].normale) ); //pour première partie du second membre
-      Matrix C_Fp(faces[Fp].S /  V * tens_sym(faces[Fp].I_Dx,  faces[Fp].normale) ); //pour première partie du second membre
-      C_F = lambda * C_F.tr() * unit() + 2*mu * C_F;
-      C_Fp = lambda * C_Fp.tr() * unit() + 2*mu * C_Fp;*/
-
     b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
     if(faces[F].BC == 1) {
