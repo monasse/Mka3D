@@ -791,9 +791,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	voisin = faces[f].voisins[0];*/
 	//Matrix Dij_n( tens_sym(solide[voisin].Dx - P->Dx,  nIJ) / 2. ); //OK Voronoi
       Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
-      if(faces[f].BC == 0) //On ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face // >= 0 avant mais pose pb. On essaie differement
-	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      else if(faces[f].BC == 1) //Test avec un - en-dessous
+      if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann car on doit recalculer la valeur sur la face // >= 0 avant mais pose pb. On essaie differement
 	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
     }
       
@@ -1100,8 +1098,15 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       P->def_plas_cumulee += delta_p;
       P->epsilon_p += delta_p * n_elas;
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes
+      //Quand on recalcul les contraintes, il faudrait vérifier qu'on a toujours les bonnes BC de Neumannn !!!
+      /*if((P->contrainte).VM() > A)
+	cout << "Problème contrainte : " << (P->contrainte).VM() << " numéro particule : " << P->id << endl;*/
     }
   }
+}
+
+void Solide::reconstruction_faces_neumann(std::vector<int> num_faces) {
+
 }
 
 
