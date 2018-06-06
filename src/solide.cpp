@@ -1099,6 +1099,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
       P->def_plas_cumulee += delta_p;
       P->epsilon_p += delta_p * n_elas;
+      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes
     }
   }
 }
