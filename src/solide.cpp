@@ -245,9 +245,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.vertex.push_back(v2 - 1);
       F.vertex.push_back(v3 - 1);
       F.type = 2;
-      if(tag_2 == 6 || tag_2 == 28) //Dirichlet
+      if(tag_2 == 11 || tag_2 == 33) //Dirichlet
 	F.BC = 1;
-      else if(tag_2 == 19 || tag_2 == 15 || tag_2 == 23 || tag_2 == 27) //Neumann
+      else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
 	F.BC = -1;
 	//F.BC = -1; //Neumann partout
       F.id = faces.size();
