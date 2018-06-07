@@ -95,7 +95,11 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-  //Dx = x0.z() /  3. * 4 * Vector_3(0., 0., 1.);
+  double L = 0.03; //Longueur de l'échantillon
+  double def_ref = 3. / 4. * t / T;
+  Dx.vec[2] = x0.z() * def_ref;
+  Dx.vec[0] = -0.3 * x0.x() * def_ref;
+  Dx.vec[1] = -0.3 * x0.y() * def_ref; //On impose les positions pour le test
 
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
@@ -113,6 +117,8 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
   //u.vec[2] = velocity_BC_bis(x0, t, T, Dx, u, BC); //Pour BC
+
+  u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
 }
 
 void Particule::barycentre(Solide* Sol, const int& cell_type) {
