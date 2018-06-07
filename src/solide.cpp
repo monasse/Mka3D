@@ -817,6 +817,8 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 	}
       }
     } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
+    if((P->contrainte).VM() > P->seuil_elas)
+      cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;
   }
 }
 
@@ -1313,11 +1315,20 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   }
   vtk << "\n";
   //Deformation plastique cumulée
-  vtk << "SCALARS p double 1" << endl;
-  vtk << "LOOKUP_TABLE default" << endl;
+  /*vtk << "SCALARS p double 1" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       vtk << P->def_plas_cumulee << endl;
+  }
+  vtk << "\n";*/
+  //Contrainte Von Mises
+  vtk << "SCALARS Von_Mises double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
+      vtk << (P->contrainte).VM() << endl;
+    }
   }
   vtk << "\n";
   //Numéro des particules
