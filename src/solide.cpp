@@ -728,8 +728,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
-      //if(t > 0.) //Enlever la valeur imposée après le test de conservation de l'énergie
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
+      faces[i].I_Dx = Vector_3(0., 0., 0.);
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
       //faces[i].I_Dx = displacement_BC(faces[i].centre, faces[i].I_Dx, t, 0.); //Pour torsion
@@ -776,7 +776,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       }
 
@@ -970,7 +970,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     }
 
     faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
-    faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+    faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumannx
     //cout << "Deplacement bord : " << x(5) << endl;
 
     //Test pour voir si c'est bon ici ou pas...
