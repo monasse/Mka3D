@@ -741,7 +741,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       //displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
-      faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
+      faces[i].I_Dx = Vector_3(0., 0., 0.);
+      //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
     }
