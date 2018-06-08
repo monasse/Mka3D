@@ -792,11 +792,11 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  int f = P->faces[i];
 
 	  //On se fout de la reconstruction, on a des déplacements imposés !
-	  double def_ref = 3. / 4. * t / T;
+	  /*double def_ref = 3. / 4. * t / T;
 	  faces[f].I_Dx.vec[2] = faces[f].centre.z() * def_ref;
 	  faces[f].I_Dx.vec[0] = -0.3 * faces[f].centre.x() * def_ref;
 	  faces[f].I_Dx.vec[1] = -0.3 * faces[f].centre.y() * def_ref; //On impose les positions pour le test
-	  
+	  */
 	  
 	  Vector_3 nIJ = faces[f].normale;
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
