@@ -955,8 +955,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double def_ref = 3. / 4. * t / T;
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
       b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), faces[Fp].centre.z() * def_ref;
-
-    }
+      }
       
     //Inversion du système !
     typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
@@ -964,13 +963,16 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     if( lu.rank() == 6) //Test voir si système inversible...
       x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
     else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-      //cout << faces[F].id << " : Neumann pas inversible !" << endl;
+      //cout << "Rang : " << lu.rank() << endl;
+      //cout << faces[F].id << " " << faces[Fp].id << " : Neumann pas inversible !" << endl;
       Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Mat);
       x = mat.solve(b);
     }
 
     faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
     faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+    faces[F].I_Dx = -faces[F].I_Dx;
+    faces[Fp].I_Dx = -faces[Fp].I_Dx;
     //cout << "Deplacement bord : " << x(5) << endl;
 
     //Test pour voir si c'est bon ici ou pas...
