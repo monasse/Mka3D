@@ -790,10 +790,11 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  int f = P->faces[i];
 
 	  //On se fout de la reconstruction, on a des déplacements imposés !
-	  double def_ref = 3. / 4. * t / T;
+	  /*double def_ref = 3. / 4. * t / T;
 	  faces[f].I_Dx.vec[2] = faces[f].centre.z() * def_ref;
 	  faces[f].I_Dx.vec[0] = -0.3 * faces[f].centre.x() * def_ref;
 	  faces[f].I_Dx.vec[1] = -0.3 * faces[f].centre.y() * def_ref; //On impose les positions pour le test
+	  */
 	  
 	  Vector_3 nIJ = faces[f].normale;
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
@@ -804,6 +805,12 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       }
       
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
+      for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
+	  int f = P->faces[i];
+	  if(faces[f].BC == -1 && sqrt((P->contrainte * faces[f].normale).squared_length()) > 1.)
+	    cout << "Problème Neumann homogène : " << sqrt((P->contrainte * faces[f].normale).squared_length()) << ". Num face : " << faces[f].id << endl;
+
+      }
 
       //Plastification si on dépasse le critère  
       P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
@@ -876,12 +883,22 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       if( lu.rank() == 3) //Test voir si système inversible...
 	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
       else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	cout << faces[F].id << " : Neumann pour inversible !" << endl;
 	Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
 	x = mat.solve(b);
       }
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
     }
+
+    //Test contraintes
+    /*Vector_3 nIJ = faces[F].normale;
+    Matrix Dij_n(tens_sym(faces[F].I_Dx,  nIJ)); //- P->Dx
+    P->discrete_gradient += faces[F].S /  P->V * Dij_n;
+    
+    contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+    if(sqrt((contrainte * faces[F].normale).squared_length()) > 0.0001)
+    cout << "Contrainte sur bord 1 de Neumann : " << sqrt((contrainte * faces[F].normale).squared_length()) << endl;*/
   }
   else if(num_faces.size() == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
     //cout << "2 faces sur bord de Neumann !" << endl;
@@ -949,8 +966,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
 
     //Test pour voir si c'est bon ici ou pas...
-    //contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-    /*if(sqrt((contrainte * faces[F].normale).squared_length()) > 0.0001)
+    /*contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
+    if(sqrt((contrainte * faces[F].normale).squared_length()) > 0.0001)
       cout << "Contrainte sur bord 1 de Neumann : " << sqrt((contrainte * faces[F].normale).squared_length()) << endl;
       if(sqrt((contrainte * faces[Fp].normale).squared_length()) > 0.0001)
       cout << "Contrainte sur bord 2 de Neumann : " << sqrt((contrainte * faces[Fp].normale).squared_length()) << endl;*/
