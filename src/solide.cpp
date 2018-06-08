@@ -971,8 +971,6 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
     faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
     faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
-    faces[F].I_Dx = -faces[F].I_Dx;
-    faces[Fp].I_Dx = -faces[Fp].I_Dx;
     //cout << "Deplacement bord : " << x(5) << endl;
 
     //Test pour voir si c'est bon ici ou pas...
