@@ -776,7 +776,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       }
 
@@ -796,6 +796,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  faces[f].I_Dx.vec[2] = faces[f].centre.z() * def_ref;
 	  faces[f].I_Dx.vec[0] = -0.3 * faces[f].centre.x() * def_ref;
 	  faces[f].I_Dx.vec[1] = -0.3 * faces[f].centre.y() * def_ref; //On impose les positions pour le test
+	  
 	  
 	  Vector_3 nIJ = faces[f].normale;
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
