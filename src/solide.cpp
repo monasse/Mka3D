@@ -777,7 +777,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       }
 
@@ -867,7 +867,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
     }
     else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
-      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
+      /*Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
       Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
       Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
       
@@ -875,23 +875,32 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat *= faces[F].S / V;
       Mat(2,0) = 0.;
       Mat(2,1) = 0.;
-      Mat(2,2) = 1.;
+      Mat(2,2) = 1.;*/
+
+      Eigen::Matrix<double, 4, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
+      Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
+      Eigen::MatrixXd Mat(4,3); //Premier bloc diagonal
+      
+      Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu, 0., 0., 0.;
+      Mat *= faces[F].S / V;
+      Mat(3,2) = 1.; //Pour avoir l'égalité de la dernière composante avec les BC de Dirichlet
 
       double def_ref = 3. / 4. * t / T;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), faces[F].centre.z() * def_ref; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.), faces[F].centre.z() * def_ref; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 
       //Inversion du système !
-      typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+      /*typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
       Eigen::FullPivLU<Matrix3x3> lu(Mat);
       if( lu.rank() == 3) //Test voir si système inversible...
 	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
-      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-	Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
-	x = mat.solve(b);
-      }
+      */
+      //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+      typedef Eigen::Matrix<double, 4, 3> Matrix4x3;
+      Eigen::CompleteOrthogonalDecomposition<Matrix4x3> mat(Mat);
+      x = mat.solve(b);
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-    }
+      }
 
     //Test contraintes
     /*Vector_3 nIJ = faces[F].normale;
@@ -935,7 +944,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     //Assemblage du second membre
     b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
-    if(faces[F].BC == 1) {
+    /*if(faces[F].BC == 1) {
       Mat(2,0) = 0.;
       Mat(2,1) = 0.;
       Mat(2,2) = 1.;
@@ -957,6 +966,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
       b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), faces[Fp].centre.z() * def_ref;
       }
+    */
       
     //Inversion du système !
     typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
