@@ -95,7 +95,6 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-  double L = 0.03; //Longueur de l'échantillon
   double def_ref = 3. / 4. * t / T;
   Dx.vec[2] = x0.z() * def_ref;
   Dx.vec[0] = -0.3 * x0.x() * def_ref;

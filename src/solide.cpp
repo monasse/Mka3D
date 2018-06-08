@@ -766,7 +766,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
       std::vector<int> num_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
       for(int i=0 ; i < P->faces.size() ; i++){
-	int f = P->faces[i];
+        int f = P->faces[i];
 	if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann == -1
 	  num_faces.push_back(f);
 	}
@@ -781,12 +781,20 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       //On reconstruit la valeur du déplacement sur les faces de Neumann
       if(num_faces.size() > 0) {
 	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
+	
 	//On recalcul le gradient discret
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
 	P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
 	for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
 	  int f = P->faces[i];
+
+	  //On se fout de la reconstruction, on a des déplacements imposés !
+	  double def_ref = 3. / 4. * t / T;
+	  faces[f].I_Dx.vec[2] = faces[f].centre.z() * def_ref;
+	  faces[f].I_Dx.vec[0] = -0.3 * faces[f].centre.x() * def_ref;
+	  faces[f].I_Dx.vec[1] = -0.3 * faces[f].centre.y() * def_ref; //On impose les positions pour le test
+	  
 	  Vector_3 nIJ = faces[f].normale;
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	    nIJ = -nIJ; //Normale pas dans le bon sens...
@@ -794,6 +802,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	}
       }
+      
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
 
       //Plastification si on dépasse le critère  
@@ -859,8 +868,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(2,1) = 0.;
       Mat(2,2) = 1.;
 
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), faces[F].centre.z() * 3. / 4. * t / T;
-	//displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 
       //Inversion du système !
       typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
@@ -915,7 +923,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(2,3) = 0.;
       Mat(2,4) = 0.;
       Mat(2,5) = 0.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), faces[F].centre.z() * 3. / 4. * t / T, /*displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), */ ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
     }
     else if(faces[Fp].BC == 1) {
       Mat(5,0) = 0.;
@@ -924,7 +932,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(5,3) = 0.;
       Mat(5,4) = 0.;
       Mat(5,5) = 1.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  faces[Fp].centre.z() * 3. / 4. * t / T; //displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
     }
       
     //Inversion du système !
