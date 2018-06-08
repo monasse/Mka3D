@@ -735,8 +735,10 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       //faces[i].I_Dx = displacement_BC(faces[i].centre, faces[i].I_Dx, t, 0.); //Pour torsion
       //cout << "On impose bien les BC : " << faces[i].centre << " " << faces[i].I_Dx <<  endl;
       //if(faces[i].id == 0) //Test pour essayer de limiter la rotation...
-	  //faces[i].I_Dx = Vector_3(0., 0., 0.);;
-      faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+	  //faces[i].I_Dx = Vector_3(0., 0., 0.);
+      double def_ref = 3. / 4. * t / T;
+      faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
+      //displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
       faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
@@ -767,14 +769,14 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       std::vector<int> num_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
       for(int i=0 ; i < P->faces.size() ; i++){
         int f = P->faces[i];
-	if(faces[f].BC != 0) { //car on ne fait ces calcul que pour les faces de Neumann == -1
+	if(faces[f].BC != 0) { //car on ne fait ces calculs sur toutes les faces au bord
 	  num_faces.push_back(f);
 	}
 	Vector_3 nIJ = faces[f].normale;
 	if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
 	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
       }
 
@@ -790,16 +792,15 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  int f = P->faces[i];
 
 	  //On se fout de la reconstruction, on a des déplacements imposés !
-	  /*double def_ref = 3. / 4. * t / T;
+	  double def_ref = 3. / 4. * t / T;
 	  faces[f].I_Dx.vec[2] = faces[f].centre.z() * def_ref;
 	  faces[f].I_Dx.vec[0] = -0.3 * faces[f].centre.x() * def_ref;
 	  faces[f].I_Dx.vec[1] = -0.3 * faces[f].centre.y() * def_ref; //On impose les positions pour le test
-	  */
 	  
 	  Vector_3 nIJ = faces[f].normale;
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	    nIJ = -nIJ; //Normale pas dans le bon sens...
-	  Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ) ); //- P->Dx
+	  Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	}
       }
@@ -831,8 +832,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	}
       }
     } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
-    if((P->contrainte).VM() > P->seuil_elas)
-      cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;
+    /*if((P->contrainte).VM() > P->seuil_elas)
+      cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
   }
 }
 
@@ -952,7 +953,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(5,5) = 1.;
       double def_ref = 3. / 4. * t / T;
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), faces[F].centre.z() * def_ref;
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), faces[Fp].centre.z() * def_ref;
 
     }
       
@@ -969,6 +970,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
     faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
     faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+    //cout << "Deplacement bord : " << x(5) << endl;
 
     //Test pour voir si c'est bon ici ou pas...
     /*contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
