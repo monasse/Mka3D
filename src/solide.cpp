@@ -702,10 +702,9 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_position(dt, flag_2d, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->BC == -1)
-      F->solve_position(dt, flag_2d, t, T);
-    /*else if(F->BC == 1 && t > 0.) //Modifier après test conservation énergie
-      F->solve_position(dt, flag_2d, t, T);*/
+    if(F->BC == 1) //Modifier après test conservation énergie
+      F->I_Dx = ;
+      }*/
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
@@ -715,14 +714,14 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
-  Forces_internes(dt, t);
+  Forces_internes(dt, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     if(F->BC == -1)
       F->Fi = F->Fi; // + Forces_externes(t,T); //Forces ext s'appliquent sur les faces !
       }*/
 }
 
-void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes les particules
+void Solide::stresses(const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     if(faces[i].BC == 0) //cad face dans bulk et donc I_Dx reconstruit
       faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
@@ -781,7 +780,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
 
       //On reconstruit la valeur du déplacement sur les faces de Neumann
       if(num_faces.size() > 0) {
-	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V); //Calcul la valeur des déplacements sur faces de Neumann
+	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
 	//On recalcul le gradient discret
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
@@ -822,7 +821,7 @@ void Solide::stresses(const double& t){ //Calcul de la contrainte dans toutes le
   }
 }
 
-void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V) {
+void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V, const double& T) {
   if(num_faces.size() == 1){  //Solution directe sans inversion de matrice
     //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
     int F = num_faces[0];
@@ -860,7 +859,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(2,1) = 0.;
       Mat(2,2) = 1.;
 
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), faces[F].centre.z() * 3. / 4. * t / T;
+	//displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 
       //Inversion du système !
       typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
@@ -915,7 +915,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(2,3) = 0.;
       Mat(2,4) = 0.;
       Mat(2,5) = 0.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), faces[F].centre.z() * 3. / 4. * t / T, /*displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), */ ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
     }
     else if(faces[Fp].BC == 1) {
       Mat(5,0) = 0.;
@@ -924,7 +924,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(5,3) = 0.;
       Mat(5,4) = 0.;
       Mat(5,5) = 1.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  faces[Fp].centre.z() * 3. / 4. * t / T; //displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
     }
       
     //Inversion du système !
@@ -1062,8 +1062,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 }
 
 
-void Solide::Forces_internes(const double& dt, const double& t){ //Calcul des forces pour chaque particule
-  stresses(t);
+void Solide::Forces_internes(const double& dt, const double& t, const double& T){ //Calcul des forces pour chaque particule
+  stresses(t, T);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Remet à zéro toutes les forces
     P->Fi = Vector_3(0.,0.,0.);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){

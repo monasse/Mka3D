@@ -56,8 +56,8 @@ public:
   //void stock_def_plastique(const double &dt);
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void Forces(const int &N_dim, const double& dt, const double& t, const double& T);
-  void Forces_internes(const double& dt, const double& t);
-  void stresses(const double& t);
+  void Forces_internes(const double& dt, const double& t, const double& T);
+  void stresses(const double& t, const double& T);
   void update_triangles();
   const double Energie();
   const double Energie_potentielle();
@@ -66,7 +66,7 @@ public:
   bool voisins_face(int num_face); //Renvoie faux si trouve pas voisins pour reconstruction du gradient dans la face
   bool face_existe(Face f); //Renvoie vraie si la face testée est déjà das faces
   Vector_3 trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisin1, Point_3 voisin2, Point_3 centre_face);
-  void reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V);
+  void reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V, const double& T);
 
   
   // private :
