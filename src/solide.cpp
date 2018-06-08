@@ -761,7 +761,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
   
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     bool test_continuer;
-    do {
+    //do {
       test_continuer = false;
       P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
       P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
@@ -815,7 +815,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 
       //Plastification si on dépasse le critère  
       P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
-      if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
+      /* if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
 	//while( (P->contrainte).VM() > A) { //On dépasse le critère plastique on refait un return mapping pour essayer de converger
 	//Plastification
 	Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
@@ -823,7 +823,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
-      }
+	}*/
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	for(int i=0 ; i < num_faces.size() ; i++) {
 	  if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
@@ -832,7 +832,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  }
 	}
       }
-    } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
+      //} while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
     /*if((P->contrainte).VM() > P->seuil_elas)
       cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
   }
