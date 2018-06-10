@@ -855,6 +855,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat *= faces[F].S / V;
 
       b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.);
+      //b = 2. * b; //Semble marcher. Pk ????
 
       //Inversion du système !
       typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
@@ -867,11 +868,13 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       }
 
       double def_ref = 3. / 4. * t / T;
-      cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      /*cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       cout << "Deplacement normal : " << 2. * x(2) << endl;
-      cout << "Deplacements tangents : " << 2. * x(0) << " " << 2. * x(1) << endl;
+      cout << "Deplacements tangents : " << 2. * x(0) << " " << 2. * x(1) << endl;*/
+      double cc1 = 2. * x(0); double cc2 = 2. * x(1); double cc3 = 2. * x(2);
       
-      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      //faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+      faces[F].I_Dx.vec[0] = cc1; faces[F].I_Dx.vec[1] = cc2; faces[F].I_Dx.vec[2] = cc3;
     }
     else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
       /*Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
