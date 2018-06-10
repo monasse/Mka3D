@@ -845,7 +845,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
   if(num_faces.size() == 1){  //Solution directe sans inversion de matrice
     //Reconstruction de la valeur sur face de Neumann Homogène s'il y en a une
     int F = num_faces[0];
-    if(faces[F].BC != 0) { //Cas Neumann Complet ==-1
+    if(faces[F].BC == -1) { //Cas Neumann Complet ==-1
       //Test avec inversion de la matrice
       Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
       Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
@@ -868,8 +868,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       double def_ref = 3. / 4. * t / T;
       cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
-      cout << "Deplacement normal : " << x(2) << endl;
-      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
+      cout << "Deplacement normal : " << 2. * x(2) << endl;
+      cout << "Deplacements tangents : " << 2. * x(0) << " " << 2. * x(1) << endl;
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
     }
@@ -916,9 +916,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	x = mat.solve(b);
       }
 
-      cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      /*cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       cout << "Deplacement normal : " << x(2) << endl;
-      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
+      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;*/
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
       }
@@ -1010,9 +1010,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       typedef Eigen::Matrix<double, 7, 6> Matrix7x6;
       Eigen::CompleteOrthogonalDecomposition<Matrix7x6> mat(Mat);
       x = mat.solve(b);
-      cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      /*cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl;
-      cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;
+      cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;*/
     }
     else if(faces[Fp].BC == 1) {
       Eigen::Matrix<double, 7, 6> Mat; //Matrice à inverser
@@ -1044,9 +1044,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       typedef Eigen::Matrix<double, 7, 6> Matrix7x6;
       Eigen::CompleteOrthogonalDecomposition<Matrix7x6> mat(Mat);
       x = mat.solve(b);
-      cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      /*cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl;
-      cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;
+      cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;*/
       }
       
     //Inversion du système !
