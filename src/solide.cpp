@@ -704,10 +704,6 @@ bool Solide::voisins_face(int num_face) {
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
     P->solve_position(dt, flag_2d, t, T);
-  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->BC == 1) //Modifier après test conservation énergie
-      F->I_Dx = ;
-      }*/
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
@@ -739,8 +735,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       //cout << "On impose bien les BC : " << faces[i].centre << " " << faces[i].I_Dx <<  endl;
       //if(faces[i].id == 0) //Test pour essayer de limiter la rotation...
 	  //faces[i].I_Dx = Vector_3(0., 0., 0.);
-      double def_ref = 0.001 * t / T;
-      faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
+      //double def_ref = 0.001 * t / T;
+      //faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
       //displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
     else if(faces[i].BC == -1) {
