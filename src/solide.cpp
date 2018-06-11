@@ -248,7 +248,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(tag_2 == 11 || tag_2 == 33) //Dirichlet
 	F.BC = 1;
       else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
-      F.BC = -1;
+	F.BC = -1;
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
 	F.BC = -1; //Tout en Neumann pour ce test
       else if(tag_2 == 15 || tag_2 == 19 || tag_2 == 23 || tag_2 == 27) //Neumann
@@ -783,7 +783,6 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       }
 
       P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
-
       //On reconstruit la valeur du déplacement sur les faces de Neumann
       if(num_faces.size() > 0) {
 	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
@@ -911,14 +910,14 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << "Second membre : " << b << endl;
 
       //Inversion du système !
-      typedef Eigen::Matrix<double, 4, 3> Matrix4x3;
-      Eigen::FullPivLU<Matrix4x3> lu(Mat);
-      /*if( lu.rank() == 3) //Test voir si système inversible...
+      /*typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+      Eigen::FullPivLU<Matrix3x3> lu(Mat);
+      if( lu.rank() == 3) //Test voir si système inversible...
 	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
 	else {*/
 	//Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-	typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
-	Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
+	typedef Eigen::Matrix<double, 4, 3> Matrix4x3;
+	Eigen::CompleteOrthogonalDecomposition<Matrix4x3> mat(Mat);
 	x = mat.solve(b);
 	//}
 
@@ -927,7 +926,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;*/
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
-      }
+    }
 
     //Test contraintes
     /*Vector_3 nIJ = faces[F].normale;
@@ -982,6 +981,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Mat);
       x = mat.solve(b);
       }
+
+    faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+    faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
     }
     else if(faces[F].BC == 1) {
       Eigen::Matrix<double, 7, 6> Mat; //Matrice à inverser
@@ -1019,6 +1021,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       /*cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl;
       cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;*/
+
+      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      faces[Fp].I_Dx.vec[0] = x(4); faces[Fp].I_Dx.vec[1] = x(5); faces[Fp].I_Dx.vec[2] = x(6); //Deuxième face de Neumann
     }
     else if(faces[Fp].BC == 1) {
       Eigen::Matrix<double, 7, 6> Mat; //Matrice à inverser
@@ -1044,7 +1049,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(3,5) = 1.; //nrm; //1.e15 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
       double def_ref = 0.001 * t / T;
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.), ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.);
 
       //Résolution
       typedef Eigen::Matrix<double, 7, 6> Matrix7x6;
@@ -1053,7 +1058,10 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       /*cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl;
       cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;*/
-      }
+
+      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+    }
       
     //Inversion du système !
     /*typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
@@ -1068,8 +1076,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       x = mat.solve(b);
       }*/
 
-    faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
-    faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+    //faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+    //faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
     //cout << "Deplacements bord : " << x(3) << " et " << x(5) << endl;
 
     //Test pour voir si c'est bon ici ou pas...
