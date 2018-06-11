@@ -782,6 +782,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  //P->discrete_gradient += -faces[f].S /  P->V * ((Dij_n * faces[F].normale) * faces[F].normale) * faces[F].normale;
       }
 
+      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
+
       //On reconstruit la valeur du déplacement sur les faces de Neumann
       if(num_faces.size() > 0) {
 	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
