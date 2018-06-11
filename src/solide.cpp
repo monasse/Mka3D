@@ -761,7 +761,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
   
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     bool test_continuer;
-    //do {
+    do {
       test_continuer = false;
       P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
       P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
@@ -819,7 +819,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 
       //Plastification si on dépasse le critère  
       P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
-      /* if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
+      if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
 	//while( (P->contrainte).VM() > A) { //On dépasse le critère plastique on refait un return mapping pour essayer de converger
 	//Plastification
 	Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
@@ -827,7 +827,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
-	}*/
+	}
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	for(int i=0 ; i < num_faces.size() ; i++) {
 	  if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
@@ -836,7 +836,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  }
 	}
       }
-      //} while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
+    } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent être respectées ?
     /*if((P->contrainte).VM() > P->seuil_elas)
       cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
   }
@@ -1022,8 +1022,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl;//displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl; //faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       //cout << "Deplacement normal : " << x(2) << endl;
-      cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
-      cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;
+      //cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      //cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;
 
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
@@ -1049,10 +1049,10 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << "Matrice à inverser : " << Mat << endl;
       //Mat(3,5) = Mat(0,0); //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
       double nrm = Mat.norm();
-      Mat(3,5) = nrm / 2.; //1. //1.e15 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
+      Mat(3,5) = nrm; //1. //1.e15 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
       double def_ref = 0.001 * t / T;
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  nrm /2. * faces[F].centre.z() * def_ref /*displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.)*/, ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  nrm * faces[F].centre.z() * def_ref /*displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.)*/, ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
       //Résolution
       typedef Eigen::Matrix<double, 7, 6> Matrix7x6;
@@ -1064,8 +1064,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl; //displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.) << endl; //faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       //cout << "Deplacement normal : " << x(5) << endl;
-      cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
-      cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;
+      //cout << "Attendu : " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      //cout << "Deplacements bord : " << x(0) << " " << x(1) << " et " << x(3) << " " << x(4) << endl;
 
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
