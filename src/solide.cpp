@@ -245,11 +245,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.vertex.push_back(v2 - 1);
       F.vertex.push_back(v3 - 1);
       F.type = 2;
-      if(tag_2 == 11 || tag_2 == 33) //Dirichlet
+      /*if(tag_2 == 11 || tag_2 == 33) //Dirichlet
 	F.BC = 1;
       else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
+      F.BC = -1;*/
+      if(tag_2 == 6 || tag_2 == 28) //Dirichlet
+	F.BC = 1;
+      else if(tag_2 == 15 || tag_2 == 19 || tag_2 == 23 || tag_2 == 27) //Neumann
 	F.BC = -1;
-	//F.BC = -1; //Neumann partout
       F.id = faces.size();
       //F.voisins.push_back(F.id); F.voisins.push_back(-1); //Car face au bord
       F.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -736,7 +739,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       //cout << "On impose bien les BC : " << faces[i].centre << " " << faces[i].I_Dx <<  endl;
       //if(faces[i].id == 0) //Test pour essayer de limiter la rotation...
 	  //faces[i].I_Dx = Vector_3(0., 0., 0.);
-      double def_ref = 3. / 4. * t / T;
+      double def_ref = 0.001 * t / T;
       faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
       //displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.); //BC de Dirichlet
     }
@@ -867,10 +870,10 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	x = mat.solve(b);
       }
 
-      double def_ref = 3. / 4. * t / T;
+      double def_ref = 0.001 * t / T;
       cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
-      cout << "Deplacement normal : " << 2. * x(2) << endl;
-      cout << "Deplacements tangents : " << 2. * x(0) << " " << 2. * x(1) << endl;
+      cout << "Deplacement normal : " << x(2) << endl;
+      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
       //double cc1 = 2. * x(0); double cc2 = 2. * x(1); double cc3 = 2. * x(2);
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
@@ -902,10 +905,10 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       //cout << "Matrice inversée : " << Mat << endl;
 
-      double def_ref = 3. / 4. * t / T;
+      double def_ref = 0.001 * t / T;
       //b << (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,0.,1.), /*nrm * */faces[F].centre.z() * def_ref; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 
-      b << (-contrainte * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale) /* + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) */ * Vector_3(0.,0.,1.);
+      b << (-contrainte * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,1.,0.), /*(-contrainte * faces[F].normale) + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  +*/ (faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,0.,1.);
 
       //cout << "Second membre : " << b << endl;
 
@@ -1007,7 +1010,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(3,4) = 0.;
       Mat(3,5) = 0.;
       //cout << "Matrice à inverser : " << Mat << endl;
-      double def_ref = 3. / 4. * t / T;
+      double def_ref = 0.001 * t / T;
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
       b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.), nrm * faces[F].centre.z() * def_ref, ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
@@ -1041,7 +1044,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //Mat(3,5) = Mat(0,0); //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
       double nrm = Mat.norm();
       Mat(3,5) = nrm; //1.e15 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
-      double def_ref = 3. / 4. * t / T;
+      double def_ref = 0.001 * t / T;
       //b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
       b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.), nrm * faces[Fp].centre.z() * def_ref, ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
