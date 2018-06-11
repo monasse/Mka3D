@@ -250,7 +250,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
       F.BC = -1;*/
       if(tag_2 == 6 || tag_2 == 28) //Dirichlet
-	F.BC = 1;
+	F.BC = -1; //Tout en Neumann pour ce test
       else if(tag_2 == 15 || tag_2 == 19 || tag_2 == 23 || tag_2 == 27) //Neumann
 	F.BC = -1;
       F.id = faces.size();
@@ -870,10 +870,10 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	x = mat.solve(b);
       }
 
-      double def_ref = 0.001 * t / T;
+      /*double def_ref = 0.001 * t / T;
       cout << "Attendu : " << faces[F].centre.z() * def_ref << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       cout << "Deplacement normal : " << x(2) << endl;
-      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
+      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;*/
       //double cc1 = 2. * x(0); double cc2 = 2. * x(1); double cc3 = 2. * x(2);
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);

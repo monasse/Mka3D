@@ -95,8 +95,8 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-  double def_ref = 0.001 * t / T;
-  Dx.vec[2] = x0.z() * def_ref;
+  //double def_ref = 0.001 * t / T;
+  //Dx.vec[2] = x0.z() * def_ref;
   //Dx.vec[0] = -0.3 * x0.x() * def_ref;
   //Dx.vec[1] = -0.3 * x0.y() * def_ref; //On impose les positions pour le test
 
@@ -115,7 +115,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   u = u + err_u; //Test pour voir si ok
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
-  u.vec[2] = 0.; //Pour voir que ce qui se passe sur Neumann
+  //u.vec[2] = 0.; //Pour voir que ce qui se passe sur Neumann
 
   //u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
 }
