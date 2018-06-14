@@ -462,6 +462,18 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
+  //Faire ici une boucle sur les particules pour vérifier le nombre de faces de Neumann qu'elles ont. S'il y en a plus d'une splitter la particule et avoir un hanging node. Les tetras voisins auront des hanging nodes mais c'est pas trop grave
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    int nb_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
+    for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      if(faces[f].BC != 0) //car on ne fait ces calculs sur toutes les faces au bord
+	nb_faces++;
+    }
+    if(nb_faces > 1) //On appelle la fonction de splitting
+      splitting_elements(P->id);
+  }
+
   //cout << "nombre particules : " << solide.size() << endl;
   //cout << "Nombre total de faces : " << faces.size() << endl;
 
@@ -636,7 +648,36 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 }
 
-bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà das faces
+void Solide::splitting_elements(const int& num_part) {
+  Particule* P = &(solide[num_part]);
+  std::vector<int> out; //Face neumann
+  std::vector<int> in; //Inner faces
+
+  for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      if(faces[f].BC == 0)
+        in.push_back(f);
+      else
+	out.push_pack(f);
+  }
+
+
+  //Trouver edge commun aux deux faces internes
+  for(int i=0; i < solide[in[0]].vertex.size() < i++) {
+    std::vector<int> common_vertex;
+    for(int j=0; i < solide[in[1]].vertex.size() < i++) {
+      if(solide[in[0]].vertex[i] == solide[in[1]].vertex[j])
+	common_vertex.push_back(solide[in[1]].vertex[j]);
+    }
+  }
+  if(common_vertex.size() > 2 || common_vertex.size() < 2)
+    throw std::invalid_argument( "Pas d'edge commun entre les 2 faces a splitter" );
+
+  //On calcule la moitiéde l'edge et on split les faces
+  
+}
+
+bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà dans faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(*F == f) {
       return true;
@@ -827,7 +868,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
-      }
+      }xq
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	for(int i=0 ; i < num_faces.size() ; i++) {
 	  if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
