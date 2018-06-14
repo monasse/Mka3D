@@ -827,7 +827,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
-	}
+      }
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	for(int i=0 ; i < num_faces.size() ; i++) {
 	  if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
