@@ -658,22 +658,82 @@ void Solide::splitting_elements(const int& num_part) {
       if(faces[f].BC == 0)
         in.push_back(f);
       else
-	out.push_pack(f);
+	out.push_back(f);
   }
 
 
   //Trouver edge commun aux deux faces internes
-  for(int i=0; i < solide[in[0]].vertex.size() < i++) {
+  for(int i=0; i < faces[in[0]].vertex.size() < i++) {
     std::vector<int> common_vertex;
-    for(int j=0; i < solide[in[1]].vertex.size() < i++) {
-      if(solide[in[0]].vertex[i] == solide[in[1]].vertex[j])
-	common_vertex.push_back(solide[in[1]].vertex[j]);
+    for(int j=0; j < faces[in[1]].vertex.size() < j++) {
+      if(faces[in[0]].vertex[i] == faces[in[1]].vertex[j])
+	common_vertex.push_back(faces[in[1]].vertex[j]);
     }
   }
   if(common_vertex.size() > 2 || common_vertex.size() < 2)
     throw std::invalid_argument( "Pas d'edge commun entre les 2 faces a splitter" );
 
   //On calcule la moitiéde l'edge et on split les faces
+  double id = vertex.size(); //Numéro du vertex qu'on va ajouter
+  Vertex demi_edge = Vertex(0.5 * (vertex[common_vertex[0]] + vertex[common_vertex[1]]), id); //Nouveau vertex
+  vertex.push_back(demi_edge); //Vertex sont donnés dans l'ordre
+
+  //on stocke les vertex qui ne sont pas sur l'edge splité
+  std::vector<int> vertex_common_part_out, vertex_part_2;
+  for(int i=0; i < faces[out[0]].vertex.size() < i++) {
+    if(faces[out[0]].vertex[i] != common_vertex[0])
+      vertex_common_part_out.push_back(faces[out[0]].vertex[i]);
+  }
+
+  //Création des 2 nouvelles particules issues du splitting
+  Particule part_1, part_2;
+  part_1.id = solide.size();
+  part_2.id = solide.size();
+  //Pas besoin de mettre les faces dans les particules. C'est fait plus tard dans l'algo. Il suffitd'y mettre les vertex
+  part_1.vertices.push_back(id); //Ajout du nouvelle edge dans les 2 particules
+  part_1.vertices.push_back(out[0].vertices[0]);
+  part_1.vertices.push_back(out[0].vertices[1]);
+  part_1.vertices.push_back(out[0].vertices[2]);
+  part_2.vertices.push_back(id); //Ajout du nouvelle edge dans les 2 particules
+  part_2.vertices.push_back(out[1].vertices[0]);
+  part_2.vertices.push_back(out[1].vertices[1]);
+  part_2.vertices.push_back(out[1].vertices[2]);
+
+  //Nouvelle face
+  Face new_face;
+  new_face.vertex.push_back(id); //Numéro du vertex issu du demi-edge
+  new_face.vertex.push_back(vertex_common_part_out[0]);
+  new_face.vertex.push_back(vertex_common_part_out[1]);
+  new_face.BC = 0; //Face dans bulk du coup
+  new_face.type = 2;
+  new_face.id = faces.size(); ////Ajout de la face dans l'ensemble des faces du Solide
+  new_face.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  faces.push_back(new_face);
+  
+  //Faces Splitées (4 après splitting)
+  //in[0]
+  Face face1;
+  face1.vertex.push_back(in[0].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
+  face1.vertex.push_back(in[0].vertices[1]);
+  face1.vertex.push_back(new_face);
+  face1.type = 2;
+  face1.BC = 0;
+  face1.id = faces.size();
+  face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  faces.push_back(face1);
+
+  Face face2;
+  face2.vertex.push_back(in[0].vertices[0]);
+  face1.vertex.push_back(in[0].vertices[2]);
+  face1.vertex.push_back(new_face);
+  face1.type = 2;
+  face1.BC = 0;
+  face1.id = faces.size();
+  face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  faces.push_back(face1);
+
+  
+      
   
 }
 
