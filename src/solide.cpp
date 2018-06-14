@@ -664,24 +664,24 @@ void Solide::splitting_elements(const int& num_part) {
 
   //Trouver edge commun aux deux faces internes
   for(int i=0; i < faces[in[0]].vertex.size() < i++) {
-    std::vector<int> common_vertex;
+    std::vector<int> common_edge;
     for(int j=0; j < faces[in[1]].vertex.size() < j++) {
       if(faces[in[0]].vertex[i] == faces[in[1]].vertex[j])
-	common_vertex.push_back(faces[in[1]].vertex[j]);
+	common_edge.push_back(faces[in[1]].vertex[j]);
     }
   }
-  if(common_vertex.size() > 2 || common_vertex.size() < 2)
+  if(common_edge.size() > 2 || common_edge.size() < 2)
     throw std::invalid_argument( "Pas d'edge commun entre les 2 faces a splitter" );
 
   //On calcule la moitiéde l'edge et on split les faces
   double id = vertex.size(); //Numéro du vertex qu'on va ajouter
-  Vertex demi_edge = Vertex(0.5 * (vertex[common_vertex[0]] + vertex[common_vertex[1]]), id); //Nouveau vertex
+  Vertex demi_edge = Vertex(0.5 * (vertex[common_edge[0]] + vertex[common_edge[1]]), id); //Nouveau vertex
   vertex.push_back(demi_edge); //Vertex sont donnés dans l'ordre
 
   //on stocke les vertex qui ne sont pas sur l'edge splité
   std::vector<int> vertex_common_part_out, vertex_part_2;
   for(int i=0; i < faces[out[0]].vertex.size() < i++) {
-    if(faces[out[0]].vertex[i] != common_vertex[0])
+    if(faces[out[0]].vertex[i] != common_edge[0])
       vertex_common_part_out.push_back(faces[out[0]].vertex[i]);
   }
 
@@ -713,8 +713,13 @@ void Solide::splitting_elements(const int& num_part) {
   //Faces Splitées (4 après splitting)
   //in[0]
   Face face1;
-  face1.vertex.push_back(in[0].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
-  face1.vertex.push_back(in[0].vertices[1]);
+  if(in[0].vertices[0] != common_edge[0] || in[0].vertices[0] != common_edge[1])
+    face1.vertex.push_back(in[0].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
+  else if(in[0].vertices[1] != common_edge[0] || in[0].vertices[1] != common_edge[1])
+    face1.vertex.push_back(in[0].vertices[1]);
+  else if(in[0].vertices[2] != common_edge[0] || in[0].vertices[2] != common_edge[1])
+    face1.vertex.push_back(in[0].vertices[0]);
+  face1.vertex.push_back(common_edge[0]);
   face1.vertex.push_back(new_face);
   face1.type = 2;
   face1.BC = 0;
@@ -723,16 +728,52 @@ void Solide::splitting_elements(const int& num_part) {
   faces.push_back(face1);
 
   Face face2;
-  face2.vertex.push_back(in[0].vertices[0]);
-  face1.vertex.push_back(in[0].vertices[2]);
-  face1.vertex.push_back(new_face);
-  face1.type = 2;
-  face1.BC = 0;
-  face1.id = faces.size();
-  face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-  faces.push_back(face1);
+  if(in[0].vertices[0] != common_edge[0] || in[0].vertices[0] != common_edge[1])
+    face2.vertex.push_back(in[1].vertices[0]);
+  else if(in[0].vertices[1] != common_edge[0] || in[0].vertices[1] != common_edge[1])
+    face2.vertex.push_back(in[1].vertices[1]);
+  else if(in[0].vertices[2] != common_edge[0] || in[0].vertices[2] != common_edge[1])
+    face2.vertex.push_back(in[1].vertices[0]);
+  face2.vertex.push_back(common_edge[1]);
+  face2.vertex.push_back(new_face);
+  face2.type = 2;
+  face2.BC = 0;
+  face2.id = faces.size();
+  face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  faces.push_back(face2);
 
-  
+  //in[1]
+  Face face3;
+  if(in[1].vertices[0] != common_edge[0] || in[1].vertices[0] != common_edge[1])
+    face3.vertex.push_back(in[1].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
+  else if(in[1].vertices[1] != common_edge[0] || in[1].vertices[1] != common_edge[1])
+    face3.vertex.push_back(in[1].vertices[1]);
+  else if(in[1].vertices[2] != common_edge[0] || in[1].vertices[2] != common_edge[1])
+    face3.vertex.push_back(in[1].vertices[0]);
+  face3.vertex.push_back(common_edge[0]);
+  face3.vertex.push_back(new_face);
+  face3.type = 2;
+  face3.BC = 0;
+  face3.id = faces.size();
+  face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  faces.push_back(face3);
+
+  Face face4;
+  if(in[1].vertices[0] != common_edge[0] || in[1].vertices[0] != common_edge[1])
+    face4.vertex.push_back(in[1].vertices[0]);
+  else if(in[1].vertices[1] != common_edge[0] || in[1].vertices[1] != common_edge[1])
+    face4.vertex.push_back(in[1].vertices[1]);
+  else if(in[1].vertices[2] != common_edge[0] || in[1].vertices[2] != common_edge[1])
+    face4.vertex.push_back(in[1].vertices[0]);
+  face4.vertex.push_back(common_edge[1]);
+  face4.vertex.push_back(new_face);
+  face4.type = 2;
+  face4.BC = 0;
+  face4.id = faces.size();
+  face4.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  faces.push_back(face4);
+
+  //Il reste à détruire (ou vider ?) la particule splittée ainsi que les 2 faces splittées !
       
   
 }
