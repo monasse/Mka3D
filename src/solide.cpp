@@ -792,16 +792,41 @@ void Solide::splitting_elements(const int& num_part) {
 
   //Ajout des faces dans les 2 particules
   part_1.faces.push_back(out[0]);
-  part_1.faces.push_back(new_face);
-  part_1.faces.push_back(face1);
-  part_1.faces.push_back(face3);
+  part_1.faces.push_back(new_face.id);
+  part_1.faces.push_back(face1.id);
+  part_1.faces.push_back(face3.id);
   particule.push_back(part_1);
 
   part_2.faces.push_back(out[1]);
-  part_2.faces.push_back(new_face);
-  part_2.faces.push_back(face2);
-  part_2.faces.push_back(face4);
+  part_2.faces.push_back(new_face.id);
+  part_2.faces.push_back(face2.id);
+  part_2.faces.push_back(face4.id);
   particule.push_back(part_2);
+
+  //Ajout des nouvelles faces dans particules environnantes pas splitées et retrait des faces splitées des particules
+  int part_voisine_1 = face1.voisins[0];
+  int part_voisine_2 = face3.voisins[0];
+  //Première paticule
+  for(int i=0; i < solide[part_voisine_1].faces.size() < i++) {
+    int F = solide[part_voisine_1].faces[i];
+    if(F == in[0]) {
+      solide[part_voisine_1].faces[i] = face1.id; //On retire la face splitée et on met à la place une des 2 nouvelles
+      break;
+    }
+  }
+  solide[part_voisine_1].faces.push_back(face2.id);
+  solide[part_voisine_1].vertices.push_back(id); //On ajoute le vertex créé au milieu de l'edge
+
+  //Deuxième particule
+  for(int i=0; i < solide[part_voisine_2].faces.size() < i++) {
+    int F = solide[part_voisine_2].faces[i];
+    if(F == in[1]) {
+      solide[part_voisine_2].faces[i] = face3.id; //On retire la face splitée et on met à la place une des 2 nouvelles
+      break;
+    }
+  }
+  solide[part_voisine_2].faces.push_back(face4.id);
+  solide[part_voisine_2].vertices.push_back(id); //On ajoute le vertex créé au milieu de l'edge
 
   //Il reste à détruire (ou vider ?) la particule splittée ainsi que les 2 faces splittées !
   //Comment faire ? Mettre marqueur pour particule jetée à pas prendre en compte dans calcul des reconstructions etc ???
