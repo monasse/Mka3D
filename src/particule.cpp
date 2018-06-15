@@ -47,6 +47,7 @@ Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p
   seuil_elas = 0.;
   fixe = 0;
   BC = 0;
+  split= false;
 }
 
 Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx()
@@ -56,6 +57,7 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(
   seuil_elas = 0.;
   fixe = 0;
   BC = 0;
+  split = false;
 }
 
 

@@ -31,6 +31,7 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins()
   S = 0.;
   type = 0;
   id = -1; //Face pas remplie
+  split = false;
 }
 
 Face & Face:: operator=(const Face &F){

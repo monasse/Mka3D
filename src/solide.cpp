@@ -462,18 +462,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  //Faire ici une boucle sur les particules pour vérifier le nombre de faces de Neumann qu'elles ont. S'il y en a plus d'une splitter la particule et avoir un hanging node. Les tetras voisins auront des hanging nodes mais c'est pas trop grave
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    int nb_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
-    for(int i=0 ; i < P->faces.size() ; i++){
-      int f = P->faces[i];
-      if(faces[f].BC != 0) //car on ne fait ces calculs sur toutes les faces au bord
-	nb_faces++;
-    }
-    if(nb_faces > 1) //On appelle la fonction de splitting
-      splitting_elements(P->id);
-  }
-
   //cout << "nombre particules : " << solide.size() << endl;
   //cout << "Nombre total de faces : " << faces.size() << endl;
 
@@ -517,6 +505,19 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(bonne_direction * F->normale < 0.)
 	F->normale = -F->normale;
     }
+  }
+
+  //Il faudra refaire un peu les connectivités mais ça va...
+  //Faire ici une boucle sur les particules pour vérifier le nombre de faces de Neumann qu'elles ont. S'il y en a plus d'une splitter la particule et avoir un hanging node. Les tetras voisins auront des hanging nodes mais c'est pas trop grave
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    int nb_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
+    for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      if(faces[f].BC != 0) //car on ne fait ces calculs sur toutes les faces au bord
+	nb_faces++;
+    }
+    if(nb_faces > 1) //On appelle la fonction de splitting
+      splitting_elements(P->id);
   }
 
 
@@ -708,6 +709,8 @@ void Solide::splitting_elements(const int& num_part) {
   new_face.type = 2;
   new_face.id = faces.size(); ////Ajout de la face dans l'ensemble des faces du Solide
   new_face.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  new_face.voisins.push_back(part_1.id);
+  new_face.voisins.push_back(part_2.id);
   faces.push_back(new_face);
   
   //Faces Splitées (4 après splitting)
@@ -720,11 +723,16 @@ void Solide::splitting_elements(const int& num_part) {
   else if(in[0].vertices[2] != common_edge[0] || in[0].vertices[2] != common_edge[1])
     face1.vertex.push_back(in[0].vertices[0]);
   face1.vertex.push_back(common_edge[0]);
-  face1.vertex.push_back(new_face);
+  face1.vertex.push_back(demi_edge);
   face1.type = 2;
   face1.BC = 0;
   face1.id = faces.size();
   face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  if(faces[in[0]].voisins[0] == num_part)
+    face1.voisins.push_back(faces[in[0]].voisins[1]);
+  else if(faces[in[0]].voisins[1] == num_part)
+    face1.voisins.push_back(faces[in[0]].voisins[0]);
+  face1.voisins.push_back(part_1);
   faces.push_back(face1);
 
   Face face2;
@@ -735,11 +743,13 @@ void Solide::splitting_elements(const int& num_part) {
   else if(in[0].vertices[2] != common_edge[0] || in[0].vertices[2] != common_edge[1])
     face2.vertex.push_back(in[1].vertices[0]);
   face2.vertex.push_back(common_edge[1]);
-  face2.vertex.push_back(new_face);
+  face2.vertex.push_back(demi_edge);
   face2.type = 2;
   face2.BC = 0;
   face2.id = faces.size();
   face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  face2.voisins.push_back(face1.voisins[0]);
+  face2.voisins.push_back(part_2);
   faces.push_back(face2);
 
   //in[1]
@@ -751,11 +761,16 @@ void Solide::splitting_elements(const int& num_part) {
   else if(in[1].vertices[2] != common_edge[0] || in[1].vertices[2] != common_edge[1])
     face3.vertex.push_back(in[1].vertices[0]);
   face3.vertex.push_back(common_edge[0]);
-  face3.vertex.push_back(new_face);
+  face3.vertex.push_back(demi_edge);
   face3.type = 2;
   face3.BC = 0;
   face3.id = faces.size();
   face3.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  if(faces[in[1]].voisins[0] == num_part)
+    face3.voisins.push_back(faces[in[1]].voisins[1]);
+  else if(faces[in[1]].voisins[1] == num_part)
+    face3.voisins.push_back(faces[in[1]].voisins[0]);
+  face3.voisins.push_back(part_1);
   faces.push_back(face3);
 
   Face face4;
@@ -766,15 +781,35 @@ void Solide::splitting_elements(const int& num_part) {
   else if(in[1].vertices[2] != common_edge[0] || in[1].vertices[2] != common_edge[1])
     face4.vertex.push_back(in[1].vertices[0]);
   face4.vertex.push_back(common_edge[1]);
-  face4.vertex.push_back(new_face);
+  face4.vertex.push_back(demi_edge);
   face4.type = 2;
   face4.BC = 0;
   face4.id = faces.size();
   face4.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
+  face4.voisins.push_back(face3.voisins[0]);
+  face4.voisins.push_back(part_2);
   faces.push_back(face4);
 
+  //Ajout des faces dans les 2 particules
+  part_1.faces.push_back(out[0]);
+  part_1.faces.push_back(new_face);
+  part_1.faces.push_back(face1);
+  part_1.faces.push_back(face3);
+  particule.push_back(part_1);
+
+  part_2.faces.push_back(out[1]);
+  part_2.faces.push_back(new_face);
+  part_2.faces.push_back(face2);
+  part_2.faces.push_back(face4);
+  particule.push_back(part_2);
+
   //Il reste à détruire (ou vider ?) la particule splittée ainsi que les 2 faces splittées !
-      
+  //Comment faire ? Mettre marqueur pour particule jetée à pas prendre en compte dans calcul des reconstructions etc ???
+  //On indique que les faces et particules splitées ne doivent plus être prises en compte dans les calculs
+  faces[in[0]].split = true;
+  faces[in[1]].split = true;
+  solide[num_part].split = true;
+  
   
 }
 
