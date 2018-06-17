@@ -35,6 +35,7 @@
 //#include <eigen3/Eigen/LU> //Sert pour inversion systeème linéaire pour condition Neumann
 #include <eigen3/Eigen/Dense>
 #include <cmath>
+#include <stdlib.h> //Pour utiliser system
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
@@ -569,6 +570,24 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
     }
     else {
+      //On génère le fichier pour qhull qui va permettre ed calculer le delaunay avec barycentre des mailles
+      std::ofstream centres("cell_centres.txt",ios::out);
+      centres << 3 << " Cell-centres" << endl; //Pour indiquer dimension des points
+      int nb_centres = 0;
+      for(std::vector<Particule>::iterator P=solide.begin();P!=particule.end();P++){
+	if(not(P->split)) //Particule pas splitée
+	  nb_centres++; //On va mettre la particule dans le fichier
+      }
+      centres << nb_centres << endl;
+      for(std::vector<Particule>::iterator P=solide.begin();P!=particule.end();P++){
+	if(not(P->split)) //Particule pas splitée
+	  centres << P->x0 << endl; //On met la particule dans le fichier
+      }
+
+      //On va appeler la fonction qhull voulu sur le fichier précédent avec commande console
+      system("qdelaunay i Qt < cell_centres > delaunay"); //Commande bash pour charger les cell-centres
+
+      //On importe la tetrahedrisation de Delaunay
       std::ifstream delaunay("delaunay.txt",ios::in);
       if(not(delaunay))
 	throw std::invalid_argument( "Pas de terahedrisation de Delaunay !" );
@@ -584,7 +603,22 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	P.vertices.push_back(ele4);
 	tetra_delau.push_back(P);
       }
+      
+      std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
+      while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
+	istringstream  stm(ligne);
+	int ele1,ele2,ele3,ele4;
+	stm >> ele1 >> ele2 >> ele3 >> ele4;
+	Particule P;
+	P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
+	P.vertices.push_back(ele2);
+	P.vertices.push_back(ele3); // - 1
+	P.vertices.push_back(ele4);
+	tetra_delau.push_back(P);
+      }
       //cout << "ok Delaunay" << endl;
+
+      //On sort dans un fichier les éléments associés à chaque face ainsi que les coodonnées barycentriques correspondantes
       std::ofstream tetra_faces("tetra_faces.txt",ios::out); //Sortie pour stocker tetras associés aux faces
       std::ofstream face_pb("face_pb.txt",ios::out); //Sorties pour les faces qui pose pb
       //Recherche du tetraèdre associé à chaque face
