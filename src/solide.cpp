@@ -574,12 +574,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       std::ofstream centres("cell_centres.txt",ios::out);
       centres << 3 << " Cell-centres" << endl; //Pour indiquer dimension des points
       int nb_centres = 0;
-      for(std::vector<Particule>::iterator P=solide.begin();P!=particule.end();P++){
+      for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
 	if(not(P->split)) //Particule pas splitée
 	  nb_centres++; //On va mettre la particule dans le fichier
       }
       centres << nb_centres << endl;
-      for(std::vector<Particule>::iterator P=solide.begin();P!=particule.end();P++){
+      for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
 	if(not(P->split)) //Particule pas splitée
 	  centres << P->x0 << endl; //On met la particule dans le fichier
       }
@@ -591,19 +591,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       std::ifstream delaunay("delaunay.txt",ios::in);
       if(not(delaunay))
 	throw std::invalid_argument( "Pas de terahedrisation de Delaunay !" );
-      std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
-      while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
-	istringstream  stm(ligne);
-	int ele1,ele2,ele3,ele4;
-	stm >> ele1 >> ele2 >> ele3 >> ele4;
-	Particule P;
-	P.vertices.push_back(ele1); //Numéros des Elements du solide qui forment chacun des tetra
-	P.vertices.push_back(ele2);
-	P.vertices.push_back(ele3); // - 1
-	P.vertices.push_back(ele4);
-	tetra_delau.push_back(P);
-      }
-      
       std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
       while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
 	istringstream  stm(ligne);
@@ -698,9 +685,9 @@ void Solide::splitting_elements(const int& num_part) {
 
 
   //Trouver edge commun aux deux faces internes
-  for(int i=0; i < faces[in[0]].vertex.size() < i++) {
-    std::vector<int> common_edge;
-    for(int j=0; j < faces[in[1]].vertex.size() < j++) {
+  std::vector<int> common_edge;
+  for(int i=0; i < faces[in[0]].vertex.size() ; i++) {
+    for(int j=0; j < faces[in[1]].vertex.size() ; j++) {
       if(faces[in[0]].vertex[i] == faces[in[1]].vertex[j])
 	common_edge.push_back(faces[in[1]].vertex[j]);
     }
@@ -711,11 +698,12 @@ void Solide::splitting_elements(const int& num_part) {
   //On calcule la moitiéde l'edge et on split les faces
   double id = vertex.size(); //Numéro du vertex qu'on va ajouter
   Vertex demi_edge = Vertex(0.5 * (vertex[common_edge[0]] + vertex[common_edge[1]]), id); //Nouveau vertex
+  //La ligne du dessus va bien casser les couilles !
   vertex.push_back(demi_edge); //Vertex sont donnés dans l'ordre
 
   //on stocke les vertex qui ne sont pas sur l'edge splité
   std::vector<int> vertex_common_part_out, vertex_part_2;
-  for(int i=0; i < faces[out[0]].vertex.size() < i++) {
+  for(int i=0; i < faces[out[0]].vertex.size() ; i++) {
     if(faces[out[0]].vertex[i] != common_edge[0])
       vertex_common_part_out.push_back(faces[out[0]].vertex[i]);
   }
@@ -726,13 +714,13 @@ void Solide::splitting_elements(const int& num_part) {
   part_2.id = solide.size();
   //Pas besoin de mettre les faces dans les particules. C'est fait plus tard dans l'algo. Il suffitd'y mettre les vertex
   part_1.vertices.push_back(id); //Ajout du nouvelle edge dans les 2 particules
-  part_1.vertices.push_back(out[0].vertices[0]);
-  part_1.vertices.push_back(out[0].vertices[1]);
-  part_1.vertices.push_back(out[0].vertices[2]);
+  part_1.vertices.push_back(faces[out[0]].vertex[0]);
+  part_1.vertices.push_back(faces[out[0]].vertex[1]);
+  part_1.vertices.push_back(faces[out[0]].vertex[2]);
   part_2.vertices.push_back(id); //Ajout du nouvelle edge dans les 2 particules
-  part_2.vertices.push_back(out[1].vertices[0]);
-  part_2.vertices.push_back(out[1].vertices[1]);
-  part_2.vertices.push_back(out[1].vertices[2]);
+  part_2.vertices.push_back(faces[out[1]].vertex[0]);
+  part_2.vertices.push_back(faces[out[1]].vertex[1]);
+  part_2.vertices.push_back(faces[out[1]].vertex[2]);
 
   //Nouvelle face
   Face new_face;
@@ -750,7 +738,7 @@ void Solide::splitting_elements(const int& num_part) {
   //Faces Splitées (4 après splitting)
   //in[0]
   Face face1;
-  if(in[0].vertices[0] != common_edge[0] || in[0].vertices[0] != common_edge[1])
+  if(faces[in[0]].vertex[0] != common_edge[0] || faces[in[0]].vertex[0] != common_edge[1])
     face1.vertex.push_back(in[0].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
   else if(in[0].vertices[1] != common_edge[0] || in[0].vertices[1] != common_edge[1])
     face1.vertex.push_back(in[0].vertices[1]);
@@ -766,7 +754,7 @@ void Solide::splitting_elements(const int& num_part) {
     face1.voisins.push_back(faces[in[0]].voisins[1]);
   else if(faces[in[0]].voisins[1] == num_part)
     face1.voisins.push_back(faces[in[0]].voisins[0]);
-  face1.voisins.push_back(part_1);
+  face1.voisins.push_back(part_1.id);
   faces.push_back(face1);
 
   Face face2;
@@ -783,7 +771,7 @@ void Solide::splitting_elements(const int& num_part) {
   face2.id = faces.size();
   face2.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
   face2.voisins.push_back(face1.voisins[0]);
-  face2.voisins.push_back(part_2);
+  face2.voisins.push_back(part_2.id);
   faces.push_back(face2);
 
   //in[1]
@@ -804,7 +792,7 @@ void Solide::splitting_elements(const int& num_part) {
     face3.voisins.push_back(faces[in[1]].voisins[1]);
   else if(faces[in[1]].voisins[1] == num_part)
     face3.voisins.push_back(faces[in[1]].voisins[0]);
-  face3.voisins.push_back(part_1);
+  face3.voisins.push_back(part_1.id);
   faces.push_back(face3);
 
   Face face4;
@@ -821,7 +809,7 @@ void Solide::splitting_elements(const int& num_part) {
   face4.id = faces.size();
   face4.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
   face4.voisins.push_back(face3.voisins[0]);
-  face4.voisins.push_back(part_2);
+  face4.voisins.push_back(part_2.id);
   faces.push_back(face4);
 
   //Ajout des faces dans les 2 particules
@@ -829,19 +817,19 @@ void Solide::splitting_elements(const int& num_part) {
   part_1.faces.push_back(new_face.id);
   part_1.faces.push_back(face1.id);
   part_1.faces.push_back(face3.id);
-  particule.push_back(part_1);
+  solide.push_back(part_1);
 
   part_2.faces.push_back(out[1]);
   part_2.faces.push_back(new_face.id);
   part_2.faces.push_back(face2.id);
   part_2.faces.push_back(face4.id);
-  particule.push_back(part_2);
+  solide.push_back(part_2);
 
   //Ajout des nouvelles faces dans particules environnantes pas splitées et retrait des faces splitées des particules
   int part_voisine_1 = face1.voisins[0];
   int part_voisine_2 = face3.voisins[0];
   //Première paticule
-  for(int i=0; i < solide[part_voisine_1].faces.size() < i++) {
+  for(int i=0; i < solide[part_voisine_1].faces.size() ; i++) {
     int F = solide[part_voisine_1].faces[i];
     if(F == in[0]) {
       solide[part_voisine_1].faces[i] = face1.id; //On retire la face splitée et on met à la place une des 2 nouvelles
@@ -852,7 +840,7 @@ void Solide::splitting_elements(const int& num_part) {
   solide[part_voisine_1].vertices.push_back(id); //On ajoute le vertex créé au milieu de l'edge
 
   //Deuxième particule
-  for(int i=0; i < solide[part_voisine_2].faces.size() < i++) {
+  for(int i=0; i < solide[part_voisine_2].faces.size() ; i++) {
     int F = solide[part_voisine_2].faces[i];
     if(F == in[1]) {
       solide[part_voisine_2].faces[i] = face3.id; //On retire la face splitée et on met à la place une des 2 nouvelles
@@ -1063,7 +1051,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
-      }xq
+      }
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	for(int i=0 ; i < num_faces.size() ; i++) {
 	  if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
