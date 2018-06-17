@@ -697,8 +697,7 @@ void Solide::splitting_elements(const int& num_part) {
 
   //On calcule la moitiéde l'edge et on split les faces
   double id = vertex.size(); //Numéro du vertex qu'on va ajouter
-  Vertex demi_edge = Vertex(0.5 * (vertex[common_edge[0]] + vertex[common_edge[1]]), id); //Nouveau vertex
-  //La ligne du dessus va bien casser les couilles !
+  Vertex demi_edge = Vertex(Point_3(0.5 * (vertex[common_edge[0]].pos.x() + vertex[common_edge[1]].pos.x()),0.5 * (vertex[common_edge[0]].pos.y() + vertex[common_edge[1]].pos.y()), 0.5 * (vertex[common_edge[0]].pos.z() + vertex[common_edge[1]].pos.z()) ), id); //Nouveau vertex
   vertex.push_back(demi_edge); //Vertex sont donnés dans l'ordre
 
   //on stocke les vertex qui ne sont pas sur l'edge splité
@@ -739,13 +738,13 @@ void Solide::splitting_elements(const int& num_part) {
   //in[0]
   Face face1;
   if(faces[in[0]].vertex[0] != common_edge[0] || faces[in[0]].vertex[0] != common_edge[1])
-    face1.vertex.push_back(in[0].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
-  else if(in[0].vertices[1] != common_edge[0] || in[0].vertices[1] != common_edge[1])
-    face1.vertex.push_back(in[0].vertices[1]);
-  else if(in[0].vertices[2] != common_edge[0] || in[0].vertices[2] != common_edge[1])
-    face1.vertex.push_back(in[0].vertices[0]);
+    face1.vertex.push_back(faces[in[0]].vertex[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
+  else if(faces[in[0]].vertex[1] != common_edge[0] || faces[in[0]].vertex[1] != common_edge[1])
+    face1.vertex.push_back(faces[in[0]].vertex[1]);
+  else if(faces[in[0]].vertex[2] != common_edge[0] || faces[in[0]].vertex[2] != common_edge[1])
+    face1.vertex.push_back(faces[in[0]].vertex[0]);
   face1.vertex.push_back(common_edge[0]);
-  face1.vertex.push_back(demi_edge);
+  face1.vertex.push_back(id);
   face1.type = 2;
   face1.BC = 0;
   face1.id = faces.size();
@@ -758,14 +757,14 @@ void Solide::splitting_elements(const int& num_part) {
   faces.push_back(face1);
 
   Face face2;
-  if(in[0].vertices[0] != common_edge[0] || in[0].vertices[0] != common_edge[1])
-    face2.vertex.push_back(in[1].vertices[0]);
-  else if(in[0].vertices[1] != common_edge[0] || in[0].vertices[1] != common_edge[1])
-    face2.vertex.push_back(in[1].vertices[1]);
-  else if(in[0].vertices[2] != common_edge[0] || in[0].vertices[2] != common_edge[1])
-    face2.vertex.push_back(in[1].vertices[0]);
+  if(faces[in[0]].vertex[0] != common_edge[0] || faces[in[0]].vertex[0] != common_edge[1])
+    face2.vertex.push_back(faces[in[1]].vertex[0]);
+  else if(faces[in[0]].vertex[1] != common_edge[0] || faces[in[0]].vertex[1] != common_edge[1])
+    face2.vertex.push_back(faces[in[1]].vertex[1]);
+  else if(faces[in[0]].vertex[2] != common_edge[0] || faces[in[0]].vertex[2] != common_edge[1])
+    face2.vertex.push_back(faces[in[1]].vertex[0]);
   face2.vertex.push_back(common_edge[1]);
-  face2.vertex.push_back(demi_edge);
+  face2.vertex.push_back(id);
   face2.type = 2;
   face2.BC = 0;
   face2.id = faces.size();
@@ -776,14 +775,14 @@ void Solide::splitting_elements(const int& num_part) {
 
   //in[1]
   Face face3;
-  if(in[1].vertices[0] != common_edge[0] || in[1].vertices[0] != common_edge[1])
-    face3.vertex.push_back(in[1].vertices[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
-  else if(in[1].vertices[1] != common_edge[0] || in[1].vertices[1] != common_edge[1])
-    face3.vertex.push_back(in[1].vertices[1]);
-  else if(in[1].vertices[2] != common_edge[0] || in[1].vertices[2] != common_edge[1])
-    face3.vertex.push_back(in[1].vertices[0]);
+  if(faces[in[1]].vertex[0] != common_edge[0] || faces[in[1]].vertex[0] != common_edge[1])
+    face3.vertex.push_back(faces[in[1]].vertex[0]); //Il fait choisir les vertex pas alignés avec le nouvel edge créé
+  else if(faces[in[1]].vertex[1] != common_edge[0] || faces[in[1]].vertex[1] != common_edge[1])
+    face3.vertex.push_back(faces[in[1]].vertex[1]);
+  else if(faces[in[1]].vertex[2] != common_edge[0] || faces[in[1]].vertex[2] != common_edge[1])
+    face3.vertex.push_back(faces[in[1]].vertex[0]);
   face3.vertex.push_back(common_edge[0]);
-  face3.vertex.push_back(demi_edge);
+  face3.vertex.push_back(id);
   face3.type = 2;
   face3.BC = 0;
   face3.id = faces.size();
@@ -796,14 +795,14 @@ void Solide::splitting_elements(const int& num_part) {
   faces.push_back(face3);
 
   Face face4;
-  if(in[1].vertices[0] != common_edge[0] || in[1].vertices[0] != common_edge[1])
-    face4.vertex.push_back(in[1].vertices[0]);
-  else if(in[1].vertices[1] != common_edge[0] || in[1].vertices[1] != common_edge[1])
-    face4.vertex.push_back(in[1].vertices[1]);
-  else if(in[1].vertices[2] != common_edge[0] || in[1].vertices[2] != common_edge[1])
-    face4.vertex.push_back(in[1].vertices[0]);
+  if(faces[in[1]].vertex[0] != common_edge[0] || faces[in[1]].vertex[0] != common_edge[1])
+    face4.vertex.push_back(faces[in[1]].vertex[0]);
+  else if(faces[in[1]].vertex[1] != common_edge[0] || faces[in[1]].vertex[1] != common_edge[1])
+    face4.vertex.push_back(faces[in[1]].vertex[1]);
+  else if(faces[in[1]].vertex[2] != common_edge[0] || faces[in[1]].vertex[2] != common_edge[1])
+    face4.vertex.push_back(faces[in[1]].vertex[0]);
   face4.vertex.push_back(common_edge[1]);
-  face4.vertex.push_back(demi_edge);
+  face4.vertex.push_back(id);
   face4.type = 2;
   face4.BC = 0;
   face4.id = faces.size();
