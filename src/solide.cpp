@@ -520,7 +520,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
     if(nb_faces > 1) { //On appelle la fonction de splitting
       //cout << "On appelle le splitting !" << endl;
-      splitting_elements(P->id);
+      splitting_elements(P->id, rho);
     }
   }
   //cout << "On a splitte tout ce qu'il faut !" << endl;
@@ -589,12 +589,13 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
 
       //On va appeler la fonction qhull voulu sur le fichier précédent avec commande console
-      system("qdelaunay i Qt < cell_centres > delaunay"); //Commande bash pour charger les cell-centres
+      int rez = system("qdelaunay i Qt < cell_centres.txt > delaunay.txt"); //Commande bash pour charger les cell-centres
 
       //On importe la tetrahedrisation de Delaunay
       std::ifstream delaunay("delaunay.txt",ios::in);
       if(not(delaunay))
 	throw std::invalid_argument( "Pas de terahedrisation de Delaunay !" );
+      getline(delaunay, ligne); //On enlève la ligne avec le nombre d'éléments
       std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
       while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
 	istringstream  stm(ligne);
@@ -658,8 +659,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	    //cout << "face ok !" << endl;
 	    if(not(test)) {
-	      //cout << "Face : " << F->id << " Pas de tetra associe a une face" << endl;
-	      throw std::invalid_argument( "Pas de tetra associ\'e a une face" );
+	      cout << "Nbr Faces : " << faces.size() << " Face : " << F->id << endl;
+	      throw std::invalid_argument( "Pas de tetra associe a une face" );
 	    }
 	  }
 	  /*else
@@ -674,7 +675,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 }
 
-void Solide::splitting_elements(const int& num_part) {
+void Solide::splitting_elements(const int& num_part, const double& rho) {
   Particule* P = &(solide[num_part]);
   std::vector<int> out; //Face neumann
   std::vector<int> in; //Inner faces
@@ -755,7 +756,7 @@ void Solide::splitting_elements(const int& num_part) {
   face1.BC = 0;
   face1.id = faces.size();
   face1.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
-  cout << "Face 1 ok" << endl;
+  //cout << "Face 1 ok" << endl;
   if(faces[in[0]].voisins[0] == num_part)
     face1.voisins.push_back(faces[in[0]].voisins[1]);
   else if(faces[in[0]].voisins[1] == num_part)
@@ -826,12 +827,18 @@ void Solide::splitting_elements(const int& num_part) {
   part_1.faces.push_back(new_face.id);
   part_1.faces.push_back(face1.id);
   part_1.faces.push_back(face3.id);
+  part_1.barycentre(this, 4); //Calcul du barycentre
+  part_1.volume(this, 4); //calcul du volume
+  part_1.m = rho * part_1.V;
   solide.push_back(part_1);
 
   part_2.faces.push_back(out[1]);
   part_2.faces.push_back(new_face.id);
   part_2.faces.push_back(face2.id);
   part_2.faces.push_back(face4.id);
+  part_2.barycentre(this, 4); //Calcul du barycentre
+  part_2.volume(this, 4); //calcul du volume
+  part_2.m = rho * part_2.V;
   solide.push_back(part_2);
 
   //Ajout des nouvelles faces dans particules environnantes pas splitées et retrait des faces splitées des particules
@@ -866,8 +873,8 @@ void Solide::splitting_elements(const int& num_part) {
   faces[in[1]].split = true;
   solide[num_part].split = true;
 
-  cout << "Particules crees : " << part_1.id << " " << part_2.id << endl;
-  cout << "Faces crees : " << new_face.id << " " << face1.id << " " << face2.id << " " << face3.id << " " << face4.id << endl;
+  //cout << "Particules crees : " << part_1.id << " " << part_2.id << endl;
+  //cout << "Faces crees : " << new_face.id << " " << face1.id << " " << face2.id << " " << face3.id << " " << face4.id << endl;
   
 }
 
