@@ -1538,8 +1538,8 @@ const double Solide::Energie_cinetique(){
       E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
     //E += 1./2. * P->m * P->u * P->u;
     if(1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4. < 0.) {
-      cout << "Particule : " << P->id << " energie cinétique negative" << endl;
-      cout << "Volume : " << P->V << endl;
+      //cout << "Particule : " << P->id << " energie cinétique negative" << endl;
+      //cout << "Volume : " << P->V << endl;
     }
   }
   return E;
@@ -1566,8 +1566,6 @@ const double Solide::Energie_potentielle(){
     if(not(P->split))
       Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
     //}
-    if(contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) < 0.)
-      cout << "Particule : " << P->id << " energie potentielle negative" << endl;
   }
   //cout << "Energie potentielle : " << Ep << endl;
   //return 0.;
@@ -1599,15 +1597,15 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
 }
 
 void Solide::Impression(const int &n){ //Sortie au format vtk
-  int nb_part = 0; //solide.size();
+  int nb_points = 0; //solide.size();
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //On ne compte pas les particules splitées
     if(not(P->split))
-      nb_part++;
+      nb_points += P->faces.size() * 3;
   }
   int nb_faces = 0;
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(not(F->split))
-      nb_faces++;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //On ne compte pas les particules splitées
+    if(not(P->split))
+      nb_faces += P->faces.size();
   }
   std::ostringstream oss;
   oss << "solide" << n << ".vtk";
@@ -1622,7 +1620,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //vtk << setprecision(15);
   
   //Pour tetras !
-  int nb_points = 3 * nb_faces; //4 * nb_part;
+  //int nb_points = 3 * nb_faces; //4 * nb_part;
   //int nb_faces = 4 * nb_part; //Reprendre ici car particules peuvent avoir plus de faces
   int size = 3 * nb_faces;
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -1737,10 +1735,12 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk << "TENSORS deformations double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
-      vtk << P->discrete_gradient.col1[0] << " " << P->discrete_gradient.col1[1] << " " << P->discrete_gradient.col1[2] << endl;
-      vtk << P->discrete_gradient.col2[0] << " " << P->discrete_gradient.col2[1] << " " << P->discrete_gradient.col2[2] << endl;
-      vtk << P->discrete_gradient.col3[0] << " " << P->discrete_gradient.col3[1] << " " << P->discrete_gradient.col3[2] << endl;
+    if(not(P->split)) {
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
+	vtk << P->discrete_gradient.col1[0] << " " << P->discrete_gradient.col1[1] << " " << P->discrete_gradient.col1[2] << endl;
+	vtk << P->discrete_gradient.col2[0] << " " << P->discrete_gradient.col2[1] << " " << P->discrete_gradient.col2[2] << endl;
+	vtk << P->discrete_gradient.col3[0] << " " << P->discrete_gradient.col3[1] << " " << P->discrete_gradient.col3[2] << endl;
+      }
     }
   }
   vtk << "\n";
