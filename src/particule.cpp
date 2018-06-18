@@ -201,4 +201,13 @@ bool Particule::contient_face(const Face& f){ //Renvoie vraie si particule conti
       }*/
 }
 
+void Particule::calcul_diametre(Solide* Sol) {
+  Vector_3 v1(Sol->vertex[vertices[0]].pos, Sol->vertex[vertices[1]].pos);
+  Vector_3 v2(Sol->vertex[vertices[2]].pos, Sol->vertex[vertices[1]].pos);
+  Vector_3 v3(Sol->vertex[vertices[3]].pos, Sol->vertex[vertices[1]].pos);
+  Vector_3 v4(Sol->vertex[vertices[2]].pos, Sol->vertex[vertices[3]].pos);
+
+  h = sqrt( max(v1.squared_length(), max(v2.squared_length(), max(v3.squared_length(), v4.squared_length()))) );
+}
+
 #endif

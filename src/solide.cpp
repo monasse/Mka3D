@@ -46,6 +46,7 @@ Solide::Solide(const double& E, const double& nu, const double& B1, const double
   B = B1;
   n = n1;
   H = H1;
+  h = 0.;
 }
 
 Solide::Solide(){
@@ -55,6 +56,7 @@ Solide::Solide(){
   B = 0.;
   n = 0.;
   H = 0.;
+  h = 0.;
 }
 
 Solide::~Solide(){   
@@ -276,6 +278,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       p.barycentre(this, type); //Calcul du barycentre
       p.volume(this, type); //calcul du volume
       p.m = rho * p.V;
+      p.calcul_diametre(this); //Calcul du diamètre de la particule
 
       //Ajout de la particule dans le solide
       solide.push_back(p);
@@ -463,6 +466,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
+  taille_maillage(); //Calcul de la taille du maillage
+
   //cout << "nombre particules : " << solide.size() << endl;
   //cout << "Nombre total de faces : " << faces.size() << endl;
 
@@ -550,7 +555,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     if(test) {
       bool aux = true;
       for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-	if(aux && F->BC == 0) { //Importation des tetras associés aux faces internes
+	if(aux && F->BC == 0 && not(F->split)) { //Importation des tetras associés aux faces internes
 	  istringstream  stm(ligne);
 	  int ele1,ele2,ele3,ele4;
 	  double c1,c2,c3,c4;
@@ -648,7 +653,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    }
 	  }
 	  if( not(tetra_ok)) {
-	    cout << "Face : " << F->id << endl;
+	    //cout << "Face : " << F->id << endl;
 	    //throw std::invalid_argument( " pas de tetra associe a une face !" );
 	    /*cout << "Face : " << F->id << endl;
 	      cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
@@ -889,6 +894,11 @@ bool Solide::face_existe(Face f) { //Renvoie vraie si la face testée est déjà da
     }
   }
   return false;
+}
+
+void Solide::taille_maillage() {
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
+    h = max(h, P->h);
 }
 
 bool Solide::voisins_face(int num_face) {

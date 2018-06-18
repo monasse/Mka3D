@@ -68,12 +68,14 @@ public:
   Vector_3 trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisin1, Point_3 voisin2, Point_3 centre_face);
   void reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V, const double& T);
   void splitting_elements(const int& num_part, const double& rho);
+  void taille_maillage(); //Calcul le h du maillage comme max de tous les h des particules
 
   
   // private :
   std::vector<Vertex> vertex;
   std::vector<Face> faces;
   std::vector<Particule> solide; //Particules du maillage
+  double h; //Taille du maillage. Max de la taille des particules
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé
