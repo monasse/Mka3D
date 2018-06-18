@@ -648,7 +648,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	    }
 	  }
 	  if( not(tetra_ok)) {
-	    //cout << "Face : " << F->id;
+	    cout << "Face : " << F->id << endl;
 	    //throw std::invalid_argument( " pas de tetra associe a une face !" );
 	    /*cout << "Face : " << F->id << endl;
 	      cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
@@ -716,7 +716,7 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   //Création des 2 nouvelles particules issues du splitting
   Particule part_1, part_2;
   part_1.id = solide.size();
-  part_2.id = solide.size();
+  part_2.id = solide.size() + 1;
   //Pas besoin de mettre les faces dans les particules. C'est fait plus tard dans l'algo. Il suffitd'y mettre les vertex
   part_1.vertices.push_back(id); //Ajout du nouvelle edge dans les 2 particules
   part_1.vertices.push_back(faces[out[0]].vertex[0]);
@@ -762,6 +762,7 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   else if(faces[in[0]].voisins[1] == num_part)
     face1.voisins.push_back(faces[in[0]].voisins[0]);
   face1.voisins.push_back(part_1.id);
+  //cout << "Voisins : " << face1.voisins[0] << " " << face1.voisins[1] << endl;
   faces.push_back(face1);
 
   Face face2;
@@ -780,6 +781,7 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   //cout << "Face 2 ok" << endl;
   face2.voisins.push_back(face1.voisins[0]);
   face2.voisins.push_back(part_2.id);
+  //cout << "Voisins : " << face2.voisins[0] << " " << face2.voisins[1] << endl;
   faces.push_back(face2);
 
   //in[1]
@@ -802,6 +804,7 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   else if(faces[in[1]].voisins[1] == num_part)
     face3.voisins.push_back(faces[in[1]].voisins[0]);
   face3.voisins.push_back(part_1.id);
+  //cout << "Voisins : " << face3.voisins[0] << " " << face3.voisins[1] << endl;
   faces.push_back(face3);
 
   Face face4;
@@ -820,6 +823,7 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   //cout << "Face 4 ok" << endl;
   face4.voisins.push_back(face3.voisins[0]);
   face4.voisins.push_back(part_2.id);
+  //cout << "Voisins : " << face4.voisins[0] << " " << face4.voisins[1] << endl;
   faces.push_back(face4);
 
   //Ajout des faces dans les 2 particules
@@ -910,6 +914,7 @@ bool Solide::voisins_face(int num_face) {
       tous_voisins.push_back(faces[*G].voisins[1]);
   }
   //Tous_voisins rempli a priori
+  //cout << "Taille recherche : " << tous_voisins.size() << endl;
 
   bool tetra_ok = false;
   for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end()-1;G++){
@@ -919,13 +924,14 @@ bool Solide::voisins_face(int num_face) {
       int voisin1 = *G;
       int voisin2 = *I;
       double vol = std::abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
+      //cout << "Volume : " << vol << endl;
       if(vol > pow(10., -20.)) { //Attention avec cette valeur !! Il faut savoir qu'elle est là ! //-10.
 	double c_part_1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_part_2 = (Vector_3(solide[part_1].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
 	double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
 	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	//cout << "Calcul coords bary ok !" << endl;
+	//cout << "Coords bary : " << c_part_1 << " " << c_part_2 << " " << c_voisin1 << " " << c_voisin2 << endl;
 
 	faces[num_face].c_reconstruction.push_back(c_part_1);
 	faces[num_face].c_reconstruction.push_back(c_part_2);

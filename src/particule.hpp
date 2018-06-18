@@ -57,6 +57,7 @@ class Particule
   void barycentre(Solide* Sol, const int& cell_type); //Calcul le barycentre d'une particule
   void volume(Solide* Sol, const int& cell_type); //calcul le volume d'une particule
   bool contient_face(const Face& f); //Renvoie vraie si particule contient les 3 vertex de la face
+  void calcul_diametre(Solide* Sol);
 
   //Attributs
   std::vector<int> faces; //!< liste de faces de la particule
@@ -73,6 +74,7 @@ class Particule
   Vector_3 u_prev; //!< Vitesse de la particule au temps t-dt/2
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
+  double h; //Diamètre de la particule
 
   //Variables pour plasticité et nouvelle formulation Mka !
   Matrix discrete_gradient; //Gradient reconstruit par particule

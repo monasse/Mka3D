@@ -48,6 +48,7 @@ Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p
   fixe = 0;
   BC = 0;
   split= false;
+  h=0.;
 }
 
 Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx()
@@ -58,6 +59,7 @@ Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(
   fixe = 0;
   BC = 0;
   split = false;
+  h=0.;
 }
 
 

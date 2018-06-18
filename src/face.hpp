@@ -60,6 +60,7 @@ public:
 
   int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
   double D0; //Distance centre face. Sera utile pour CFL...
+  double h; //Diamètre de la face
 
   //Booléen pour savoir si face a été splitée et doit donc être exclue des calculs
   bool split;

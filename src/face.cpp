@@ -103,6 +103,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   double norm = sqrt((normale.squared_length()));
   normale = normale / norm;
   D0 = 1000000000.;
+  h = sqrt( max(Vector_3(v1,v2).squared_length(), max(Vector_3(v1,v3).squared_length(), Vector_3(v3,v2).squared_length())) ); //Diamètre de la face
 
   /*if(BC != 0) { //Pour les faces au bord, on calcule les vecteurs tangents
     double eps = pow(10., -14.);//std::numeric_limits<double>::epsilon(); //1e-14
