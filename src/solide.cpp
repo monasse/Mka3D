@@ -528,6 +528,16 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       splitting_elements(P->id, rho);
     }
   }
+
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)) {
+      for(int i=0 ; i < P->faces.size() ; i++){
+	int f = P->faces[i];
+	if(faces[f].split)
+	  cout << "Gros probleme !" << endl;
+      }
+    }
+    }*/
   //cout << "On a splitte tout ce qu'il faut !" << endl;
 
 

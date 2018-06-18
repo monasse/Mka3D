@@ -104,6 +104,7 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   Dx.vec[0] = -0.3 * x0.x() * def_ref;
   Dx.vec[1] = -0.3 * x0.y() * def_ref; //On impose les positions pour le test
   */
+  
 
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
