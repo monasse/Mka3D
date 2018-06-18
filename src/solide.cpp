@@ -960,14 +960,17 @@ bool Solide::voisins_face(int num_face) {
 }
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
-    P->solve_position(dt, flag_2d, t, T);
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++) {
+    if(not(P->split))
+      P->solve_position(dt, flag_2d, t, T);
+  }
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++) {
+    if(not(P->split)) 
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
+  }
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
@@ -1534,8 +1537,9 @@ const double Solide::Energie_cinetique(){
     if(not(P->split))
       E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
     //E += 1./2. * P->m * P->u * P->u;
+    if(1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4. < 0.)
+      cout << "Particule : " << P->id << " energie cinétique negative" << endl;
   }
-  //cout << "Energie cinetique : " << E << endl;
   return E;
   //return 0.;
 }
@@ -1560,6 +1564,8 @@ const double Solide::Energie_potentielle(){
     if(not(P->split))
       Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
     //}
+    if(contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) < 0.)
+      cout << "Particule : " << P->id << " energie potentielle negative" << endl;
   }
   //cout << "Energie potentielle : " << Ep << endl;
   //return 0.;
@@ -1591,7 +1597,16 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
 }
 
 void Solide::Impression(const int &n){ //Sortie au format vtk
-  int nb_part = solide.size();
+  int nb_part = 0; //solide.size();
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //On ne compte pas les particules splitées
+    if(not(P->split))
+      nb_part++;
+  }
+  int nb_faces = 0;
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    if(not(F->split))
+      nb_faces++;
+  }
   std::ostringstream oss;
   oss << "solide" << n << ".vtk";
   string s = oss.str();
@@ -1605,8 +1620,8 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //vtk << setprecision(15);
   
   //Pour tetras !
-  int nb_points = 3 * 4 * nb_part;
-  int nb_faces = 4 * nb_part; //Reprendre ici car particules peuvent avoir plus de faces
+  int nb_points = 3 * nb_faces; //4 * nb_part;
+  //int nb_faces = 4 * nb_part; //Reprendre ici car particules peuvent avoir plus de faces
   int size = 3 * nb_faces;
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<Face>::iterator F=P->faces.begin();F!=P->faces.end();F++)
