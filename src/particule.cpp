@@ -142,8 +142,10 @@ void Particule::barycentre(Solide* Sol, const int& cell_type) {
 }
 
 void Particule::volume(Solide* Sol, const int& cell_type) {
-  if(cell_type == 4) //Tetra
+  if(cell_type == 4) {//Tetra
     V = cross_product(Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[1]].pos),Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[2]].pos))*Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[3]].pos)/6.;
+    V = sqrt( V * V);
+  }
   else if(cell_type == 5) {//Hexa
     const Point_3 v0 = Sol->vertex[vertices[0]].pos;
     const Point_3 v1 = Sol->vertex[vertices[1]].pos;

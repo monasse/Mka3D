@@ -1537,8 +1537,10 @@ const double Solide::Energie_cinetique(){
     if(not(P->split))
       E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
     //E += 1./2. * P->m * P->u * P->u;
-    if(1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4. < 0.)
+    if(1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4. < 0.) {
       cout << "Particule : " << P->id << " energie cinétique negative" << endl;
+      cout << "Volume : " << P->V << endl;
+    }
   }
   return E;
   //return 0.;
