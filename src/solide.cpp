@@ -525,7 +525,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
     if(nb_faces > 1) { //On appelle la fonction de splitting
       //cout << "On appelle le splitting !" << endl;
-      splitting_elements(P->id, rho);
+      //splitting_elements(P->id, rho);
     }
   }
 
@@ -1170,8 +1170,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu, 0., 0., 0.;
       Mat *= faces[F].S / V;
       double nrm = Mat.norm();
-      Mat(3,2) = nrm; //1.e17 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
-      //Mat(3,2) = 1.; //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
+      //Mat(3,2) = nrm; //1.e17 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
+      Mat(3,2) = 1.; //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
 
 
       //cout << "Matrice inversée : " << Mat << endl;
@@ -1179,7 +1179,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //double def_ref = 0.001 * t / T;
       //b << (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,0.,1.), /*nrm * */faces[F].centre.z() * def_ref; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 
-      b << (-contrainte * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,0.,1.), nrm * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //faces[F].centre.z() * def_ref;
+      b << (-contrainte * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,0.,1.), /*nrm * */displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //faces[F].centre.z() * def_ref;
 
       //cout << "Second membre : " << b << endl;
 
@@ -1195,21 +1195,23 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       x = mat.solve(b);
 	//}
 
-      //cout << "Attendu : " << faces[F].centre.z() * def_ref << endl; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl; // << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
-      //cout << "Deplacement normal : " << x(2) << endl;
+      cout << "Attendu : " << displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl; // faces[F].centre.z() * def_ref << endl; // << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
+      cout << "Deplacement normal : " << x(2) << endl;
       //cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
+
+      //Test contraintes
+      Vector_3 nIJ = faces[F].normale;
+      Matrix Dij_n(tens_sym(faces[F].I_Dx,  nIJ)); //- P->Dx
+      //P->discrete_gradient += faces[F].S /  P->V * Dij_n;
+    
+      Matrix test_contrainte = contrainte + lambda * (faces[F].S /  V * Dij_n).tr() * unit() + 2*mu * (faces[F].S /  V * Dij_n); //Calcul des contraintes complètes
+      //if(sqrt((test_contrainte * faces[F].normale - ((test_contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale).squared_length()) > 0.0001)
+      cout << "Contraintes tangentielles sur bord Neumann : " << sqrt((test_contrainte * faces[F].normale).squared_length()) << endl;
     }
 
-    //Test contraintes
-    /*Vector_3 nIJ = faces[F].normale;
-    Matrix Dij_n(tens_sym(faces[F].I_Dx,  nIJ)); //- P->Dx
-    P->discrete_gradient += faces[F].S /  P->V * Dij_n;
-    
-    contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Calcul des contraintes complètes
-    if(sqrt((contrainte * faces[F].normale).squared_length()) > 0.0001)
-    cout << "Contrainte sur bord 1 de Neumann : " << sqrt((contrainte * faces[F].normale).squared_length()) << endl;*/
+
   }
   else if(num_faces.size() == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
     cout << "2 faces sur bord de Neumann !" << endl;
