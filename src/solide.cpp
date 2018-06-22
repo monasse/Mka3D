@@ -1203,7 +1203,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       cout << "Attendu : " << displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl; // faces[F].centre.z() * def_ref << endl; // << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       cout << "Deplacement normal : " << x(2) << endl;
-      //cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
+      cout << "Deplacements tangents : " << x(0) << " " << x(1) << endl;
       
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2);
 
@@ -1214,13 +1214,13 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     
       Matrix test_contrainte = contrainte + lambda * (faces[F].S /  V * Dij_n).tr() * unit() + 2*mu * (faces[F].S /  V * Dij_n); //Calcul des contraintes complètes
       //if(sqrt((test_contrainte * faces[F].normale - ((test_contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale).squared_length()) > 0.0001)
-      cout << "Contraintes tangentielles sur bord Neumann : " << sqrt((test_contrainte * faces[F].normale).squared_length()) << endl;
+      cout << "Contraintes tangentielles sur bord Neumann : " << (test_contrainte * faces[F].normale) * s << " and " << (test_contrainte * faces[F].normale) * tt << endl;
     }
 
 
   }
   else if(num_faces.size() == 2) { //Inversion d'un système linéaire de 6 équations avec Eigen
-    cout << "2 faces sur bord de Neumann !" << endl;
+    //cout << "2 faces sur bord de Neumann !" << endl;
     int F = num_faces[0];
     int Fp = num_faces[1];
     Eigen::Matrix<double, 6, 1> x; //Contient les valeurs aux faces
