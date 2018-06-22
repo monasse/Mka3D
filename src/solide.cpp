@@ -1153,25 +1153,31 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << "Valeur interpolée : "  << faces[F].I_Dx << endl;
     }
     else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
-      /*Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
+      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
       Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
       Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
+
+      Vector_3 s = Vector_3(vertex[faces[F].vertex[0]].pos, vertex[faces[F].vertex[1]].pos);
+      s = s / sqrt(s.squared_length());
+      Vector_3 tt = Vector_3(vertex[faces[F].vertex[0]].pos, vertex[faces[F].vertex[2]].pos);
+      tt = tt / sqrt(tt.squared_length());
       
-      Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
+      //Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
+      Mat << mu * s.x(), mu * s.y(), mu * s.z(), mu * tt.x(), mu * tt.y(), mu * tt.z(), 0., 0., 0.;
       Mat *= faces[F].S / V;
       Mat(2,0) = 0.;
       Mat(2,1) = 0.;
-      Mat(2,2) = 1.;*/
+      Mat(2,2) = 1.;
 
-      Eigen::Matrix<double, 4, 1> b; //4 //Vecteur second membre. Neumann homogène pour l'instant
+      /*Eigen::Matrix<double, 4, 1> b; //4 //Vecteur second membre. Neumann homogène pour l'instant
       Eigen::Matrix<double, 3, 1> x; //3 //Contient les valeurs aux faces
       Eigen::MatrixXd Mat(4,3); //4 //Premier bloc diagonal
 				    
       Mat << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu, 0., 0., 0.;
       Mat *= faces[F].S / V;
       double nrm = Mat.norm();
-      //Mat(3,2) = nrm; //1.e17 //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
       Mat(3,2) = 1.; //Attention la valeur mise ici doit coller avec celle dans second membre et ordre de grandeur des autres valeurs dans la matrice !
+      */
 
 
       //cout << "Matrice inversée : " << Mat << endl;
@@ -1179,21 +1185,21 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //double def_ref = 0.001 * t / T;
       //b << (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale + ((contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale  + faces[F].S / V * (lambda + 2.*mu) * faces[F].centre.z() * def_ref * faces[F].normale) * Vector_3(0.,0.,1.), /*nrm * */faces[F].centre.z() * def_ref; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //BC de Dirichlet
 
-      b << (-contrainte * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,1.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,0.,1.), /*nrm * */displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //faces[F].centre.z() * def_ref;
+      b << (-contrainte * faces[F].normale) * Vector_3(1.,0.,0.), (-contrainte * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.); //faces[F].centre.z() * def_ref;
 
       //cout << "Second membre : " << b << endl;
 
       //Inversion du système !
-      /*typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+      typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
       Eigen::FullPivLU<Matrix3x3> lu(Mat);
       if( lu.rank() == 3) //Test voir si système inversible...
 	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
-	else {*/
+	else {
 	//Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-      typedef Eigen::Matrix<double, 4, 3> Matrix4x3;
-      Eigen::CompleteOrthogonalDecomposition<Matrix4x3> mat(Mat);
-      x = mat.solve(b);
-	//}
+	  typedef Eigen::Matrix<double, 3, 3> Matrix3x3;
+	  Eigen::CompleteOrthogonalDecomposition<Matrix3x3> mat(Mat);
+	  x = mat.solve(b);
+	}
 
       cout << "Attendu : " << displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl; // faces[F].centre.z() * def_ref << endl; // << " " << -0.3 * faces[F].centre.x() * def_ref << " " << -0.3 * faces[F].centre.y() * def_ref << endl;
       cout << "Deplacement normal : " << x(2) << endl;
