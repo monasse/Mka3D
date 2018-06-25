@@ -76,6 +76,7 @@ public:
   std::vector<Face> faces;
   std::vector<Particule> solide; //Particules du maillage
   double h; //Taille du maillage. Max de la taille des particules
+  double eta; //Paramètre de pénalisation
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé

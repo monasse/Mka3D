@@ -248,9 +248,11 @@ int main(){
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
-  /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
-    cout << "Particle pos : " << P->x0 << endl;
-    }*/
+  double eta = 0.;
+  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++){
+    eta = max(eta, F->h);
+  }
+  S.eta = eta; //Pour l'instant on prend eta qui vaut la valeur max des taille de faces
   	
   //Initialization of time measurements
   int iter=0;	
