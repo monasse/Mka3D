@@ -1354,7 +1354,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       //Assemblage du second membre
       double def_ref = 0.001 * t / T;
-      Matrix contrainte_aux = contrainte; // + faces[F].S / V * (lambda + 2*mu) * faces[F].centre.z() * def_ref * tens(n, n);
+      Matrix contrainte_aux = contrainte + faces[F].S / V * (lambda * faces[F].centre.z() * def_ref * unit() + 2*mu * faces[F].centre.z() * def_ref * tens(n, n));
       bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       //b << ((-contrainte) * faces[F].normale) * s, ((-contrainte) * faces[F].normale) * tt, displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fp].normale) * s, ((-contrainte) * faces[Fp].normale) * tt, ((-contrainte) * faces[Fp].normale) * n;
       bb *= 1. / mu; //On divise par mu pour adimensionnaliser
