@@ -1058,6 +1058,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
       
 	//On reconstruit la valeur du déplacement sur les faces de Neumann
 	if(num_faces.size() > 0) {
+	  cout << "Num particule : " << P->id << endl;
 	  reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
 	
 	  //On recalcul le gradient discret
@@ -1269,6 +1270,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Vector_3 s = faces[F].vec_tangent_1;
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
+
+      cout << "Vecteurs tangents : " << s << " " << tt << endl;
       
       /*Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
       A_FF << faces[F].S / V * mu, 0., 0.,  0.,  faces[F].S / V * mu, 0., 0., 0., 1.;
@@ -1351,7 +1354,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       //Assemblage du second membre
       double def_ref = 0.001 * t / T;
-      Matrix contrainte_aux = contrainte + faces[F].S / V * (lambda + 2*mu) * faces[F].centre.z() * def_ref * tens(n, n);
+      Matrix contrainte_aux = contrainte; // + faces[F].S / V * (lambda + 2*mu) * faces[F].centre.z() * def_ref * tens(n, n);
       bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       //b << ((-contrainte) * faces[F].normale) * s, ((-contrainte) * faces[F].normale) * tt, displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fp].normale) * s, ((-contrainte) * faces[Fp].normale) * tt, ((-contrainte) * faces[Fp].normale) * n;
       bb *= 1. / mu; //On divise par mu pour adimensionnaliser
