@@ -1065,6 +1065,9 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	  P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
 	  P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+	  P->grad.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+	  P->grad.col2 = Vector_3(0., 0., 0.);
+	  P->grad.col3 = Vector_3(0., 0., 0.);
 	  for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
 	    int f = P->faces[i];
 
@@ -1080,6 +1083,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	      nIJ = -nIJ; //Normale pas dans le bon sens...
 	    Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
 	    P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	    P->grad += faces[f].S / P->V * tens(faces[f].I_Dx, nIJ);
 	  }
 	}
       
@@ -1379,6 +1383,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + faces[F].centre.z() * def_ref * n; //Face mixte
       faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
+      cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Pas nul. Normal ?
 
       //Test contraintes
       Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
@@ -1677,13 +1682,25 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk<< "\n";
   vtk << "DATASET UNSTRUCTURED_GRID" << endl;
   vtk << "POINTS " << nb_points << " DOUBLE" << endl;
-    
+
+  if(reconstruction) { //Sortie des points
+    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      if(not(P->split)) {
+	for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+	  for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++)
+	    vtk << P->x0 + P->Dx + P->grad * (vertex[*V].pos - P->x0) << endl;
+	}
+      }
+    }
+  }
+  else {
   //Sortie des points
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    if(not(P->split)) {
-      for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
-	for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++)
-	  vtk << P->mvt_t(vertex[*V].pos) << endl;
+    for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+      if(not(P->split)) {
+	for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+	  for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++)
+	    vtk << P->mvt_t(vertex[*V].pos) << endl;
+	}
       }
     }
   }
@@ -1720,6 +1737,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     if(not(P->split)) {
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
 	vtk << P->Dx << endl;
+	//vtk << P->Dx + P->grad * (vertex[*V].pos - P->x0) << endl;
     }
   }
   vtk << "\n";

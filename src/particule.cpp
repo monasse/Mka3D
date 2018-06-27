@@ -41,7 +41,7 @@ inline double signe(const double &x)
   return (x < 0.) ? -1. : 1. ;
 }
 
-Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx() {
+Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx(), grad() {
   id = Id;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien
   seuil_elas = 0.;
@@ -51,7 +51,7 @@ Particule::Particule(const int& Id):discrete_gradient(), contrainte(), epsilon_p
   h=0.;
 }
 
-Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx()
+Particule::Particule():discrete_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx(), grad()
 {
   id = 0;
   def_plas_cumulee = 0.; //Déformation plastique cumulée du lien

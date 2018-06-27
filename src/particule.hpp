@@ -77,7 +77,8 @@ class Particule
   double h; //Diamètre de la particule
 
   //Variables pour plasticité et nouvelle formulation Mka !
-  Matrix discrete_gradient; //Gradient reconstruit par particule
+  Matrix grad; //Gradient reconstruit par particule
+  Matrix discrete_gradient; //Gradient symétrique reconstruit par particule
   Matrix contrainte; //Contrainte par particule
   double def_plas_cumulee; //Déformation plastique cumulée du lien
   Matrix epsilon_p; //Déformation plastique rémanante
