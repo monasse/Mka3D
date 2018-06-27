@@ -39,7 +39,7 @@
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
-Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1){
+Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const int& recon){
   lambda = E * nu / (1.+nu) / (1. - 2.*nu);
   mu = E / 2. / (1.+nu);
   A = A1;
@@ -47,6 +47,7 @@ Solide::Solide(const double& E, const double& nu, const double& B1, const double
   n = n1;
   H = H1;
   h = 0.;
+  reconstruction = recon;
 }
 
 Solide::Solide(){
@@ -57,6 +58,7 @@ Solide::Solide(){
   n = 0.;
   H = 0.;
   h = 0.;
+  reconstruction = 0;
 }
 
 Solide::~Solide(){   
@@ -1336,16 +1338,19 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       Eigen::MatrixXd A_FFp(2,3); //Premier bloc hors-diagonale
       A_FFp << n * faces[Fp].normale, 0., faces[Fp].normale * s, 0., n * faces[Fp].normale, faces[Fp].normale * tt;
+      //A_FFp << 0., 0., faces[Fp].normale * s, 0., 0., faces[Fp].normale * tt;
       A_FFp *= faces[Fp].S / V; // * mu
       //A_FF *= mu;
 
       Eigen::MatrixXd A_FpF(3,2); //Second bloc hors-diagonale
       A_FpF << n * faces[Fp].normale, 0., 0., n * faces[Fp].normale,  faces[Fp].normale * s, faces[Fp].normale * tt;
+      //A_FpF << 0., 0., 0., 0.,  faces[Fp].normale * s, faces[Fp].normale * tt;
       A_FpF *= faces[F].S / V; // * mu
       //A_FF *= mu;
 
       Eigen::MatrixXd A_FpFp(3,3); //Second bloc diagonal
       A_FpFp << (lambda + mu) * (faces[Fp].normale * s) * (faces[Fp].normale * s) + mu, (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * s),  (lambda + mu) * (faces[Fp].normale * n) * (faces[Fp].normale * s),  (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * s),  (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * tt) + mu, (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * n), (lambda + mu) * (faces[Fp].normale * n) * (faces[Fp].normale * s), (lambda + mu) * (faces[Fp].normale * n) * (faces[Fp].normale * tt), (lambda + mu) * (faces[Fp].normale * n) * (faces[Fp].normale * n) + mu;
+      //A_FpFp << (lambda + mu) * (faces[Fp].normale * s) * (faces[Fp].normale * s) + mu, (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * s),  0.,  (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * s),  (lambda + mu) * (faces[Fp].normale * tt) * (faces[Fp].normale * tt) + mu, 0., 0., 0., mu;
       A_FpFp *= faces[Fp].S / V / mu; //On divise par mu pour adimensionnaliser
 
       //Assemblage de la matrice
@@ -1383,7 +1388,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + faces[F].centre.z() * def_ref * n; //Face mixte
       faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
-      cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Pas nul. Normal ?
+      cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
+      cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être négatif non ?
+      cout << "Prod scal : " << faces[Fp].normale * n << endl;
 
       //Test contraintes
       Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
@@ -1735,9 +1742,13 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)) {
-      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
-	vtk << P->Dx << endl;
-	//vtk << P->Dx + P->grad * (vertex[*V].pos - P->x0) << endl;
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
+	if(reconstruction)
+	  vtk << faces[*F].I_Dx << endl;
+	else
+	  vtk << P->Dx << endl;
+      }
+	
     }
   }
   vtk << "\n";

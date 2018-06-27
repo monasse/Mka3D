@@ -239,7 +239,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S(E, nu, B, n, A, H);
+  Solide S(E, nu, B, n, A, H, reconstruction);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   if(mesh_type == 0)
     S.Init((nom_fichier+".1.node").c_str(), (nom_fichier+".1.ele").c_str(), (nom_fichier+".1.face").c_str(), rep, numrep, rho);

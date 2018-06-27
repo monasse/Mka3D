@@ -41,7 +41,7 @@ class Solide
 public:
   
   Solide();//:solide(std::vector<Particule>(1)){}
-  Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1);
+  Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const int& recon);
   Solide(const std::vector<Particule> & Part);
   ~Solide();
   Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
@@ -84,6 +84,8 @@ public:
   double B; //Ecrouissage JC
   double n; //Ecrouissage JC
   double H; //Ecrouissage linéaire
+
+  int reconstruction; //Indique si on a la sortie P0 ou P1 des déplacements
 };
 
 
