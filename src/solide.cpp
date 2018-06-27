@@ -1001,6 +1001,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
       faces[i].I_Dx = Vector_3(0., 0., 0.);
+      faces[i].I_Dx = faces[i].I_Dx + displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.) * faces[i].normale;
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
@@ -1050,7 +1051,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	    nIJ = -nIJ; //Normale pas dans le bon sens...
 	  Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	  if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	  if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	    P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	  //else if(faces[f].BC == 1) //On ajoute la partie Dirichlet imposée. Si toute la face était en dirichlet elle finirait comme une face intérieure au-dessus...
 	  //P->discrete_gradient += -faces[f].S /  P->V * ((Dij_n * faces[F].normale) * faces[F].normale) * faces[F].normale;
@@ -1061,6 +1062,10 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	//On reconstruit la valeur du déplacement sur les faces de Neumann
 	if(num_faces.size() > 0) {
 	  //cout << "Num particule : " << P->id << endl;
+	  /*cout << "Apres calcul : " << endl;
+	  cout << P->contrainte.col1 << endl;
+	  cout << P->contrainte.col2 << endl;
+	  cout << P->contrainte.col3 << endl;*/
 	  reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
 	
 	  //On recalcul le gradient discret
@@ -1359,29 +1364,55 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Matt.topRightCorner<2,3>() = A_FFp;
       Matt.bottomLeftCorner<3,2>() = A_FpF;
       Matt.bottomRightCorner<3,3>() = A_FpFp;
-
+      
+      double mat_norme = Matt.norm();
+      Matt *= 1. / mat_norme;
+      //cout << "Norme matrice : " << mat_norme << endl;
       //cout << Matt << endl;
 
       //Assemblage du second membre
       //double def_ref = 0.001 * t / T;
-      Matrix contrainte_aux = contrainte + faces[F].S / V * (lambda * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * unit() + 2*mu * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * tens(n, n));
+      //Matrix contrainte_aux = contrainte + faces[F].S / V * (lambda * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * unit() + 2*mu * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * tens(n, n));
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
-      bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
-      //b << ((-contrainte) * faces[F].normale) * s, ((-contrainte) * faces[F].normale) * tt, displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fp].normale) * s, ((-contrainte) * faces[Fp].normale) * tt, ((-contrainte) * faces[Fp].normale) * n;
-      bb *= 1. / mu; //On divise par mu pour adimensionnaliser
+      //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
+      bb << ((-contrainte) * faces[F].normale) * s, ((-contrainte) * faces[F].normale) * tt, ((-contrainte) * faces[Fp].normale) * s, ((-contrainte) * faces[Fp].normale) * tt, ((-contrainte) * faces[Fp].normale) * n;
+      //bb *= 1. / mu; //On divise par mu pour adimensionnaliser
+      double bb_norme = bb.norm();
+      //cout << "Norme second membre : " << bb_norme << endl;
+      //bb /= 10.;
+      if(bb_norme > 0.1)
+	bb *= 1. / bb_norme;
+
+      /*cout << "Pour inversion : " << endl;
+      cout << contrainte.col1 << endl;
+      cout << contrainte.col2 << endl;
+      cout << contrainte.col3 << endl;*/
 
       //cout << bb << endl;
 
       //Résolution
-      typedef Eigen::Matrix<double, 5, 5> Matrix5x5;
-      Eigen::FullPivLU<Matrix5x5> lu(Matt);
-      //cout << lu.rank() << endl;
-      if( lu.rank() == 5) //Test voir si système inversible...
-	xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
-      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+      if(bb_norme > 0.1) {
+	xx(0) = 0.;
+	xx(1) = 0.;
+	xx(2) = 0.;
+	xx(3) = 0.;
+	xx(4) = 0.;
+      }
+      else {
 	typedef Eigen::Matrix<double, 5, 5> Matrix5x5;
-	Eigen::CompleteOrthogonalDecomposition<Matrix5x5> mat(Matt);
-	xx = mat.solve(bb);
+	Eigen::FullPivLU<Matrix5x5> lu(Matt);
+	//cout << lu.rank() << endl;
+	if( lu.rank() == 5) //Test voir si système inversible...
+	  xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
+	else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	  typedef Eigen::Matrix<double, 5, 5> Matrix5x5;
+	  Eigen::CompleteOrthogonalDecomposition<Matrix5x5> mat(Matt);
+	  xx = mat.solve(bb);
+	}
+
+	//xx /= mu; //Pour adimensionnaliser
+	//xx *= 10.;
+	xx *= bb_norme / mat_norme / mu;
       }
 
       /*cout << "Deplacement normal : " << faces[F].centre.z() * def_ref << endl;
@@ -1390,9 +1421,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
       faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
-      /*cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
-      cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être négatif non ?
-      cout << "Prod scal : " << faces[Fp].normale * n << endl; */
+      //cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
+      //cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être positif
+      //cout << "Prod scal : " << faces[Fp].normale * n << endl;
 
       //Test contraintes
       /*Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
@@ -1775,7 +1806,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   }
   vtk << "\n";
   //Tangent 1
-  /*vtk << "VECTORS tan_1 double" << endl;
+  vtk << "VECTORS tan_1 double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
@@ -1789,7 +1820,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
     vtk << faces[*F].vec_tangent_2 << endl;
   }
-  vtk << "\n";*/
+  vtk << "\n";
   //Contrainte
   vtk << "TENSORS contraintes double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
