@@ -1362,20 +1362,20 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
 
-      Eigen::Matrix<double, 6, 1> xx; //Contient les valeurs aux faces
-      Eigen::Matrix<double, 6, 6> Matt; //Matrice à inverser
+      Eigen::Matrix<double, 5, 1> xx; //Contient les valeurs aux faces
+      Eigen::Matrix<double, 6, 5> Matt; //Matrice à inverser
       Eigen::Matrix<double, 6, 1> bb; //Vecteur second membre. Neumann homogène pour l'instant
       
-      Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
-      A_FF << mu * faces[F].S / V, 0., 0., 0.,  mu * faces[F].S / V, 0., 0., 0., 0.;; // * mu
+      Eigen::MatrixXd A_FF(3,2); //Premier bloc diagonal
+      A_FF << mu * faces[F].S / V, 0., 0.,  mu * faces[F].S / V, 0., 0.; // * mu
 
       Eigen::MatrixXd A_FFp(3,3); //Premier bloc hors-diagonale
       A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt, lambda * faces[Fp].normale * s, lambda * faces[Fp].normale * tt, (lambda +2.*mu) * faces[Fp].normale * n;
       //A_FFp << 0., 0., faces[Fp].normale * s, 0., 0., faces[Fp].normale * tt;
       A_FFp *= faces[Fp].S / V; // * mu
 
-      Eigen::MatrixXd A_FpF(3,3); //Second bloc hors-diagonale
-      A_FpF << mu * n * faces[Fp].normale, 0., 0., 0., mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, mu * faces[Fp].normale * tt, 0.;
+      Eigen::MatrixXd A_FpF(3,2); //Second bloc hors-diagonale
+      A_FpF << mu * n * faces[Fp].normale, 0., 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * s, mu * faces[Fp].normale * tt;
       //A_FpF << 0., 0., 0., 0.,  faces[Fp].normale * s, faces[Fp].normale * tt;
       A_FpF *= faces[F].S / V; // * mu
 
@@ -1385,9 +1385,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       A_FpFp *= faces[Fp].S / V; // / mu; //On divise par mu pour adimensionnaliser
 
       //Assemblage de la matrice
-      Matt.topLeftCorner<3,3>() = A_FF;
+      Matt.topLeftCorner<3,2>() = A_FF;
       Matt.topRightCorner<3,3>() = A_FFp;
-      Matt.bottomLeftCorner<3,3>() = A_FpF;
+      Matt.bottomLeftCorner<3,2>() = A_FpF;
       Matt.bottomRightCorner<3,3>() = A_FpFp;
       
       //double mat_norme = Matt.norm();
@@ -1425,16 +1425,17 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	xx(4) = 0.;
       }
       else {*/
-      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-      Eigen::FullPivLU<Matrix6x6> lu(Matt);
+      typedef Eigen::Matrix<double, 6, 5> Matrix6x5;
+      Eigen::FullPivLU<Matrix6x5> lu(Matt);
       cout << lu.rank() << endl;
-      if( lu.rank() == 6) //Test voir si système inversible...
+      /*if( lu.rank() == ) //Test voir si système inversible...
 	xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
       else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-	typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-	Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Matt);
-	xx = mat.solve(bb);
-      }
+      */
+      //typedef Eigen::Matrix<double, 6, 5> Matrix6x5;
+      Eigen::CompleteOrthogonalDecomposition<Matrix6x5> mat(Matt);
+      xx = mat.solve(bb);
+	//}
 
 	//xx /= mu; //Pour adimensionnaliser
 	//xx *= 10.;
@@ -1448,7 +1449,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       cout << "Deplacements tangents : " << xx(0) << " " << xx(1) << endl;
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + faces[F].centre.z() * def_ref * n; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
-      faces[Fp].I_Dx = xx(3) * s + xx(4) * tt + xx(5) * n; //Face de Neumann
+      faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
       /*cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
       cout << faces[Fp].I_Dx << endl;
       cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être positif
