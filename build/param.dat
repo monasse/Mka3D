@@ -16,5 +16,5 @@ n_ecrouissage_JC	.31
 A_limite_elas		45000000.
 H_ecrouissage_lineaire	0.
 mesh_type		1
-nom_fichier		petite_poutre
+nom_fichier		cylindre
 
