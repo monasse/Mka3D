@@ -1363,14 +1363,14 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Vector_3 n = faces[F].normale;
 
       Eigen::Matrix<double, 5, 1> xx; //Contient les valeurs aux faces
-      Eigen::Matrix<double, 6, 5> Matt; //Matrice à inverser
-      Eigen::Matrix<double, 6, 1> bb; //Vecteur second membre. Neumann homogène pour l'instant
+      Eigen::Matrix<double, 5, 5> Matt; //Matrice à inverser
+      Eigen::Matrix<double, 5, 1> bb; //Vecteur second membre. Neumann homogène pour l'instant
       
-      Eigen::MatrixXd A_FF(3,2); //Premier bloc diagonal
-      A_FF << mu * faces[F].S / V, 0., 0.,  mu * faces[F].S / V, 0., 0.; // * mu
+      Eigen::MatrixXd A_FF(2,2); //Premier bloc diagonal
+      A_FF << mu * faces[F].S / V, 0., 0.,  mu * faces[F].S / V; // * mu
 
-      Eigen::MatrixXd A_FFp(3,3); //Premier bloc hors-diagonale
-      A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt, lambda * faces[Fp].normale * s, lambda * faces[Fp].normale * tt, (lambda +2.*mu) * faces[Fp].normale * n;
+      Eigen::MatrixXd A_FFp(2,3); //Premier bloc hors-diagonale
+      A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt;
       //A_FFp << 0., 0., faces[Fp].normale * s, 0., 0., faces[Fp].normale * tt;
       A_FFp *= faces[Fp].S / V; // * mu
 
@@ -1385,8 +1385,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       A_FpFp *= faces[Fp].S / V; // / mu; //On divise par mu pour adimensionnaliser
 
       //Assemblage de la matrice
-      Matt.topLeftCorner<3,2>() = A_FF;
-      Matt.topRightCorner<3,3>() = A_FFp;
+      Matt.topLeftCorner<2,2>() = A_FF;
+      Matt.topRightCorner<2,3>() = A_FFp;
       Matt.bottomLeftCorner<3,2>() = A_FpF;
       Matt.bottomRightCorner<3,3>() = A_FpFp;
       
@@ -1401,7 +1401,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	//+ faces[F].S / V * (lambda * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * unit() + 2*mu * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * tens(n, n));
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
-      bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[F].normale) * n, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
+      bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, /*((-contrainte_aux) * faces[F].normale) * n,*/ ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       //bb *= 1. / mu; //On divise par mu pour adimensionnaliser
       //double bb_norme = bb.norm();
       //cout << "Norme second membre : " << bb_norme << endl;
@@ -1425,17 +1425,15 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	xx(4) = 0.;
       }
       else {*/
-      typedef Eigen::Matrix<double, 6, 5> Matrix6x5;
-      Eigen::FullPivLU<Matrix6x5> lu(Matt);
+      typedef Eigen::Matrix<double, 5, 5> Matrix5x5;
+      Eigen::FullPivLU<Matrix5x5> lu(Matt);
       cout << lu.rank() << endl;
-      /*if( lu.rank() == ) //Test voir si système inversible...
+      if( lu.rank() == 5) //Test voir si système inversible...
 	xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
       else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-      */
-      //typedef Eigen::Matrix<double, 6, 5> Matrix6x5;
-      Eigen::CompleteOrthogonalDecomposition<Matrix6x5> mat(Matt);
-      xx = mat.solve(bb);
-	//}
+	Eigen::CompleteOrthogonalDecomposition<Matrix5x5> mat(Matt);
+	xx = mat.solve(bb);
+      }
 
 	//xx /= mu; //Pour adimensionnaliser
 	//xx *= 10.;
