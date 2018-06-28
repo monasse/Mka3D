@@ -707,9 +707,21 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++)
-    P->solve_vitesse(dt, flag_2d, Amort, t , T);
+  //Mise a jour du coeff d'amortissement dans chaque particule
+  //Force_damping(dt, Amort, t, T);
+  //Predicteur
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
+  }
+  //Calcul des forces d'amortissement
+  //Force_damping(dt, Amort, t, T);
+  //Correcteur
+  //for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    //P->solve_vitesse_corrector(dt, flag_2d, Amort, t , T);
+  //}
+  
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
@@ -1254,13 +1266,53 @@ void Solide::Forces_internes(const double& dt, const double& t, const double& T)
 	Vector_3 nIJ = faces[num_face].normale;
 	/*if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
 	  cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;*/
-	P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	if(faces[num_face].BC != -1) {
+	  P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	} else {
+	  //Rien à faire !
+	}
+	
+	
       }
     }
     /*cout << "Particule :" << P->first << endl;
     cout << "Force : " << P->Fi << endl; */
   }
 }
+
+void Solide::Force_damping(const double& dt, const double& Amort, const double& t, const double& T)
+{//Calcul des forces d'amortissement pour chaque particule
+  for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){ //Remet à zéro des forces d'amortissement et de coefficients d'amortissement par lien
+    P->F_damp = Vector_3(0.,0.,0.);
+    P->damping = 0.;
+  }
+  
+  for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
+    for(int i=0 ; i<P->faces.size() ; i++){
+      int num_face = P->faces[i]; //Numéro de la face dans l'ensemble des faces contenu dans le solide
+      /*int part_1 = faces[num_face].voisins[0];
+	int part_2 = faces[num_face].voisins[1];*/
+      if(faces[num_face].BC == 0) { //Forces sur faces internes
+	int part = faces[num_face].voisins[0];
+	int part2 = faces[num_face].voisins[1];
+	if(part==P->id){
+	  //cout << "part=" << part << " P.id=" << P->id << endl;
+	  part = faces[num_face].voisins[1];
+	  part2 = faces[num_face].voisins[0];
+	}
+	const Particule& P1 = solide[part];
+	if(part2!=P->id || part!=P1.id){
+	  cout << "part2=" << part2 << " P.id=" << P->id << " part=" << part << " P1.id=" << P1.id << endl;
+	  getchar();
+	}
+	double damping_link = Amort*sqrt(faces[num_face].S*(lambda+2*mu)*(P->m/P->V+P1.m/P1.V));
+	P->F_damp = P->F_damp + damping_link * P1.u;
+	P->damping += damping_link;
+      }
+    }
+  }
+}
+
 
 const double Solide::Energie(){
   return Energie_cinetique()+Energie_potentielle();
@@ -1315,6 +1367,7 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
       sigma = min(sigma,faces[solide[i].faces[j]].D0);
     }
   }
+  cout << "sigma=" << sigma << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(int j=0;j<P->faces.size();j++){
       if(faces[P->faces[j]].voisins[0] >=0 && faces[P->faces[j]].voisins[1] >= 0){
@@ -1322,6 +1375,9 @@ double Solide::pas_temps(const double& t, const double& T, const double& cfls, c
       }
     }
   }
+  cout << "cs=" << cs << endl;
+  getchar();
+  
   dt = min(dt,T-t);
   return dt;
 }

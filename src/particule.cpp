@@ -121,6 +121,16 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   //u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
 }
 
+void Particule::solve_vitesse_predictor(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+  u_prev = u;
+  //u = (m*u + Fi * dt) / (m + dt*damping) ; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
+  u = (m*u + Fi * dt) / (m + dt*Amort*m) ; //Amortissement avec forces fluides sur chaque particule. Mettre Amort = 0. pour l'enlever
+}
+
+void Particule::solve_vitesse_corrector(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+  u = u + F_damp * dt / m ; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
+}
+
 void Particule::barycentre(Solide* Sol, const int& cell_type) {
   std::vector<Point_3> aux;
   aux.push_back(Sol->vertex[vertices[0]].pos);
