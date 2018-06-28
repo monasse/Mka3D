@@ -1391,7 +1391,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << bb << endl;
 
       //Résolution
-      if(bb_norme < 0.1) {
+      if(bb_norme < 0.01) {
 	xx(0) = 0.;
 	xx(1) = 0.;
 	xx(2) = 0.;
@@ -1424,10 +1424,10 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
       faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
-      /*cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
+      cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
       cout << faces[Fp].I_Dx << endl;
       cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être positif
-      cout << faces[F].I_Dx << endl;*/
+      cout << faces[F].I_Dx << endl;
       //cout << "Prod scal : " << faces[Fp].normale * n << endl;
 
       //Test contraintes
@@ -1603,13 +1603,19 @@ void Solide::Forces_internes(const double& dt, const double& t, const double& T)
 	  //Ajout de la force issue de la pénalisation
 	  P->Fi = P->Fi + faces[num_face].S * eta / faces[num_face].h * (solide[faces[num_face].voisins[0]].u - solide[faces[num_face].voisins[1]].u) * signe; //signe pour changer le sens du saut selon la particule choisie
 	}
-	else if(faces[num_face].BC != 0) { //Calcul forces sur DDL bords Dirichlet. Vaut 0 exactement en Neumann Homogène. A vérifier... // == 1
+	else if(faces[num_face].BC == -1) { //Calcul forces sur DDL bords Dirichlet. Vaut 0 exactement en Neumann Homogène. A vérifier... // == 1
 	  //cout << "Face au bord" << endl;
 	  int part = faces[num_face].voisins[0];
 	  Vector_3 nIJ = faces[num_face].normale;
 	  /*if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
 	    cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;*/
-	  P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	  //P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	}
+	else if(faces[num_face].BC == 1) { //Calcul forces sur DDL bords Dirichlet. Vaut 0 exactement en Neumann Homogène. A vérifier... // == 1
+	  //cout << "Face au bord" << endl;
+	  int part = faces[num_face].voisins[0];
+	  Vector_3 nIJ = faces[num_face].normale;
+	  P->Fi = P->Fi + faces[num_face].S * ((solide[part].contrainte * nIJ) * nIJ) * nIJ; //On ne met que le composante imposée
 	}
       }
       /*cout << "Particule :" << P->first << endl;
