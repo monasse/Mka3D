@@ -245,14 +245,16 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.vertex.push_back(v2 - 1);
       F.vertex.push_back(v3 - 1);
       F.type = 2;
-      if(tag_2 == 11 || tag_2 == 33) //Dirichlet
+      //cylindre
+      /*if(tag_2 == 11 || tag_2 == 33) //Dirichlet
 	F.BC = -1; //Neumann partout pour ce test  //1
       else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
-	F.BC = -1;
-      /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
+      F.BC = -1;*/
+      //Poutre base carrée
+      if(tag_2 == 6 || tag_2 == 28) //Dirichlet
 	F.BC = -1; //Tout en Neumann pour ce test
       else if(tag_2 == 15 || tag_2 == 19 || tag_2 == 23 || tag_2 == 27) //Neumann
-      F.BC = -1;*/
+      F.BC = -1;
       F.id = faces.size();
       //F.voisins.push_back(F.id); F.voisins.push_back(-1); //Car face au bord
       F.comp_quantities(this); //Calcul de la normale sortante, surface et barycentre face
@@ -1002,17 +1004,26 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Vector_3 s = faces[F].vec_tangent_1;
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
+      //double signe = 1.;
+      if(cross_product(s, tt) * n < 0.)
+        n = -n;
+
+      /*cout << "s : " << s << endl;
+      cout << "tt : " << tt << endl;
+      cout << "n : " << n << endl;
+      cout << "nFp : " << faces[Fp].normale << endl;
+      cout << "Prod scal : " << s * tt << endl; */
 
       Eigen::Matrix<double, 6, 1> xx; //Contient les valeurs aux faces
       Eigen::Matrix<double, 6, 6> Matt; //Matrice à inverser
       Eigen::Matrix<double, 6, 1> bb; //Vecteur second membre. Neumann homogène pour l'instant
       
       //Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
-      A_FF << mu, 0., 0., 0., mu, 0., 0., 0., lambda + 2.*mu;
+      A_FF << mu, 0., 0., 0., mu, 0., 0., 0., (lambda + mu) * n * faces[F].normale + mu;
       A_FF *= faces[F].S / V;
 
       //Eigen::MatrixXd A_FFp(3,3); //Premier bloc hors-diagonale
-      A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt, lambda * faces[Fp].normale * s, lambda * faces[Fp].normale * tt, (lambda + 2.*mu) * (n * faces[Fp].normale);
+      A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt, lambda * (faces[Fp].normale * s) * (n * faces[F].normale), lambda * (faces[Fp].normale * tt) * (n * faces[F].normale), mu * (n * faces[Fp].normale) + mu * (faces[Fp].normale * n) * (n * faces[F].normale) + lambda * (n * faces[Fp].normale);
       A_FFp *= faces[Fp].S / V; // * mu
 
       //Eigen::MatrixXd A_FpF(3,3); //Second bloc hors-diagonale

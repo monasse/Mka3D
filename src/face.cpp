@@ -106,7 +106,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   Vector_3 s = Vector_3(v1, v2);
   vec_tangent_1 = s / sqrt(s.squared_length());
   Vector_3 tt = Vector_3(v1, v3);
-  tt = tt - (s * tt) * s; //On fait en sorte d'avoir une BON
+  tt = tt - (vec_tangent_1 * tt) * vec_tangent_1; //On fait en sorte d'avoir une BON
   vec_tangent_2 = tt / sqrt(tt.squared_length());
 }
 
