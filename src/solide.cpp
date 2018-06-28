@@ -1232,7 +1232,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     if(faces[F].BC == -1 && faces[Fp].BC == -1) {
       //cout << "2 faces sur bord de Neumann !" << endl;
 
-      /*Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
+      Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
       A_FF << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
       A_FF *= faces[F].S / V;
 
@@ -1269,9 +1269,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
-      */
 
-      Vector_3 s = faces[F].vec_tangent_1;
+      /*Vector_3 s = faces[F].vec_tangent_1;
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
 
@@ -1319,11 +1318,6 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       if(bb_norme > 0.1)
 	bb *= 1. / bb_norme;
 
-      /*cout << "Pour inversion : " << endl;
-      cout << contrainte.col1 << endl;
-      cout << contrainte.col2 << endl;
-      cout << contrainte.col3 << endl;*/
-
       //cout << bb << endl;
 
       //Résolution
@@ -1349,16 +1343,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       
       xx *= bb_norme / mat_norme; // / mu;
 
-      /*cout << "Deplacement normal : " << faces[F].centre.z() * def_ref << endl;
-      cout << "Attendus : " << (-0.3 * faces[F].centre.x() * def_ref) * (s * Vector_3(1.,0.,0.)) + (-0.3 * faces[F].centre.y() * def_ref) * (s * Vector_3(0.,1.,0.)) << " " << (-0.3 * faces[F].centre.x() * def_ref) * (tt * Vector_3(1.,0.,0.)) + (-0.3 * faces[F].centre.y() * def_ref) * (tt * Vector_3(0.,1.,0.)) << endl; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl;
-      cout << "Deplacements tangents : " << xx(0) << " " << xx(1) << endl; */
-
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + xx(2) * n; //Face mixte
       faces[Fp].I_Dx = xx(3) * s + xx(4) * tt + xx(5) * n; //Face de Neumann
-      /*cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
-      cout << faces[Fp].I_Dx << endl;
-      cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être positif
-      cout << faces[F].I_Dx << endl; */
 
       Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
       Matrix Dij_2(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale));
@@ -1367,7 +1353,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       if(sqrt((test_contrainte * faces[F].normale).squared_length()) > 0.0001)
 	cout << "Norme Contraintes bord de Neumann 1 : " << sqrt((test_contrainte * faces[F].normale).squared_length()) << endl;
       if(sqrt((test_contrainte * faces[Fp].normale).squared_length()) > 0.0001)
-	cout << "Norme Contraintes bord de Neumann 2 : " << sqrt((test_contrainte * faces[Fp].normale).squared_length()) << endl;
+	cout << "Norme Contraintes bord de Neumann 2 : " << sqrt((test_contrainte * faces[Fp].normale).squared_length()) << endl; */
     }
     else  {
       if(faces[num_faces[0]].BC == 1 && faces[num_faces[1]].BC == -1) {
@@ -1419,7 +1405,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << Matt << endl;
 
       //Assemblage du second membre
-      //double def_ref = 0.001 * t / T;
+      double def_ref = 0.001 * t / T;
       //Matrix contrainte_aux = contrainte + faces[F].S / V * (lambda * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * unit() + 2*mu * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * tens(n, n));
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
@@ -1466,16 +1452,16 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << "xx apres : " << xx << endl;
       //}
 
-      /*cout << "Deplacement normal : " << faces[F].centre.z() * def_ref << endl;
+      //cout << "Deplacement normal : " << faces[F].centre.z() * def_ref << endl;
       cout << "Attendus : " << (-0.3 * faces[F].centre.x() * def_ref) * (s * Vector_3(1.,0.,0.)) + (-0.3 * faces[F].centre.y() * def_ref) * (s * Vector_3(0.,1.,0.)) << " " << (-0.3 * faces[F].centre.x() * def_ref) * (tt * Vector_3(1.,0.,0.)) + (-0.3 * faces[F].centre.y() * def_ref) * (tt * Vector_3(0.,1.,0.)) << endl; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl;
-      cout << "Deplacements tangents : " << xx(0) << " " << xx(1) << endl; */
+      cout << "Deplacements tangents : " << xx(0) << " " << xx(1) << endl;
 
-      faces[F].I_Dx = xx(0) * s + xx(1) * tt + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
+      faces[F].I_Dx = xx(0) * s + xx(1) * tt + faces[F].centre.z() * def_ref * n; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
       faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
-      cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
+      /*cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
       cout << faces[Fp].I_Dx << endl;
       cout << "Test bis : " << faces[F].I_Dx * faces[F].normale << endl; //Devrait être positif
-      cout << faces[F].I_Dx << endl;
+      cout << faces[F].I_Dx << endl; */
       //cout << "Prod scal : " << faces[Fp].normale * n << endl;
 
       //Test contraintes
