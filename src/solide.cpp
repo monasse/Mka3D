@@ -1287,7 +1287,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       A_FFp *= faces[Fp].S / V; // * mu
 
       Eigen::MatrixXd A_FpF(3,3); //Second bloc hors-diagonale
-      A_FpF << mu * n * faces[Fp].normale, 0., lambda * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale,  mu * faces[Fp].normale * tt, lambda * faces[Fp].normale * s, lambda * faces[Fp].normale * tt, (lambda + 2.*mu) * (faces[Fp].normale * n);
+      A_FpF << mu * n * faces[Fp].normale, 0., lambda * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale,  lambda * faces[Fp].normale * tt, mu * faces[Fp].normale * s, mu * faces[Fp].normale * tt, (lambda + 2.*mu) * (faces[Fp].normale * n);
       A_FpF *= faces[F].S / V; // * mu
 
       Eigen::MatrixXd A_FpFp(3,3); //Second bloc diagonal
@@ -1300,8 +1300,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Matt.bottomLeftCorner<3,3>() = A_FpF;
       Matt.bottomRightCorner<3,3>() = A_FpFp;
       
-      double mat_norme = Matt.norm();
-      Matt *= 1. / mat_norme;
+      //double mat_norme = Matt.norm();
+      //Matt *= 1. / mat_norme;
       //cout << "Norme matrice : " << mat_norme << endl;
       //cout << Matt << endl;
 
@@ -1315,33 +1315,24 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double bb_norme = bb.norm();
       //cout << "Norme second membre : " << bb_norme << endl;
       //bb /= 10.;
-      if(bb_norme > 0.1)
-	bb *= 1. / bb_norme;
+      //if(bb_norme > 0.1)
+      //bb *= 1. / bb_norme;
 
       //cout << bb << endl;
 
       //Résolution
-      if(bb_norme < 0.01) {
-	xx(0) = 0.;
-	xx(1) = 0.;
-	xx(2) = 0.;
-	xx(3) = 0.;
-	xx(4) = 0.;
-      }
-      else {
+      typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+      Eigen::FullPivLU<Matrix6x6> lu(Matt);
+      cout << lu.rank() << endl;
+      if( lu.rank() == 6) //Test voir si système inversible...
+	xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
+      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
 	typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-	Eigen::FullPivLU<Matrix6x6> lu(Matt);
-	cout << lu.rank() << endl;
-	if( lu.rank() == 6) //Test voir si système inversible...
-	  xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
-	else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
-	  typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-	  Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Matt);
-	  xx = mat.solve(bb);
-	}
+	Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Matt);
+	xx = mat.solve(bb);
       }
       
-      xx *= bb_norme / mat_norme; // / mu;
+	//xx *= bb_norme / mat_norme; // / mu;
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + xx(2) * n; //Face mixte
       faces[Fp].I_Dx = xx(3) * s + xx(4) * tt + xx(5) * n; //Face de Neumann
@@ -1399,8 +1390,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Matt.bottomLeftCorner<3,2>() = A_FpF;
       Matt.bottomRightCorner<3,3>() = A_FpFp;
       
-      double mat_norme = Matt.norm();
-      Matt *= 1. / mat_norme;
+      //double mat_norme = Matt.norm();
+      //Matt *= 1. / mat_norme;
       //cout << "Norme matrice : " << mat_norme << endl;
       //cout << Matt << endl;
 
@@ -1411,11 +1402,11 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       bb << ((-contrainte) * faces[F].normale) * s, ((-contrainte) * faces[F].normale) * tt, ((-contrainte) * faces[Fp].normale) * s, ((-contrainte) * faces[Fp].normale) * tt, ((-contrainte) * faces[Fp].normale) * n;
       //bb *= 1. / mu; //On divise par mu pour adimensionnaliser
-      double bb_norme = bb.norm();
+      //double bb_norme = bb.norm();
       //cout << "Norme second membre : " << bb_norme << endl;
       //bb /= 10.;
-      if(bb_norme > 0.1)
-	bb *= 1. / bb_norme;
+      //if(bb_norme > 0.1)
+      //bb *= 1. / bb_norme;
 
       /*cout << "Pour inversion : " << endl;
       cout << contrainte.col1 << endl;
@@ -1425,14 +1416,14 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << bb << endl;
 
       //Résolution
-      if(bb_norme < 0.01) {
+      /*if(bb_norme < 0.01) {
 	xx(0) = 0.;
 	xx(1) = 0.;
 	xx(2) = 0.;
 	xx(3) = 0.;
 	xx(4) = 0.;
       }
-      else {
+      else {*/
 	typedef Eigen::Matrix<double, 5, 5> Matrix5x5;
 	Eigen::FullPivLU<Matrix5x5> lu(Matt);
 	//cout << lu.rank() << endl;
@@ -1448,7 +1439,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	//xx /= mu; //Pour adimensionnaliser
 	//xx *= 10.;
       //cout << "xx avant : " << xx << endl;
-      xx *= bb_norme / mat_norme; // / mu;
+      //xx *= bb_norme / mat_norme; // / mu;
       //cout << "xx apres : " << xx << endl;
       //}
 
