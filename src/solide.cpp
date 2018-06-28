@@ -246,7 +246,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.vertex.push_back(v3 - 1);
       F.type = 2;
       if(tag_2 == 11 || tag_2 == 33) //Dirichlet
-	F.BC = 1;
+	F.BC = -1; //Neumann partout pour ce test  //1
       else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
 	F.BC = -1;
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
@@ -824,8 +824,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	//Plastification
 	Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-	P->def_plas_cumulee += delta_p;
-	P->epsilon_p += delta_p * n_elas;
+	//P->def_plas_cumulee += delta_p;
+	//P->epsilon_p += delta_p * n_elas;
 	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
       }
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
