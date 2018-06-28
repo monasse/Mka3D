@@ -1053,7 +1053,7 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	    nIJ = -nIJ; //Normale pas dans le bon sens...
 	  Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	  if(faces[f].BC >= 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	  if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	    P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	  //else if(faces[f].BC == 1) //On ajoute la partie Dirichlet imposée. Si toute la face était en dirichlet elle finirait comme une face intérieure au-dessus...
 	  //P->discrete_gradient += -faces[f].S /  P->V * ((Dij_n * faces[F].normale) * faces[F].normale) * faces[F].normale;
@@ -1397,11 +1397,12 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       //Assemblage du second membre
       double def_ref = 0.001 * t / T;
-      Matrix contrainte_aux = contrainte + faces[F].S / V * ((lambda + 2.*mu) * tens(n,n) + lambda * faces[Fp].normale * s * tens_sym(faces[Fp].normale,s)  + lambda * faces[Fp].normale * tt * tens_sym(faces[Fp].normale,tt) + (lambda + 2.*mu) * faces[Fp].normale * n * tens_sym(faces[Fp].normale, n)) * faces[F].centre.z() * def_ref; //On ajoute au second membre les  termes enlevés dans la matrice.
+      //Matrix contrainte_aux = contrainte + faces[F].S / V * (lambda * faces[Fp].normale * s * tens_sym(faces[Fp].normale,s)  + lambda * faces[Fp].normale * tt * tens_sym(faces[Fp].normale,tt) + (lambda + 2.*mu) * faces[Fp].normale * n * tens_sym(faces[Fp].normale, n)) * faces[F].centre.z() * def_ref; //On ajoute au second membre les  termes enlevés dans la matrice.
+      //(lambda + 2.*mu) * tens(n,n) qu'on ne met plus
 	//+ faces[F].S / V * (lambda * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * unit() + 2*mu * displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * tens(n, n));
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
       //bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
-      bb << ((-contrainte_aux) * faces[F].normale) * s, ((-contrainte_aux) * faces[F].normale) * tt, /*((-contrainte_aux) * faces[F].normale) * n,*/ ((-contrainte_aux) * faces[Fp].normale) * s, ((-contrainte_aux) * faces[Fp].normale) * tt, ((-contrainte_aux) * faces[Fp].normale) * n;
+      bb << ((-contrainte) * faces[F].normale) * s, ((-contrainte) * faces[F].normale) * tt, /*((-contrainte_aux) * faces[F].normale) * n,*/ ((-contrainte) * faces[Fp].normale) * s + faces[F].S / V * lambda * faces[Fp].normale * s * faces[F].centre.z() * def_ref, ((-contrainte) * faces[Fp].normale) * tt + faces[F].S / V * lambda * faces[Fp].normale * tt * faces[F].centre.z() * def_ref, ((-contrainte) * faces[Fp].normale) * n + faces[F].S / V * (lambda + 2.*mu) * faces[Fp].normale * n * faces[F].centre.z() * def_ref;
       //bb *= 1. / mu; //On divise par mu pour adimensionnaliser
       //double bb_norme = bb.norm();
       //cout << "Norme second membre : " << bb_norme << endl;
