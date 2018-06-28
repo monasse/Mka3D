@@ -1005,8 +1005,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
       //double signe = 1.;
-      if(cross_product(s, tt) * n < 0.)
-        n = -n;
+      //if(cross_product(s, tt) * n < 0.)
+      //n = -n;
 
       /*cout << "s : " << s << endl;
       cout << "tt : " << tt << endl;
@@ -1023,11 +1023,12 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       A_FF *= faces[F].S / V;
 
       //Eigen::MatrixXd A_FFp(3,3); //Premier bloc hors-diagonale
-      A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt, lambda * (faces[Fp].normale * s) * (n * faces[F].normale), lambda * (faces[Fp].normale * tt) * (n * faces[F].normale), mu * (n * faces[Fp].normale) + mu * (faces[Fp].normale * n) * (n * faces[F].normale) + lambda * (n * faces[Fp].normale);
+      //A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale, mu * faces[Fp].normale * tt, lambda * (faces[Fp].normale * s) * (n * faces[F].normale), lambda * (faces[Fp].normale * tt) * (n * faces[F].normale), mu * (n * faces[Fp].normale) + mu * (faces[Fp].normale * n) * (n * faces[F].normale) + lambda * (n * faces[Fp].normale);
+      A_FFp << mu * n * faces[Fp].normale, 0., mu * faces[Fp].normale * s, 0., mu * faces[Fp].normale * n, mu * faces[Fp].normale * tt, lambda * (faces[Fp].normale * s), lambda * faces[Fp].normale * tt, (lambda + 2.*mu) * faces[Fp].normale * n;
       A_FFp *= faces[Fp].S / V; // * mu
 
       //Eigen::MatrixXd A_FpF(3,3); //Second bloc hors-diagonale
-      A_FpF << mu * n * faces[Fp].normale, 0., lambda * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale,  mu * faces[Fp].normale * tt, lambda * faces[Fp].normale * s, lambda * faces[Fp].normale * tt, (lambda + 2.*mu) * (faces[Fp].normale * n);
+      A_FpF << mu * n * faces[Fp].normale, 0., lambda * faces[Fp].normale * s, 0., mu * n * faces[Fp].normale,  lambda * faces[Fp].normale * tt, mu * faces[Fp].normale * s, mu * faces[Fp].normale * tt, (lambda + 2.*mu) * (faces[Fp].normale * n);
       A_FpF *= faces[F].S / V; // * mu
 
       //Eigen::MatrixXd A_FpFp(3,3); //Second bloc diagonal
