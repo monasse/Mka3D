@@ -971,11 +971,17 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat.bottomLeftCorner<3,3>() = A_FpF;
       Mat.bottomRightCorner<3,3>() = A_FpFp;
 
+      cout << Mat << endl;
+
+      cout << "Valeurs propres : " << Mat.eigenvalues() << endl;
+
+
       //Assemblage du second membre
       b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
       typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
       Eigen::FullPivLU<Matrix6x6> lu(Mat);
+      cout << lu.rank() << endl;
       if( lu.rank() == 6) //Test voir si système inversible...
 	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
       else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
@@ -984,8 +990,12 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	x = mat.solve(b);
       }
 
+      /*
+
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+
+      */
 
       
 
@@ -993,7 +1003,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
 
-      /*Eigen::Matrix<double, 6, 1> xx; //Contient les valeurs aux faces
+      Eigen::Matrix<double, 6, 1> xx; //Contient les valeurs aux faces
       Eigen::Matrix<double, 6, 6> Matt; //Matrice à inverser
       Eigen::Matrix<double, 6, 1> bb; //Vecteur second membre. Neumann homogène pour l'instant
       
@@ -1022,7 +1032,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double mat_norme = Matt.norm();
       //Matt *= 1. / mat_norme;
       //cout << "Norme matrice : " << mat_norme << endl;
-      //cout << Matt << endl;
+      cout << Matt << endl;
+      cout << "Valeurs propres : " << Matt.eigenvalues() << endl;
 
       //Assemblage du second membre
       //double def_ref = 0.001 * t / T;
@@ -1037,7 +1048,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //if(bb_norme > 0.1)
       //bb *= 1. / bb_norme;
 
-      //cout << bb << endl;
+      cout << bb << endl;
 
       //Résolution
       //if(bb_norme < 0.01) {
@@ -1050,9 +1061,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //}
       //else {
 	typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-	Eigen::FullPivLU<Matrix6x6> lu(Matt);
-	cout << lu.rank() << endl;
-	if( lu.rank() == 6) //Test voir si système inversible...
+	Eigen::FullPivLU<Matrix6x6> luu(Matt);
+	cout << luu.rank() << endl;
+	if( luu.rank() == 6) //Test voir si système inversible...
 	  xx = Matt.lu().solve(bb); //Problème avec les valeurs de x !!!!
 	else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
 	  typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
@@ -1062,11 +1073,11 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	//}
       
 	//xx *= bb_norme / mat_norme; // / mu;
+	cout << "xx : " << xx << endl;
 
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + xx(2) * n; //Face mixte
       faces[Fp].I_Dx = xx(3) * s + xx(4) * tt + xx(5) * n; //Face de Neumann
 
-      */
 
 
       Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
