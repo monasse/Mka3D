@@ -1468,12 +1468,15 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Matrix Dij_1(tens_sym(faces[F].I_Dx - faces[F].centre.z() * def_ref * n,  n));
       Matrix Dij_2(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale));
 
-      Matrix test_contrainte = contrainte + lambda * (faces[F].S /  V * Dij_1).tr() * unit() + 2*mu * (faces[F].S /  V * Dij_1) + lambda * (faces[Fp].S /  V * Dij_2).tr() * unit() + 2*mu * (faces[Fp].S /  V * Dij_2); //Calcul des contraintes complètes
+      Matrix test_contrainte = contrainte + faces[F].S /  V * 2*mu * Dij_1 + faces[Fp].S /  V * (lambda * (faces[Fp].I_Dx * faces[Fp].normale) * unit() + 2*mu * Dij_2); //Calcul des contraintes complètes
       //if(sqrt((test_contrainte * faces[Fp].normale).squared_length()) > 0.0001)
 	cout << "Norme Contraintes bord de Neumann : " << sqrt((test_contrainte * faces[Fp].normale).squared_length()) << endl;
 	//if(sqrt((test_contrainte * faces[F].normale - ((test_contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale).squared_length()) > 0.0001)
 	cout << "Contraintes tangentielles sur bord Mixte : " << (test_contrainte * faces[F].normale) * s << " and " << (test_contrainte * faces[F].normale) * tt << endl;
 	cout << "Contrainte normale : " << (test_contrainte * n) * n << endl;
+	cout << "Contribution interne Dirichlet contrainte normale : " << (contrainte * n) * n << endl;
+	cout << "Contribution Fp : " << faces[Fp].S / V * ( lambda * (faces[Fp].normale * s) * (faces[Fp].I_Dx * s)  + lambda * (faces[Fp].normale * tt) * (faces[Fp].I_Dx * tt) + (lambda + 2.*mu) * faces[Fp].normale * n) * (faces[Fp].I_Dx * n) << endl;
+	
     }
 
   }
