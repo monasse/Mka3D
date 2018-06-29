@@ -1168,10 +1168,6 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //cout << "Valeur interpolée : "  << faces[F].I_Dx << endl;
     }
     else if(faces[F].BC == 1) { //Calcul direct avec vecteurs tangents
-      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Neumann homogène pour l'instant
-      Eigen::Matrix<double, 3, 1> x; //Contient les valeurs aux faces
-      Eigen::MatrixXd Mat(3,3); //Premier bloc diagonal
-
       Vector_3 s = faces[F].vec_tangent_1;
       Vector_3 tt = faces[F].vec_tangent_2;
       
@@ -1205,7 +1201,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //double def_ref = 0.001 * t / T;
       
       //faces[F].I_Dx = (-contrainte * faces[F].normale) * s / (mu * faces[F].S / V) * s + (-contrainte * faces[F].normale) * tt / (mu * faces[F].S / V) * tt + faces[F].centre.z() * def_ref * faces[F].normale;
-      faces[F].I_Dx = (-contrainte * faces[F].normale) * s / (mu * faces[F].S / V) * s + (-contrainte * faces[F].normale) * tt / (mu * faces[F].S / V) * tt + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * faces[F].normale;
+      double def_ref = 0.001 * t / T;
+      faces[F].I_Dx = (-contrainte * faces[F].normale) * s / (mu * faces[F].S / V) * s + (-contrainte * faces[F].normale) * tt / (mu * faces[F].S / V) * tt + def_ref * faces[F].centre.z() * faces[F].normale;
+	//displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * faces[F].normale;
       //faces[F].I_Dx = x(0) * s + x(1) * tt + x(2) * faces[F].normale;
 
       //cout << "Attendus : " /*<< faces[F].centre.z() * def_ref << " "*/ << (-0.3 * faces[F].centre.x() * def_ref) * (s * Vector_3(1.,0.,0.)) + (-0.3 * faces[F].centre.y() * def_ref) * (s * Vector_3(0.,1.,0.)) << " " << (-0.3 * faces[F].centre.x() * def_ref) * (tt * Vector_3(1.,0.,0.)) + (-0.3 * faces[F].centre.y() * def_ref) * (tt * Vector_3(0.,1.,0.)) << endl; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl; 
