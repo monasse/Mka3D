@@ -72,8 +72,10 @@ Particule & Particule:: operator=(const Particule &P){
   Dx = P.Dx;
   Dxprev = P.Dxprev;
   Fi = P.Fi;
+  Fi_int = P.Fi_int;
   u = P.u;
   u_prev = P.u_prev;
+  u_prev2 = P.u_prev2;
   mvt_t = P.mvt_t;
   mvt_tprev = P.mvt_tprev;
 }
@@ -129,6 +131,13 @@ void Particule::solve_vitesse_predictor(const double& dt, const bool& flag_2d, c
 
 void Particule::solve_vitesse_corrector(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   u = u + F_damp * dt / m ; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
+}
+
+void Particule::solve_vitesse_MEMM(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
+  u_prev2 = u_prev;
+  u_prev = u;
+  u = (m*u_prev2 + 2*Fi_int * dt) / (m + 2.*dt*Amort*m) ; //Amortissement avec forces fluides sur chaque particule. Mettre Amort = 0. pour l'enlever
+  //u = (m*u + Fi_int * dt) / (m + dt*Amort*m) ;
 }
 
 void Particule::barycentre(Solide* Sol, const int& cell_type) {

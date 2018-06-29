@@ -712,7 +712,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //P->solve_vitesse(dt, flag_2d, Amort, t , T);
-    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
+    //P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
   }
   //Calcul des forces d'amortissement
@@ -725,14 +726,22 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
-  Forces_internes(dt, t, T);
+  //Mise a zero de l'integrale des forces
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    P->Fi_int = Vector_3(0.,0.,0.);
+  }
+  //Integration par points de Gauss
+  //Point milieu
+  double theta=0.5;
+  double weight = 1.;
+  Forces_internes(dt, theta, weight, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     if(F->BC == -1)
       F->Fi = F->Fi; // + Forces_externes(t,T); //Forces ext s'appliquent sur les faces !
       }*/
 }
 
-void Solide::stresses(const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules
+void Solide::stresses(const double& theta, const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     if(faces[i].BC == 0) //cad face dans bulk et donc I_Dx reconstruit
       faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise à zéro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
@@ -759,7 +768,8 @@ void Solide::stresses(const double& t, const double& T){ //Calcul de la contrain
     }
     else if(faces[i].BC == 0) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].reconstruction.size() ; j++) {
-	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_reconstruction[j] * solide[faces[i].reconstruction[j]].Dx;
+	Vector_3 Dx = theta*solide[faces[i].reconstruction[j]].Dx + (1.-theta)*solide[faces[i].reconstruction[j]].Dxprev;
+	faces[i].I_Dx = faces[i].I_Dx + faces[i].c_reconstruction[j] * Dx;
 	//cout << "Interpolation : " << faces[i].I_Dx << endl;
       }
       //faces[i].I_Dx = (solide[faces[i].voisins[0]].Dx + solide[faces[i].voisins[1]].Dx) / 2.;
@@ -1222,8 +1232,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 }
 
 
-void Solide::Forces_internes(const double& dt, const double& t, const double& T){ //Calcul des forces pour chaque particule
-  stresses(t, T);
+void Solide::Forces_internes(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
+  stresses(theta, t, T);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Remet à zéro toutes les forces
     P->Fi = Vector_3(0.,0.,0.);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
@@ -1277,6 +1287,10 @@ void Solide::Forces_internes(const double& dt, const double& t, const double& T)
     }
     /*cout << "Particule :" << P->first << endl;
     cout << "Force : " << P->Fi << endl; */
+  }
+  //Mise a jour de l'integrale en temps des forces
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    P->Fi_int = P->Fi_int + weight*P->Fi;
   }
 }
 

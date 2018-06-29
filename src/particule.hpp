@@ -51,6 +51,7 @@ class Particule
   void solve_position(const double &dt, const bool &flag_2d, const double& t, const double& T);
   void solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void solve_vitesse_predictor(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T);
+  void solve_vitesse_MEMM(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T);
   void solve_vitesse_corrector(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T);
   
 
@@ -72,10 +73,12 @@ class Particule
   //Vector_3 Dx_plas; //Déplacements plastiques...
   Vector_3 Dxprev; //!<Deplacement du centre de la particule en t-dt
   Vector_3 Fi; //!<Forces int&eacute;rieures du solide
+  Vector_3 Fi_int; //!<Forces int&eacute;rieures du solide integrees sur le pas de temps
   Vector_3 F_damp; //!<Forces d'amortissement du solide
   double damping;//!<Prise en compte de l'amortissement du solide de facon semi-implicite
   Vector_3 u; //!< Vitesse de la particule au temps t
   Vector_3 u_prev; //!< Vitesse de la particule au temps t-dt/2
+  Vector_3 u_prev2; //!< Vitesse de la particule au temps t-3*dt/2
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
 

@@ -328,11 +328,11 @@ int main(){
     if(dt < pow(10., -10.))
       dt = 2.*pow(10., -8.); //9. ref 6. ok pour ce calcul
     //dt = S.pas_temps(t,T,cfl, E, nu, rho);
-    //First half-step of the Verlet+RATTLE Scheme
+    //Position update for the MEMM Scheme
     S.Solve_position(dt,flag_2d, t, T);
-    //Computation of forces
+    //Computation of the integral of forces
     S.Forces(N_dim, dt, t , T);
-    //Second half-step of the Verlet+RATTLE Scheme
+    //Velocity update for the MEMM Scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T); //Ajouter ici (dans le calcul des vitesses), l'amortissement ?
     //Update of time
     t+= dt;
