@@ -1201,8 +1201,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       //double def_ref = 0.001 * t / T;
       
       //faces[F].I_Dx = (-contrainte * faces[F].normale) * s / (mu * faces[F].S / V) * s + (-contrainte * faces[F].normale) * tt / (mu * faces[F].S / V) * tt + faces[F].centre.z() * def_ref * faces[F].normale;
-      double def_ref = 0.001 * t / T;
-      faces[F].I_Dx = (-contrainte * faces[F].normale) * s / (mu * faces[F].S / V) * s + (-contrainte * faces[F].normale) * tt / (mu * faces[F].S / V) * tt + def_ref * faces[F].centre.z() * faces[F].normale;
+      //double def_ref = 0.001 * t / T;
+      faces[F].I_Dx = faces[F].I_Dx + (-contrainte * faces[F].normale) * s / (mu * faces[F].S / V) * s + (-contrainte * faces[F].normale) * tt / (mu * faces[F].S / V) * tt;
 	//displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * faces[F].normale;
       //faces[F].I_Dx = x(0) * s + x(1) * tt + x(2) * faces[F].normale;
 
@@ -1236,7 +1236,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       cout << "Position centre F : " << faces[F].centre << endl;
       cout << "Position centre Fp : " << faces[Fp].centre << endl; */
 
-      /*Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
+      Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
       A_FF << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu, (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(),  (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),  (lambda + mu) * faces[F].normale.y() * faces[F].normale.y() + mu, (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.x() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.y() * faces[F].normale.z(), (lambda + mu) * faces[F].normale.z() * faces[F].normale.z() + mu;
       A_FF *= faces[F].S / V;
 
@@ -1273,9 +1273,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
       faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
       faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
-      */
 
-      Vector_3 s = faces[F].vec_tangent_1;
+      /*Vector_3 s = faces[F].vec_tangent_1;
       Vector_3 tt = faces[F].vec_tangent_2;
       Vector_3 n = faces[F].normale;
 
@@ -1342,7 +1341,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       faces[F].I_Dx = xx(0) * s + xx(1) * tt + xx(2) * n; //Face mixte
       faces[Fp].I_Dx = xx(3) * s + xx(4) * tt + xx(5) * n; //Face de Neumann
 
-      Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
+      */
+
+      Matrix Dij_1(tens_sym(faces[F].I_Dx,  faces[F].normale));
       Matrix Dij_2(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale));
 
       Matrix test_contrainte = contrainte + lambda * (faces[F].S /  V * Dij_1).tr() * unit() + 2*mu * (faces[F].S /  V * Dij_1) + lambda * (faces[Fp].S /  V * Dij_2).tr() * unit() + 2*mu * (faces[Fp].S /  V * Dij_2); //Calcul des contraintes complètes
@@ -1464,7 +1465,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       cout << "Deplacement normal impose : "  << faces[F].centre.z() * def_ref << endl;
 
       //Test contraintes
-      Matrix Dij_1(tens_sym(faces[F].I_Dx,  n));
+      Matrix Dij_1(tens_sym(faces[F].I_Dx - faces[F].centre.z() * def_ref * n,  n));
       Matrix Dij_2(tens_sym(faces[Fp].I_Dx,  faces[Fp].normale));
 
       Matrix test_contrainte = contrainte + lambda * (faces[F].S /  V * Dij_1).tr() * unit() + 2*mu * (faces[F].S /  V * Dij_1) + lambda * (faces[Fp].S /  V * Dij_2).tr() * unit() + 2*mu * (faces[Fp].S /  V * Dij_2); //Calcul des contraintes complètes
@@ -1472,6 +1473,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	cout << "Norme Contraintes bord de Neumann : " << sqrt((test_contrainte * faces[Fp].normale).squared_length()) << endl;
 	//if(sqrt((test_contrainte * faces[F].normale - ((test_contrainte * faces[F].normale) * faces[F].normale) * faces[F].normale).squared_length()) > 0.0001)
 	cout << "Contraintes tangentielles sur bord Mixte : " << (test_contrainte * faces[F].normale) * s << " and " << (test_contrainte * faces[F].normale) * tt << endl;
+	cout << "Contrainte normale : " << (test_contrainte * n) * n << endl;
     }
 
   }
