@@ -1455,7 +1455,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       cout << "Attendus Fp : " << (-0.3 * faces[Fp].centre.x() * def_ref) * (s * Vector_3(1.,0.,0.)) + (-0.3 * faces[Fp].centre.y() * def_ref) * (s * Vector_3(0.,1.,0.)) + (faces[Fp].centre.z() * def_ref) * (s * Vector_3(0.,0.,1.)) << " " << (-0.3 * faces[Fp].centre.x() * def_ref) * (tt * Vector_3(1.,0.,0.)) + (-0.3 * faces[Fp].centre.y() * def_ref) * (tt * Vector_3(0.,1.,0.)) + (faces[Fp].centre.z() * def_ref) * (tt * Vector_3(0.,0.,1.)) << " " << (-0.3 * faces[Fp].centre.x() * def_ref) * (n * Vector_3(1.,0.,0.)) + (-0.3 * faces[Fp].centre.y() * def_ref) * (n * Vector_3(0.,1.,0.)) + (faces[Fp].centre.z() * def_ref) * (n * Vector_3(0.,0.,1.)) << endl; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) << endl;
       cout << "Deplacements Fp : " << xx(2) << " " << xx(3) << " " << xx(4) << endl;
 
-      faces[F].I_Dx = xx(0) * s + xx(1) * tt + faces[F].centre.z() * def_ref * n; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
+      faces[F].I_Dx = faces[F].I_Dx + xx(0) * s + xx(1) * tt; // + faces[F].centre.z() * def_ref * n; //displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.) * n; //Face mixte
       faces[Fp].I_Dx = xx(2) * s + xx(3) * tt + xx(4) * n; //Face de Neumann
       //cout << "Test : " << faces[Fp].I_Dx * faces[Fp].normale << endl; //Devrait être négatif non ?
       //cout << faces[Fp].I_Dx << endl;
@@ -1475,8 +1475,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	cout << "Contraintes tangentielles sur bord Mixte : " << (test_contrainte * faces[F].normale) * s << " and " << (test_contrainte * faces[F].normale) * tt << endl;
 	cout << "Contrainte normale : " << (test_contrainte * n) * n << endl;
 	cout << "Contribution interne Dirichlet contrainte normale : " << (contrainte * n) * n << endl;
-	cout << "Contribution Fp : " << faces[Fp].S / V * ( lambda * (faces[Fp].normale * s) * (faces[Fp].I_Dx * s)  + lambda * (faces[Fp].normale * tt) * (faces[Fp].I_Dx * tt) + (lambda + 2.*mu) * faces[Fp].normale * n) * (faces[Fp].I_Dx * n) << endl;
-	
+	cout << "Contribution Fp : " << faces[Fp].S / V * ( lambda * (faces[Fp].normale * s) * (faces[Fp].I_Dx * s)  + lambda * (faces[Fp].normale * tt) * (faces[Fp].I_Dx * tt) + (lambda + 2.*mu) * (faces[Fp].normale * n) * (faces[Fp].I_Dx * n)) << endl;
     }
 
   }
