@@ -788,6 +788,9 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
       P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
       P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
       P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+      P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+      P->discrete_sym_gradient.col2 = Vector_3(0., 0., 0.);
+      P->discrete_sym_gradient.col3 = Vector_3(0., 0., 0.);
       std::vector<int> num_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
       for(int i=0 ; i < P->faces.size() ; i++){
         int f = P->faces[i];
@@ -797,14 +800,18 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	Vector_3 nIJ = faces[f].normale;
 	if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	  nIJ = -nIJ; //Normale pas dans le bon sens...
-	Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
-	if(faces[f].BC == 0) //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
+	//Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
+	Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
+	Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
+	if(faces[f].BC == 0){ //On ajoute pas les faces de Neumann ni de Dirichlet car on doit recalculer la valeur sur la face// >= 0 avant test
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	  P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+	}
 	//else if(faces[f].BC == 1) //On ajoute la partie Dirichlet imposée. Si toute la face était en dirichlet elle finirait comme une face intérieure au-dessus...
 	  //P->discrete_gradient += -faces[f].S /  P->V * ((Dij_n * faces[F].normale) * faces[F].normale) * faces[F].normale;
       }
 
-      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
+      P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
       
       //On reconstruit la valeur du déplacement sur les faces de Neumann
       if(num_faces.size() > 0) {
@@ -814,6 +821,9 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
 	P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+	P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+	P->discrete_sym_gradient.col2 = Vector_3(0., 0., 0.);
+	P->discrete_sym_gradient.col3 = Vector_3(0., 0., 0.);
 	for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
 	  int f = P->faces[i];
 
@@ -827,12 +837,14 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  Vector_3 nIJ = faces[f].normale;
 	  if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	    nIJ = -nIJ; //Normale pas dans le bon sens...
-	  Matrix Dij_n(tens_sym(faces[f].I_Dx,  nIJ));
+	  Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
+	  Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
 	  P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	  P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
 	}
       }
       
-      P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
+      P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
       /*for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
 	  int f = P->faces[i];
 	  if(faces[f].BC == -1 && sqrt((P->contrainte * faces[f].normale).squared_length()) > 1.)
@@ -848,7 +860,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
 	P->def_plas_cumulee += delta_p;
 	P->epsilon_p += delta_p * n_elas;
-	P->contrainte = lambda * (P->discrete_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
+	P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
       if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	for(int i=0 ; i < num_faces.size() ; i++) {
@@ -1360,7 +1372,7 @@ const double Solide::Energie_potentielle(){
       }
       }*/
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //OK Voronoi
-    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
     //}
   }
   //cout << "Energie potentielle : " << Ep << endl;
@@ -1475,6 +1487,15 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     vtk << 10 << endl; //Pour le tétra
   }
   vtk << "\n";
+  vtk << "POINT_DATA " << 4*nb_part << endl;
+  //Deplacement reconstruit
+  vtk << "VECTORS deplacement_rec double" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator V=P->vertices.begin();V!=P->vertices.end();V++){
+      vtk << P->Dx + P->discrete_gradient*(vertex[*V].pos-P->x0) << endl;
+    }
+  }
+  vtk << "\n";
   //vtk << "CELL_DATA " << nb_faces << endl;
   vtk << "CELL_DATA " << nb_part << endl;
   //Deplacement
@@ -1533,9 +1554,9 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     //for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
-    vtk << P->discrete_gradient.col1[0] << " " << P->discrete_gradient.col1[1] << " " << P->discrete_gradient.col1[2] << endl;
-    vtk << P->discrete_gradient.col2[0] << " " << P->discrete_gradient.col2[1] << " " << P->discrete_gradient.col2[2] << endl;
-    vtk << P->discrete_gradient.col3[0] << " " << P->discrete_gradient.col3[1] << " " << P->discrete_gradient.col3[2] << endl;
+    vtk << P->discrete_sym_gradient.col1[0] << " " << P->discrete_sym_gradient.col1[1] << " " << P->discrete_sym_gradient.col1[2] << endl;
+    vtk << P->discrete_sym_gradient.col2[0] << " " << P->discrete_sym_gradient.col2[1] << " " << P->discrete_sym_gradient.col2[2] << endl;
+    vtk << P->discrete_sym_gradient.col3[0] << " " << P->discrete_sym_gradient.col3[1] << " " << P->discrete_sym_gradient.col3[2] << endl;
     //}
   }
   vtk << "\n";

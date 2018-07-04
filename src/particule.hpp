@@ -83,6 +83,7 @@ class Particule
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
 
   //Variables pour plasticité et nouvelle formulation Mka !
+  Matrix discrete_sym_gradient; //Gradient symétrique reconstruit par particule
   Matrix discrete_gradient; //Gradient reconstruit par particule
   Matrix contrainte; //Contrainte par particule
   double def_plas_cumulee; //Déformation plastique cumulée du lien
