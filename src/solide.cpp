@@ -1599,4 +1599,75 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
   vtk.close();
 }
 
+void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpolations aux faces
+  int nb_part = solide.size();
+  std::ostringstream oss;
+  oss << "faces" << n << ".vtk";
+  string s = oss.str();
+  const char* const solidevtk = s.c_str();
+    
+  //Ouverture des flux en donne en ecriture
+  std::ofstream vtk;
+  vtk.open(solidevtk,ios::out);
+  if(not(vtk.is_open()))
+    cout <<"ouverture de faces" << n << ".vtk rate" << endl;
+  //vtk << setprecision(15);
+  
+  //Pour tetras !
+  int nb_points = 3 * 4 * nb_part;
+  int nb_faces = 4 * nb_part;
+  int size = 4 * nb_faces;
+    
+  //Initialisation du fichier vtk
+  vtk << "# vtk DataFile Version 3.0" << endl;
+  vtk << "#Simulation Euler" << endl;
+  vtk << "ASCII" << endl;
+  vtk<< "\n";
+  vtk << "DATASET UNSTRUCTURED_GRID" << endl;
+  vtk << "POINTS " << nb_points << " DOUBLE" << endl;
+    
+  //Sortie des points
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+      for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++){
+	vtk << P->mvt_t(vertex[*V].pos) << endl;
+      }
+    }
+  }
+  vtk << endl;
+    
+  //Sortie des faces
+  int point_tmp=0;
+  vtk << "CELLS " << nb_faces << " " << size << endl;
+  int compteur_vertex = 0;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++) {
+      vtk << faces[*F].vertex.size();
+      for(int k=0 ; k<faces[*F].vertex.size() ; k++)
+  	vtk << " " << compteur_vertex + k; //(faces[*F].vertex)[k];
+      vtk << endl;
+      compteur_vertex += faces[*F].vertex.size();
+    }
+    //vtk << endl;
+  }
+  vtk << endl;
+  vtk << "CELL_TYPES " << nb_faces << endl;
+  for(int i=0;i<nb_faces;i++){
+    //vtk << 9 << endl; //Pour Quad
+    vtk << 5 << endl; //Pour triangle
+  }
+  vtk << "\n";
+  vtk << "CELL_DATA " << nb_faces << endl;
+  //Deplacement interpolé au centre de la face
+  vtk << "VECTORS deplacement_interp double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+      vtk << faces[*F].I_Dx << endl;
+    }
+  }
+  vtk << "\n";
+  vtk.close();
+}
+
 #endif

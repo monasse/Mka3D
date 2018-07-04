@@ -264,6 +264,7 @@ int main(){
     next_timp = t+dtimp;
   } else {
     S.Impression(kimp);
+    S.Impression_faces(kimp);
     sorties_reprise << t << endl;
   }
   kimp++;
@@ -310,6 +311,7 @@ int main(){
     //Output at prescribed times
     if(t>next_timp){
       S.Impression(kimp);
+      S.Impression_faces(kimp);
       sorties_reprise << t << endl;
       kimp++;
       next_timp += dtimp;
@@ -340,6 +342,7 @@ int main(){
 
   //Output of the final solid state
   S.Impression(kimp);
+  S.Impression_faces(kimp);
 
   //Final output
   cout << "Final time of the simulation: " << t<<endl;
