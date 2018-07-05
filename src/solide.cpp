@@ -1037,21 +1037,37 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat.bottomLeftCorner<3,3>() = A_FpF;
       Mat.bottomRightCorner<3,3>() = A_FpFp;
 
-    //Assemblage du second membre
-    b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
+      //Assemblage du second membre
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.);
 
-    typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-    Eigen::FullPivLU<Matrix6x6> lu(Mat);
-    if( lu.rank() == 6) //Test voir si système inversible...
-      x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
-    else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
       typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
-      Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Mat);
-      x = mat.solve(b);
+      Eigen::FullPivLU<Matrix6x6> lu(Mat);
+      //if( lu.rank() == 6) //Test voir si système inversible...
+      if(Mat.determinant()!=0.){
+	x = Mat.lu().solve(b); //Problème avec les valeurs de x !!!!
       }
-
-    faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
-    faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
+      else { //Calcul de la pseudo-inverse pour minimisation de l'écart aux moindres carrés.
+	cout << "Matrice 6x6 non inversible !" << endl;
+	cout << Mat << endl;
+	cout << Mat.determinant() << endl;
+	cout << "Here is, up to permutations, its LU decomposition matrix:"
+	     << endl << lu.matrixLU() << endl;
+	cout << "Here is the L part:" << endl;
+	Matrix6x6 l = Matrix6x6::Identity();
+	l.block<6,6>(0,0).triangularView<Eigen::StrictlyLower>() = lu.matrixLU();
+	cout << l << endl;
+	cout << "Here is the U part:" << endl;
+	Matrix6x6 u = lu.matrixLU().triangularView<Eigen::Upper>();
+	cout << u << endl;
+	cout << lu.rank() << endl;
+	getchar();
+	typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+	Eigen::CompleteOrthogonalDecomposition<Matrix6x6> mat(Mat);
+	x = mat.solve(b);
+      }
+      
+      faces[F].I_Dx.vec[0] = x(0); faces[F].I_Dx.vec[1] = x(1); faces[F].I_Dx.vec[2] = x(2); //Première face de Neumann
+      faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //Deuxième face de Neumann
     }
     else if(faces[F].BC == 1) {
       Eigen::Matrix<double, 7, 6> Mat; //Matrice à inverser
