@@ -1119,7 +1119,15 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	-2*S*Sp/V/V*mu*mu*c*s,
 	2*S*Sp/V/V*mu*mu*c*s*(c*c-s*s),
 	4*S*Sp/V/V*mu*mu*c*c*s*s;
-      invA /= detA;
+      // cout << "cos=" << c << endl;
+      // getchar();
+      // cout << detA << endl;
+      // getchar();
+      if(detA!=0.){
+	invA /= detA;
+      } else {
+	throw std::invalid_argument( "Division by zero" );
+      }
       Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Prend les contributions Neumann homogène sur les deux faces sauf une contribution Dirichlet selon la composante normale de la face F
       double Dx_normal = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.);
       b << -(contrainte*n)*t2,
@@ -1217,6 +1225,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double Sp = faces[Fp].S;
       double c = n*m;//cosinus de l'angle entre les faces
       double s = cross_product(m,n)*t1; //sinus de l'angle entre les faces
+      //cout << "cos=" << c << endl;
+      //getchar();
       double detA = 4*S*S*Sp/pow(V,3)*mu*mu*(lambda+mu)*c*c*s*s;
       invA << S*S/V/V*mu*(lambda+2*mu),
 	-S*S/V/V*mu*(c*c-s*s)*(lambda+2*mu),
@@ -1229,7 +1239,13 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	-2*S*Sp/V/V*mu*mu*c*s,
 	2*S*Sp/V/V*mu*mu*c*s*(c*c-s*s),
 	4*S*Sp/V/V*mu*mu*c*c*s*s;
-      invA /= detA;
+      //cout << detA << endl;
+      //getchar();
+      if(detA!=0.){
+	invA /= detA;
+      } else {
+	throw std::invalid_argument( "Division by zero" );
+      }
       Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Prend les contributions Neumann homogène sur les deux faces sauf une contribution Dirichlet selon la composante normale de la face F
       double Dx_normal = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
       b << -(contrainte*n)*t2,
@@ -1780,6 +1796,19 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
       vtk << P->id << endl;
   }
   vtk << endl;*/
+  //Nombre de faces avec des BCs
+  vtk << "SCALARS nb_faces_BC double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    std::vector<int> num_faces;
+    for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      if(faces[f].BC != 0) { //car on ne fait ces calculs sur toutes les faces au bord
+	num_faces.push_back(f);
+      }
+    }
+    vtk << num_faces.size() << endl;
+  }
   vtk.close();
 }
 
@@ -1848,6 +1877,15 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
       vtk << faces[*F].I_Dx << endl;
+    }
+  }
+  vtk << "\n";
+  //Contrainte normale sur la face
+  vtk << "VECTORS contrainte_normale double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+      vtk << P->contrainte * faces[*F].normale << endl;
     }
   }
   vtk << "\n";
