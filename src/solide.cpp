@@ -529,7 +529,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
     if(nb_faces > 1) { //On appelle la fonction de splitting
       //cout << "On appelle le splitting !" << endl;
-      //splitting_elements(P->id, rho);
+      splitting_elements(P->id, rho);
     }
   }
 
