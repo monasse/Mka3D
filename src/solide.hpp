@@ -41,7 +41,7 @@ class Solide
 public:
   
   Solide();//:solide(std::vector<Particule>(1)){}
-  Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1);
+  Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const int& recon);
   Solide(const std::vector<Particule> & Part);
   ~Solide();
   Solide & operator=(const Solide &S); // opérateur = surcharge pour l'affectation
@@ -69,12 +69,16 @@ public:
   bool face_existe(Face f); //Renvoie vraie si la face testée est déjà das faces
   Vector_3 trouve_coord_bary(Point_3 part_1, Point_3 part_2, Point_3 voisin1, Point_3 voisin2, Point_3 centre_face);
   void reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V, const double& T);
+  void splitting_elements(const int& num_part, const double& rho);
+  void taille_maillage(); //Calcul le h du maillage comme max de tous les h des particules
 
   
   // private :
   std::vector<Vertex> vertex;
   std::vector<Face> faces;
   std::vector<Particule> solide; //Particules du maillage
+  double h; //Taille du maillage. Max de la taille des particules
+  double eta; //Paramètre de pénalisation
 
   double lambda; //Premier coeff de lamé
   double mu; //Second coefficient de lamé
@@ -82,6 +86,8 @@ public:
   double B; //Ecrouissage JC
   double n; //Ecrouissage JC
   double H; //Ecrouissage linéaire
+
+  int reconstruction; //Indique si on a la sortie P0 ou P1 des déplacements
 };
 
 

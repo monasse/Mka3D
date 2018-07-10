@@ -47,6 +47,8 @@ Particule::Particule(const int& Id):discrete_gradient(), discrete_sym_gradient()
   seuil_elas = 0.;
   fixe = 0;
   BC = 0;
+  split= false;
+  h=0.;
 }
 
 Particule::Particule():discrete_gradient(), discrete_sym_gradient(), contrainte(), epsilon_p(), vertices(), x0(), err_u(), err_Dx(), Dx()
@@ -56,6 +58,8 @@ Particule::Particule():discrete_gradient(), discrete_sym_gradient(), contrainte(
   seuil_elas = 0.;
   fixe = 0;
   BC = 0;
+  split = false;
+  h=0.;
 }
 
 
@@ -97,11 +101,11 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
-  /*double def_ref = 0.001 * t / T;
+  double def_ref = 0.001 * t / T;
   Dx.vec[2] = x0.z() * def_ref;
   Dx.vec[0] = -0.3 * x0.x() * def_ref;
   Dx.vec[1] = -0.3 * x0.y() * def_ref; //On impose les positions pour le test
-  */
+  
 
   //Mise a jour de la transformation donnant le mouvement de la particule
   mvt_tprev = mvt_t;
@@ -114,13 +118,13 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
 
 void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   u_prev = u;
-  err_u = err_u + Fi * dt / m - Amort*m*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
+  err_u = err_u + Fi * dt / m; // - Amort*m*u*dt; //Amortissement avec forces fluides. Mettre Amort = 0. pour l'enlever
   u = u + err_u; //Test pour voir si ok
   err_u = err_u + (u_prev - u); //Version compensation erreur sommation
   //if(t < pow(10., -8.))
   //u.vec[2] = 0.; //Pour voir que ce qui se passe sur Neumann
 
-  //u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
+  u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
 }
 
 void Particule::solve_vitesse_predictor(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
@@ -157,8 +161,10 @@ void Particule::barycentre(Solide* Sol, const int& cell_type) {
 }
 
 void Particule::volume(Solide* Sol, const int& cell_type) {
-  if(cell_type == 4) //Tetra
+  if(cell_type == 4) {//Tetra
     V = cross_product(Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[1]].pos),Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[2]].pos))*Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[3]].pos)/6.;
+    V = sqrt( V * V);
+  }
   else if(cell_type == 5) {//Hexa
     const Point_3 v0 = Sol->vertex[vertices[0]].pos;
     const Point_3 v1 = Sol->vertex[vertices[1]].pos;
@@ -214,6 +220,15 @@ bool Particule::contient_face(const Face& f){ //Renvoie vraie si particule conti
     else
       false;
       }*/
+}
+
+void Particule::calcul_diametre(Solide* Sol) {
+  Vector_3 v1(Sol->vertex[vertices[0]].pos, Sol->vertex[vertices[1]].pos);
+  Vector_3 v2(Sol->vertex[vertices[2]].pos, Sol->vertex[vertices[1]].pos);
+  Vector_3 v3(Sol->vertex[vertices[3]].pos, Sol->vertex[vertices[1]].pos);
+  Vector_3 v4(Sol->vertex[vertices[2]].pos, Sol->vertex[vertices[3]].pos);
+
+  h = sqrt( max(v1.squared_length(), max(v2.squared_length(), max(v3.squared_length(), v4.squared_length()))) );
 }
 
 #endif

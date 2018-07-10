@@ -52,7 +52,7 @@ public:
   double S; //Surface de la face
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
-  std::vector<int> voisins; //Donne le numéro des 2 voisins de la face puis celui des 2 autres particules pour avoir le tétra associé à la face et calculer le gradient
+  std::vector<int> voisins; //Donne le numéro des 2 voisins de la face 
   std::vector<int> reconstruction; //Donne le numéro des 4 particules pour la reconstruction sur la face
   std::vector<double> c_reconstruction; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
@@ -60,6 +60,10 @@ public:
 
   int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
   double D0; //Distance centre face. Sera utile pour CFL...
+  double h; //Diamètre de la face
+
+  //Booléen pour savoir si face a été splitée et doit donc être exclue des calculs
+  bool split;
 };
 
 bool operator==(const Face &F1, const Face &F2); //Compare les faces
