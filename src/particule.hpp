@@ -101,6 +101,10 @@ class Particule
 
   //Pour indiquer s'il faut prendre en compte ou pas la particule car elle a été splittée
   bool split;
+  //Pour indiquer si la particule est issue du splitting
+  bool from_splitting;
+  //Pour indiquer si la particule est affectée par le splitting
+  bool impact_splitting;
 }; 
 
 #endif

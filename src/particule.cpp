@@ -48,6 +48,8 @@ Particule::Particule(const int& Id):discrete_gradient(), discrete_sym_gradient()
   fixe = 0;
   BC = 0;
   split= false;
+  from_splitting= false;
+  impact_splitting = false;
   h=0.;
 }
 
@@ -59,6 +61,8 @@ Particule::Particule():discrete_gradient(), discrete_sym_gradient(), contrainte(
   fixe = 0;
   BC = 0;
   split = false;
+  from_splitting= false;
+  impact_splitting = false;
   h=0.;
 }
 

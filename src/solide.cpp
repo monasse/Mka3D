@@ -196,7 +196,7 @@ void Solide::Init(const char* s1, const char* s2, const char* s3, const bool& re
 
   //Calcul du tetrahÃ¨dre associÃ© Ã  chaque face pour le calcul du gradient
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
-    if(F->BC == 0) {
+    if(F->BC == 0 && not(F->split)) {
       //cout << "Face : " << F->id << endl;
       bool test = voisins_face(F->id);
       if(not(test)) {
@@ -533,22 +533,169 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)) {
       for(int i=0 ; i < P->faces.size() ; i++){
 	int f = P->faces[i];
-	if(faces[f].split)
+	if(faces[f].split){
 	  cout << "Gros probleme !" << endl;
+	  getchar();
+	}
+      }
+    }
+  }
+  cout << "On a splitte tout ce qu'il faut !" << endl;
+  getchar();
+
+  //Verification de la connectivite
+  //Verification de la numérotation des particules
+  for(int i=0;i<solide.size();i++){
+    const Particule& P = solide[i];
+    if(i!=P.id){
+      cout << "probleme numerotation particule i=" << i << " P.id=" << P.id << endl;
+      getchar();
+    }
+  }
+  //Verification de la numérotation des faces
+  for(int i=0;i<faces.size();i++){
+    const Face& F = faces[i];
+    if(i!=F.id){
+      cout << "probleme numerotation face i=" << i << " F.id=" << F.id << endl;
+      getchar();
+    }
+  }
+  //Verification de la numérotation des vertex
+  for(int i=0;i<vertex.size();i++){
+    const Vertex& V = vertex[i];
+    if(i!=V.num){
+      cout << "probleme numerotation vertex i=" << i << " V.num=" << V.num << endl;
+      getchar();
+    }
+  }
+  //Verification de la connectivite faces/particules
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    //if(not(P->split)){
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	if(faces[*F].voisins[0]!=P->id && faces[*F].voisins[1]!=P->id){
+	  cout << "Probleme connectivite face=" << *F << " voisins=" << faces[*F].voisins[0] << " " << faces[*F].voisins[1] << " part.id=" << P->id << endl;
+	  getchar();
+	}
+      }
+      //}
+  }
+  //Verification de la connectivite particules/faces
+  for(int i=0;i<faces.size();i++){
+    Face F = faces[i];
+    if(F.voisins.size()!=2){
+      cout << "La face n'a pas le bon nombre de voisins ! size=" << F.voisins.size() << endl;
+      for(std::vector<int>::iterator P=F.voisins.begin();P!=F.voisins.end();P++){
+	cout << *P << " ";
+      }
+      cout << endl;
+      getchar();
+    }
+    if(F.voisins[0]>=0){
+      Particule P = solide[F.voisins[0]];
+      bool test=true;
+      for(std::vector<int>::iterator f=P.faces.begin();f!=P.faces.end() && test;f++){
+	test = (*f!=i);
+      }
+      if(test){
+	cout << "Probleme connectivite face=" << i << " voisins[0]=" << F.voisins[0] << " P.id=" << P.id << endl;
+      }
+    }
+    if(F.voisins[1]>=0){
+      Particule P = solide[F.voisins[1]];
+      bool test=true;
+      for(std::vector<int>::iterator f=P.faces.begin();f!=P.faces.end() && test;f++){
+	test = (*f!=i);
+      }
+      if(test){
+	cout << "Probleme connectivite face=" << i << " voisins[1]=" << F.voisins[1] << " P.id=" << P.id << endl;
+      }
+    }
+  }
+  //Verification de la connectivite faces/vertex
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+      for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++){
+	bool test=true;
+	for(std::vector<int>::iterator v=P->vertices.begin();v!=P->vertices.end() && test;v++){
+	  test = (*v!=*V);
+	}
+	if(test){
+	  cout << "Probleme connectivite face=" << *F << " vertex=" << *V << " particule=" << P->id << endl;
+	  cout << "Points de la face ";
+	  for(std::vector<int>::iterator Vt=faces[*F].vertex.begin();Vt!=faces[*F].vertex.end();Vt++){
+	    cout << *Vt << " ";
+	  }
+	  cout << endl;
+	  cout << "Points de la particule ";
+	  for(std::vector<int>::iterator v=P->vertices.begin();v!=P->vertices.end() && test;v++){
+	    cout << *v << " ";
+	  }
+	  cout << endl;
+	  getchar();
+	}
+      }
+    }
+    for(std::vector<int>::iterator v=P->vertices.begin();v!=P->vertices.end();v++){
+      bool test=true;
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end() && test;F++){
+	for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end() && test;V++){
+	  test = (*v!=*V);
+	}
+      }
+      if(test){
+	cout << "Probleme connectivite vertex=" << *v << " particule=" << P->id << endl;
+	getchar();
+      }
+    }
+  }
+  //Verification de la connectivite particules/vertex caduque car la liste particules des vertex est vide: a changer en vue de l'IFS
+  /*Verification de la connectivite particules/vertex
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    for(std::vector<int>::iterator V=P->vertices.begin();V!=P->vertices.end();V++){
+      Vertex v=vertex[*V];
+      bool test=true;
+      for(std::vector<int>::iterator p=v.particules.begin();p!=v.particules.end() && test;p++){
+	test = (*p!=P->id);
+      }
+      if(test){
+	cout << "Probleme connectivite particule=" << P->id << " vertex=" << *V << endl;
+	for(std::vector<int>::iterator p=v.particules.begin();p!=v.particules.end() && test;p++){
+	  cout << *p << " " ;
+	}
+	cout << endl;
+	getchar();
+      }
+    }
+  }
+  //Verification de la connectivite vertex/particules
+  for(std::vector<Vertex>::iterator v=vertex.begin();v!=vertex.end();v++){
+    for(std::vector<int>::iterator p=v->particules.begin();p!=v->particules.end();p++){
+      Particule P = solide[*p];
+      bool test=true;
+      for(std::vector<int>::iterator V=P.vertices.begin();V!=P.vertices.end() && test;V++){
+	test = (*V!=v->num);
+      }
+      if(test){
+	cout << "Probleme connectivite vertex=" << v->num << " particule=" << *p << " P.id=" << P.id << endl;
       }
     }
     }*/
-  //cout << "On a splitte tout ce qu'il faut !" << endl;
-
-
+  
+  
+  
+  
+  
+  
+  
+  
   //Calcul du tetrahÃ¨dre associÃ© Ã  chaque face pour le calcul du gradient
-  /*if(type == 4) { //Seulement pour tetra
+  if(type == 4) { //Seulement pour tetra
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
-      if(F->BC == 0) {
+      if(F->BC == 0 && not(F->split)) {
 	//cout << "Face : " << F->id << endl;
 	bool test = voisins_face(F->id);
 	if(not(test)) {
@@ -557,7 +704,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	}
       }
     }
-    }*/
+  }
 
   if(type == 4) { //Utilisation du Delaunay pour trouver les tÃ©tras associÃ©s Ã  chaque face
     bool calcul_pre_traitement = false;
@@ -571,13 +718,33 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
 	if(aux && F->BC == 0 && not(F->split)) { //Importation des tetras associés aux faces internes
 	  istringstream  stm(ligne);
-	  int ele1,ele2,ele3,ele4;
+	  int id, ele1,ele2,ele3,ele4;
 	  double c1,c2,c3,c4;
-	  stm >> ele1 >> ele2 >> ele3 >> ele4 >> c1 >> c2 >> c3 >> c4;
+	  stm >> id >> ele1 >> ele2 >> ele3 >> ele4 >> c1 >> c2 >> c3 >> c4;
+	  if(id != F->id){
+	    cout << "probleme numerotation face id=" << id << " F.id=" << F->id << endl;
+	    getchar();
+	  }
 	  F->reconstruction.push_back(ele1);
 	  F->reconstruction.push_back(ele2);
 	  F->reconstruction.push_back(ele3);
 	  F->reconstruction.push_back(ele4);
+	  if(solide[ele1].split){
+	    cout << "ele1 split !" << endl;
+	    getchar();
+	  }
+	  if(solide[ele2].split){
+	    cout << "ele2 split !" << endl;
+	    getchar();
+	  }
+	  if(solide[ele3].split){
+	    cout << "ele3 split !" << endl;
+	    getchar();
+	  }
+	  if(solide[ele4].split){
+	    cout << "ele4 split !" << endl;
+	    getchar();
+	  }
 	  F->c_reconstruction.push_back(c1);
 	  F->c_reconstruction.push_back(c2);
 	  F->c_reconstruction.push_back(c3);
@@ -613,7 +780,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //On importe la tetrahedrisation de Delaunay
       std::ifstream delaunay("delaunay.txt",ios::in);
       if(not(delaunay))
-	throw std::invalid_argument( "Pas de terahedrisation de Delaunay !" );
+	throw std::invalid_argument( "Pas de tetrahedrisation de Delaunay !" );
       getline(delaunay, ligne); //On enlève la ligne avec le nombre d'éléments
       std::vector<Particule> tetra_delau; //Ensemble des particules contenant la tetra
       while(getline(delaunay, ligne)) { //Importation de la tetraedrisation de Delaunay
@@ -687,7 +854,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       
 	//Sortie contenant les Ã©lÃ©ments associÃ©s Ã  chaque face pour faire le prÃ©-traitement une seule fois
 	//cout << "Enregistrement pret !" << endl;
-	tetra_faces << F->reconstruction[0] << " " << F->reconstruction[1] << " " << F->reconstruction[2] << " " << F->reconstruction[3] << " " << F->c_reconstruction[0] << " " << F->c_reconstruction[1] << " " << F->c_reconstruction[2] << " " << F->c_reconstruction[3] << endl;
+	  tetra_faces << F->id << " " << F->reconstruction[0] << " " << F->reconstruction[1] << " " << F->reconstruction[2] << " " << F->reconstruction[3] << " " << F->c_reconstruction[0] << " " << F->c_reconstruction[1] << " " << F->c_reconstruction[2] << " " << F->c_reconstruction[3] << endl;
 	}
       }
     }
@@ -719,6 +886,31 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   }
   if(common_edge.size() > 2 || common_edge.size() < 2)
     throw std::invalid_argument( "Pas d'edge commun entre les 2 faces a splitter" );
+  //Ordonnancement de common_edge selon l'ordre de out
+  bool test=true;
+  for(std::vector<int>::iterator v=faces[out[0]].vertex.begin();v!=faces[out[0]].vertex.end() && test;v++){
+    test = (*v!=common_edge[0]);
+  }
+  if(test){
+    int tmp = common_edge[0];
+    common_edge[0] = common_edge[1];
+    common_edge[1] = tmp;
+  }
+  for(std::vector<int>::iterator v=faces[out[0]].vertex.begin();v!=faces[out[0]].vertex.end() && test;v++){
+    test = (*v!=common_edge[0]);
+  }
+  if(test){
+    cout << "la correction n'a pas fontionne common_edge[0]=" << common_edge[0] << endl;
+    getchar();
+  }
+  for(std::vector<int>::iterator v=faces[out[1]].vertex.begin();v!=faces[out[1]].vertex.end() && test;v++){
+    test = (*v!=common_edge[1]);
+  }
+  if(test){
+    cout << "la correction n'a pas fontionne common_edge[1]=" << common_edge[1] << endl;
+    getchar();
+  }
+  
 
   //On calcule la moitiéde l'edge et on split les faces
   double id = vertex.size(); //Numéro du vertex qu'on va ajouter
@@ -727,9 +919,15 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
 
   //on stocke les vertex qui ne sont pas sur l'edge splité
   std::vector<int> vertex_common_part_out, vertex_part_2;
+  // for(int i=0; i < faces[out[0]].vertex.size() ; i++) {
+  //   if(faces[out[0]].vertex[i] != common_edge[0])
+  //     vertex_common_part_out.push_back(faces[out[0]].vertex[i]);
+  // }
   for(int i=0; i < faces[out[0]].vertex.size() ; i++) {
-    if(faces[out[0]].vertex[i] != common_edge[0])
-      vertex_common_part_out.push_back(faces[out[0]].vertex[i]);
+    for(int j=0; j < faces[out[1]].vertex.size() ; j++) {
+      if(faces[out[0]].vertex[i] == faces[out[1]].vertex[j])
+	vertex_common_part_out.push_back(faces[out[1]].vertex[j]);
+    }
   }
 
   //Création des 2 nouvelles particules issues du splitting
@@ -741,10 +939,13 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   part_1.vertices.push_back(faces[out[0]].vertex[0]);
   part_1.vertices.push_back(faces[out[0]].vertex[1]);
   part_1.vertices.push_back(faces[out[0]].vertex[2]);
+  cout << "num_part splitte=" << num_part << endl;
+  cout << "part_1: id=" << id << " out[0]=" << faces[out[0]].vertex[0] << " " << faces[out[0]].vertex[1] << " " << faces[out[0]].vertex[2] << endl;
   part_2.vertices.push_back(id); //Ajout du nouvelle edge dans les 2 particules
   part_2.vertices.push_back(faces[out[1]].vertex[0]);
   part_2.vertices.push_back(faces[out[1]].vertex[1]);
   part_2.vertices.push_back(faces[out[1]].vertex[2]);
+  cout << "part_2: id=" << id << " out[1]=" << faces[out[1]].vertex[0] << " " << faces[out[1]].vertex[1] << " " << faces[out[1]].vertex[2] << endl;
 
   //Nouvelle face
   Face new_face;
@@ -846,6 +1047,7 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   faces.push_back(face4);
 
   //Ajout des faces dans les 2 particules
+  faces[out[0]].voisins[0] = part_1.id;
   part_1.faces.push_back(out[0]);
   part_1.faces.push_back(new_face.id);
   part_1.faces.push_back(face1.id);
@@ -853,8 +1055,10 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   part_1.barycentre(this, 4); //Calcul du barycentre
   part_1.volume(this, 4); //calcul du volume
   part_1.m = rho * part_1.V;
+  part_1.from_splitting = true;
   solide.push_back(part_1);
 
+  faces[out[1]].voisins[0] = part_2.id;
   part_2.faces.push_back(out[1]);
   part_2.faces.push_back(new_face.id);
   part_2.faces.push_back(face2.id);
@@ -862,12 +1066,13 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   part_2.barycentre(this, 4); //Calcul du barycentre
   part_2.volume(this, 4); //calcul du volume
   part_2.m = rho * part_2.V;
+  part_2.from_splitting = true;
   solide.push_back(part_2);
 
   //Ajout des nouvelles faces dans particules environnantes pas splitées et retrait des faces splitées des particules
   int part_voisine_1 = face1.voisins[0];
   int part_voisine_2 = face3.voisins[0];
-  //Première paticule
+  //Première particule
   for(int i=0; i < solide[part_voisine_1].faces.size() ; i++) {
     int F = solide[part_voisine_1].faces[i];
     if(F == in[0]) {
@@ -877,6 +1082,8 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   }
   solide[part_voisine_1].faces.push_back(face2.id);
   solide[part_voisine_1].vertices.push_back(id); //On ajoute le vertex créé au milieu de l'edge
+  solide[part_voisine_1].impact_splitting = true;
+  
 
   //Deuxième particule
   for(int i=0; i < solide[part_voisine_2].faces.size() ; i++) {
@@ -888,14 +1095,29 @@ void Solide::splitting_elements(const int& num_part, const double& rho) {
   }
   solide[part_voisine_2].faces.push_back(face4.id);
   solide[part_voisine_2].vertices.push_back(id); //On ajoute le vertex créé au milieu de l'edge
-
+  solide[part_voisine_2].impact_splitting = true;
+  
   //Il reste à détruire (ou vider ?) la particule splittée ainsi que les 2 faces splittées !
   //Comment faire ? Mettre marqueur pour particule jetée à pas prendre en compte dans calcul des reconstructions etc ???
   //On indique que les faces et particules splitées ne doivent plus être prises en compte dans les calculs
   faces[in[0]].split = true;
   faces[in[1]].split = true;
+  faces[in[0]].voisins[0] = -1;
+  faces[in[0]].voisins[1] = -1;
+  faces[in[0]].vertex.clear();
+  faces[in[0]].reconstruction.clear();
+  faces[in[0]].c_reconstruction.clear();
+  faces[in[1]].voisins[0] = -1;
+  faces[in[1]].voisins[1] = -1;
+  faces[in[1]].vertex.clear();
+  faces[in[1]].reconstruction.clear();
+  faces[in[1]].c_reconstruction.clear();
   solide[num_part].split = true;
-
+  solide[num_part].faces.clear();
+  solide[num_part].vertices.clear();
+  
+  
+  //getchar();
   //cout << "Particules crees : " << part_1.id << " " << part_2.id << endl;
   //cout << "Faces crees : " << new_face.id << " " << face1.id << " " << face2.id << " " << face3.id << " " << face4.id << endl;
   
@@ -922,51 +1144,56 @@ bool Solide::voisins_face(int num_face) {
 
   vector<int> tous_voisins; //Va Ãªtre rempli des voisins des 2 particules qui peuvent Ãªtre candidats pour former le tetra associÃ© Ã  la face !
 
-  for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++){
-    //cout << "Num face teste : " << *G << endl;
-    if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[0] != part_1 && faces[*G].voisins[0] != -1)
-      tous_voisins.push_back(faces[*G].voisins[0]);
-    else if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[1] != part_1 && faces[*G].voisins[1] != -1)
-      tous_voisins.push_back(faces[*G].voisins[1]);
-  }
-  //Boucle sur deuxiÃ¨me groupe de particules
-  for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++){
-    //cout << "Num face teste : " << *G << endl;
-    if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[0] != part_2 && faces[*G].voisins[0] != -1)
-      tous_voisins.push_back(faces[*G].voisins[0]);
-    else if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[1] != part_2 && faces[*G].voisins[1] != -1)
-      tous_voisins.push_back(faces[*G].voisins[1]);
-  }
-  //Tous_voisins rempli a priori
-  //cout << "Taille recherche : " << tous_voisins.size() << endl;
-
   bool tetra_ok = false;
-  for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end()-1;G++){
-    if(tetra_ok)
-      break;
-    for(std::vector<int>::iterator I=G + 1;I!=tous_voisins.end();I++){
-      int voisin1 = *G;
-      int voisin2 = *I;
-      double vol = std::abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
-      //cout << "Volume : " << vol << endl;
-      if(vol > pow(10., -20.)) { //Attention avec cette valeur !! Il faut savoir qu'elle est là ! //-10.
-	double c_part_1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	double c_part_2 = (Vector_3(solide[part_1].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
-	double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
-	double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
+  if(not(faces[num_face].split)){
+    
+  
+    for(std::vector<int>::iterator G=solide[part_1].faces.begin();G!=solide[part_1].faces.end();G++){
+      //cout << "Num face teste : " << *G << endl;
+      if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[0] != part_1 && faces[*G].voisins[0] != -1)
+	tous_voisins.push_back(faces[*G].voisins[0]);
+      else if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[1] != part_1 && faces[*G].voisins[1] != -1)
+	tous_voisins.push_back(faces[*G].voisins[1]);
+    }
+    //Boucle sur deuxiÃ¨me groupe de particules
+    for(std::vector<int>::iterator G=solide[part_2].faces.begin();G!=solide[part_2].faces.end();G++){
+      //cout << "Num face teste : " << *G << endl;
+      if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[0] != part_2 && faces[*G].voisins[0] != -1)
+	tous_voisins.push_back(faces[*G].voisins[0]);
+      else if(not(faces[*G] == faces[num_face]) && faces[*G].voisins[1] != part_2 && faces[*G].voisins[1] != -1)
+	tous_voisins.push_back(faces[*G].voisins[1]);
+    }
+    //Tous_voisins rempli a priori
+    //cout << "Taille recherche : " << tous_voisins.size() << endl;
 
-	//cout << "Coords bary : " << c_part_1 << " " << c_part_2 << " " << c_voisin1 << " " << c_voisin2 << endl;
+  
+    for(std::vector<int>::iterator G=tous_voisins.begin();G!=tous_voisins.end()-1;G++){
+      if(tetra_ok)
+	break;
+      for(std::vector<int>::iterator I=G + 1;I!=tous_voisins.end();I++){
+	int voisin1 = *G;
+	int voisin2 = *I;
+	double vol = std::abs(cross_product(Vector_3(solide[part_1].x0,solide[part_2].x0),Vector_3(solide[part_1].x0,solide[voisin1].x0))*Vector_3(solide[part_1].x0,solide[voisin2].x0)/6.); //Volume du tetra associé à la face
+	//cout << "Volume : " << vol << endl;
+	if(vol > pow(10., -20.)) { //Attention avec cette valeur !! Il faut savoir qu'elle est là ! //-10.
+	  double c_part_1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[part_1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c_part_2 = (Vector_3(solide[part_1].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_1].x0, solide[part_2].x0) * cross_product(Vector_3(solide[part_1].x0, solide[voisin1].x0), Vector_3(solide[part_1].x0, solide[voisin2].x0) ));
+	  double c_voisin1 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin1].x0) * cross_product(Vector_3(solide[part_2].x0, solide[part_1].x0), Vector_3(solide[part_2].x0, solide[voisin2].x0) ));
+	  double c_voisin2 = (Vector_3(solide[part_2].x0, faces[num_face].centre) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0)) ) / (Vector_3(solide[part_2].x0, solide[voisin2].x0) * cross_product(Vector_3(solide[part_2].x0, solide[voisin1].x0), Vector_3(solide[part_2].x0, solide[part_1].x0) ));
 
-	faces[num_face].c_reconstruction.push_back(c_part_1);
-	faces[num_face].c_reconstruction.push_back(c_part_2);
-	faces[num_face].c_reconstruction.push_back(c_voisin1);
-	faces[num_face].c_reconstruction.push_back(c_voisin2);
-        faces[num_face].reconstruction.push_back(part_1);
-	faces[num_face].reconstruction.push_back(part_2);
-	faces[num_face].reconstruction.push_back(voisin1);
-        faces[num_face].reconstruction.push_back(voisin2);
-	tetra_ok = true;
-	break;	
+	  //cout << "Coords bary : " << c_part_1 << " " << c_part_2 << " " << c_voisin1 << " " << c_voisin2 << endl;
+
+	  faces[num_face].c_reconstruction.push_back(c_part_1);
+	  faces[num_face].c_reconstruction.push_back(c_part_2);
+	  faces[num_face].c_reconstruction.push_back(c_voisin1);
+	  faces[num_face].c_reconstruction.push_back(c_voisin2);
+	  faces[num_face].reconstruction.push_back(part_1);
+	  faces[num_face].reconstruction.push_back(part_2);
+	  faces[num_face].reconstruction.push_back(voisin1);
+	  faces[num_face].reconstruction.push_back(voisin2);
+	  tetra_ok = true;
+	  break;	
+	}
       }
     }
   }
@@ -2279,6 +2506,38 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
       }
     }
   }
+  //Particules issues du splitting
+  vtk << "SCALARS from_splitting double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)) {
+      //Si tetra
+      if(P->vertices.size()==4){
+	vtk << P->from_splitting << endl;
+      } else {
+	//Particule polyedrale : sortie des faces triangulaires
+	for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+	  vtk << P->from_splitting << endl;
+	}
+      }
+    }
+  }
+  //Particules impactees par le splitting
+  vtk << "SCALARS impact_splitting double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)) {
+      //Si tetra
+      if(P->vertices.size()==4){
+	vtk << P->impact_splitting << endl;
+      } else {
+	//Particule polyedrale : sortie des faces triangulaires
+	for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+	  vtk << P->impact_splitting << endl;
+	}
+      }
+    }
+  }
   vtk.close();
 }
 
@@ -2384,6 +2643,28 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
 	vtk << faces[*F].BC << endl;
+      }
+    }
+  }
+  vtk << "\n";
+  //Indicateur de splitting sur la face
+  vtk << "SCALARS split double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)){
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	vtk << faces[*F].split << endl;
+      }
+    }
+  }
+  vtk << "\n";
+  //Normale
+  vtk << "VECTORS normale double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)){
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	vtk << faces[*F].normale << endl;
       }
     }
   }
