@@ -331,7 +331,7 @@ int main(){
     cout<< "Energy variation: "<< S.Energie() - E0 << endl;
     //Time step
     if(dt < pow(10., -10.))
-      dt = 2.*pow(10., -8.); //9. ref 6. ok pour ce calcul
+      dt = 1.*pow(10., -11.); //9. ref 6. ok pour ce calcul
     //dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //Position update for the MEMM Scheme
     S.Solve_position(dt,flag_2d, t, T);

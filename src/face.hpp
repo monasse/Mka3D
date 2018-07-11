@@ -64,6 +64,8 @@ public:
 
   //Booléen pour savoir si face a été splitée et doit donc être exclue des calculs
   bool split;
+  //Pour indiquer s'il y a un probleme de reconstruction
+  bool face_pb;
 };
 
 bool operator==(const Face &F1, const Face &F2); //Compare les faces
