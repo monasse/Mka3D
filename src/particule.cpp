@@ -164,6 +164,17 @@ void Particule::barycentre(Solide* Sol, const int& cell_type) {
   x0 = centroid(aux.begin(), aux.end());
 }
 
+void Particule::calcul_sphere_inscrite(const Solide* Sol)
+{
+  //Necessite d'avoir deja calcule les aires des faces et le volume de la particule
+  double A = 0.;//Aire totale
+  for(std::vector<int>::iterator F=faces.begin();F!=faces.end();F++){
+    A += Sol->faces[*F].S;
+  }
+  r = 3*V/A;//Rayon de la sphere inscrite
+}
+
+
 void Particule::volume(Solide* Sol, const int& cell_type) {
   if(cell_type == 4) {//Tetra
     V = cross_product(Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[1]].pos),Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[2]].pos))*Vector_3(Sol->vertex[vertices[0]].pos,Sol->vertex[vertices[3]].pos)/6.;

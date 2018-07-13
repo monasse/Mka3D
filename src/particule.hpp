@@ -62,7 +62,8 @@ class Particule
   void volume(Solide* Sol, const int& cell_type); //calcul le volume d'une particule
   bool contient_face(const Face& f); //Renvoie vraie si particule contient les 3 vertex de la face
   void calcul_diametre(Solide* Sol);
-
+  void calcul_sphere_inscrite(const Solide* Sol);
+  
   //Attributs
   std::vector<int> faces; //!< liste de faces de la particule
   std::vector<int> vertices; //Utile pour retrouver les faces lors de l'importation de la connectivité
@@ -83,6 +84,8 @@ class Particule
   Aff_transformation_3 mvt_t; //!<Transformation affine de la particule au temps t
   Aff_transformation_3 mvt_tprev; //!<Transformation affine de la particule au temps t-dt
   double h; //Diamètre de la particule
+  double r; //Rayon de la sphère inscrite
+  
 
   //Variables pour plasticité et nouvelle formulation Mka !
   Matrix discrete_sym_gradient; //Gradient symétrique reconstruit par particule

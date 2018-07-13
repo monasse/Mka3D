@@ -241,10 +241,10 @@ int main(){
   }
   Solide S(E, nu, B, n, A, H, reconstruction);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
-  if(mesh_type == 0)
-    S.Init((nom_fichier+".1.node").c_str(), (nom_fichier+".1.ele").c_str(), (nom_fichier+".1.face").c_str(), rep, numrep, rho);
-  //S.Init("poutre.1.node", "poutre.1.ele", "poutre.1.face", rep, numrep, rho);
-  else if(mesh_type == 1)
+  // if(mesh_type == 0)
+  //   S.Init((nom_fichier+".1.node").c_str(), (nom_fichier+".1.ele").c_str(), (nom_fichier+".1.face").c_str(), rep, numrep, rho);
+  // //S.Init("poutre.1.node", "poutre.1.ele", "poutre.1.face", rep, numrep, rho);
+  // else if(mesh_type == 1)
     S.Init((nom_fichier+".msh").c_str(), rep, numrep, rho);
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
@@ -331,8 +331,8 @@ int main(){
     cout<< "Energy variation: "<< S.Energie() - E0 << endl;
     //Time step
     if(dt < pow(10., -10.))
-      dt = 1.*pow(10., -11.); //9. ref 6. ok pour ce calcul
-    //dt = S.pas_temps(t,T,cfl, E, nu, rho);
+      dt = 1.*pow(10., -8.); //9. ref 6. ok pour ce calcul
+    dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //Position update for the MEMM Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of the integral of forces
