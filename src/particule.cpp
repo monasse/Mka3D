@@ -144,7 +144,11 @@ void Particule::solve_vitesse_corrector(const double& dt, const bool& flag_2d, c
 void Particule::solve_vitesse_MEMM(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
   u_prev2 = u_prev;
   u_prev = u;
-  u = (m*u_prev2 + 2*Fi_int * dt) / (m + 2.*dt*Amort*m) ; //Amortissement avec forces fluides sur chaque particule. Mettre Amort = 0. pour l'enlever
+  //u = u_prev2 + 2. * (Fi_int / m -Amort * u_prev2 * m) * dt; //Amortissement fluide
+  if(t < T/2.)
+    u = u_prev2 + 2*Fi_int * dt / m;
+  else //L'amortissement n'est mis en place que lorsqu'on a fini de tirer
+    u = (m*u_prev2 + 2*Fi_int * dt) / (m + 2.*dt*Amort*m) ; //Amortissement avec forces fluides sur chaque particule. Mettre Amort = 0. pour l'enlever
   //u = (m*u + Fi_int * dt) / (m + dt*Amort*m) ;
 }
 
