@@ -1555,10 +1555,10 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  cout << "ProblÃ¨me Neumann homogÃ¨ne : " << sqrt((P->contrainte * faces[f].normale).squared_length()) << ". Num face : " << faces[f].id << endl;
 	  }*/
 	
-	//Plastification si on dÃ©passe le critère  
+	//Plastification si on dépasse le critère  
 	P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
 	if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
-	  //while( (P->contrainte).VM() > A) { //On dÃ©passe le critÃ¨re plastique on refait un return mapping pour essayer de converger
+	  //while( (P->contrainte).VM() > A) { //On dépasse le critère plastique on refait un return mapping pour essayer de converger
 	  //cout << "Plastification !!!!" << endl;
 	  //Plastification
 	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
@@ -1567,12 +1567,24 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  //cout << "delta_p : " << delta_p << endl;
 	  P->epsilon_p += delta_p * n_elas;
 	  //cout << "Def plas : " << P->epsilon_p.col1 << endl;
-	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes aprÃ¨s plastification
+	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
-	if(num_faces.size() > 0) { //On vÃ©rifie qu'on a toujours les bonnes BC de Neumann
+	if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	  for(int i=0 ; i < num_faces.size() ; i++) {
-	    if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
+	    if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1. && faces[i].BC == -1) {
 	      test_continuer = true;
+	      //cout << "On continue la boucle 1 !" << endl;
+	      break;
+	    }
+	    //else if( sqrt( (P->contrainte * faces[i].normale - ((P->contrainte * faces[i].normale) * faces[i].normale) * faces[i].normale).squared_length()) > 1. && faces[i].BC == 1) {
+	    else if( faces[i].BC == 1 && sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_1, 2.)) > 1. && sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_2, 2.)) ) {
+	      test_continuer = true;
+	      /*cout << "On continue la boucle 2 !" << endl;
+	      cout << sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_1, 2.)) << " " << sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_2, 2.)) << endl;
+	      cout << P->epsilon_p.col1 << endl;
+	      cout << P->epsilon_p.col2 << endl;
+	      cout << P->epsilon_p.col3 << endl;
+	      cout << P->def_plas_cumulee << endl;*/
 	      break;
 	    }
 	  }

@@ -14,7 +14,7 @@ AMORTISSEMENT		50000.
 B_ecrouissage_JC 	292000000.
 n_ecrouissage_JC	.31
 A_limite_elas		450000.
-H_ecrouissage_lineaire	60000000000.
+H_ecrouissage_lineaire	600000000.
 mesh_type		1
 nom_fichier		cylindre_h_0_5
 
