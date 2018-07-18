@@ -1408,17 +1408,17 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Force_damping(dt, Amort, t, T);
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
-    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
   }
   //Calcul des forces d'amortissement
   //Force_damping(dt, Amort, t, T);
   //Correcteur
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     P->solve_vitesse_corrector(dt, flag_2d, Amort, t , T);
-  }
+    }*/
   
 }
 
@@ -1484,8 +1484,10 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)) {
       bool test_continuer;
+      int nb_iterations = 0;
       do {
 	test_continuer = false;
+	nb_iterations++;
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
 	P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
@@ -1589,7 +1591,9 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	    }
 	  }
 	}
-      } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer);
+      } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10);
+      if(nb_iterations = 10)
+	cout << "Pas de convergence entre plasticite et BC !" << endl;
       /*if((P->contrainte).VM() > P->seuil_elas)
 	cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
     }
