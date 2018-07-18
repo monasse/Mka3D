@@ -1485,7 +1485,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
     if(not(P->split)) {
       bool test_continuer;
       int nb_iterations = 0;
-      do {
+      //do {
 	test_continuer = false;
 	nb_iterations++;
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
@@ -1565,9 +1565,9 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  //Plastification
 	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	  double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-	  P->def_plas_cumulee += delta_p;
+	  //P->def_plas_cumulee += delta_p;
 	  //cout << "delta_p : " << delta_p << endl;
-	  P->epsilon_p += delta_p * n_elas;
+	  //P->epsilon_p += delta_p * n_elas;
 	  //cout << "Def plas : " << P->epsilon_p.col1 << endl;
 	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
@@ -1591,7 +1591,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	    }
 	  }
 	}
-      } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10);
+	//} while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10);
       if(nb_iterations = 10)
 	cout << "Pas de convergence entre plasticite et BC !" << endl;
       /*if((P->contrainte).VM() > P->seuil_elas)
