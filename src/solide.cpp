@@ -853,11 +853,11 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	      cout << "BC : " << F->BC << endl;
 	      cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
 	    face_pb << F->id << " " << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
-	    F->face_pb = true;
 	    //throw std::invalid_argument( " pas de tetra associe a la face !" );
-	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne mÃ©thode...
+	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	    //cout << "face ok !" << endl;
 	    if(not(test)) {
+	      F->face_pb = true;
 	      cout << "Nbr Faces : " << faces.size() << " Face : " << F->id << endl;
 	      //getchar();
 	      //throw std::invalid_argument( "Pas de tetra associe a une face" );
@@ -1408,9 +1408,11 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Force_damping(dt, Amort, t, T);
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    P->solve_vitesse(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    /*if(t < T/2.)
+      P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    else
+    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);*/
+    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
   }
   //Calcul des forces d'amortissement
@@ -1429,7 +1431,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=0.5;
+  double theta=0.5; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes(dt, theta, weight, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
@@ -2910,7 +2912,11 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
-	vtk << faces[*F].face_pb << endl;
+	if(faces[*F].face_pb)
+	  vtk << 1. << endl;
+	else
+	  vtk << 0. << endl;
+	  //vtk << faces[*F].face_pb << endl;
       }
     }
   }
