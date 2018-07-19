@@ -254,6 +254,7 @@ int main(){
     eta = max(eta, F->h);
   }
   S.eta = eta; //Pour l'instant on prend eta qui vaut la valeur max des taille de faces
+  //eta = 10.; //Test
   	
   //Initialization of time measurements
   int iter=0;	
