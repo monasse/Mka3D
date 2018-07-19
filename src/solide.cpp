@@ -534,8 +534,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	nb_faces++;
     }
     if(nb_faces > 1) { //On appelle la fonction de splitting
-      //cout << "On appelle le splitting !" << endl;
-      //splitting_elements(P->id, rho);
+      cout << "On appelle le splitting !" << endl;
+      splitting_elements(P->id, rho);
     }
   }
 
@@ -1412,8 +1412,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
       P->solve_vitesse(dt, flag_2d, Amort, t , T);
     else
     P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);*/
-    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
+    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse(dt, flag_2d, Amort, t , T);
   }
   //Calcul des forces d'amortissement
   //Force_damping(dt, Amort, t, T);
@@ -1431,7 +1431,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=0.5; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=1.; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes(dt, theta, weight, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
@@ -2239,6 +2239,7 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
 	  /*if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
 	    cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;*/
 	  P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	  //cout << "Force volume : " << P->Fi * nIJ << endl;
 	}
 	else if(faces[num_face].BC == 1) { //Calcul forces sur DDL bords Dirichlet. Vaut 0 exactement en Neumann Homogène. A vérifier... // == 1
 	  //cout << "Face au bord" << endl;
