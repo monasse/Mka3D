@@ -1408,9 +1408,9 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Force_damping(dt, Amort, t, T);
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
   }
   //Calcul des forces d'amortissement
@@ -1592,8 +1592,8 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  }
 	}
 	//} while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10);
-      if(nb_iterations = 10)
-	cout << "Pas de convergence entre plasticite et BC !" << endl;
+      //if(nb_iterations = 10)
+	//cout << "Pas de convergence entre plasticite et BC !" << endl;
       /*if((P->contrainte).VM() > P->seuil_elas)
 	cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
     }
