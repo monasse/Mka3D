@@ -1408,9 +1408,9 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Force_damping(dt, Amort, t, T);
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
-    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
   }
   //Calcul des forces d'amortissement
