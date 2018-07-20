@@ -534,8 +534,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	nb_faces++;
     }
     if(nb_faces > 1) { //On appelle la fonction de splitting
-      cout << "On appelle le splitting !" << endl;
-      splitting_elements(P->id, rho);
+      //cout << "On appelle le splitting !" << endl;
+      //splitting_elements(P->id, rho);
     }
   }
 
@@ -700,7 +700,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   
   
   
-  //Calcul du tetrahÃ¨dre associÃ© Ã  chaque face pour le calcul du gradient
+  //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   if(type == 4) { //Seulement pour tetra
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
       if(F->BC == 0 && not(F->split)) {
@@ -1408,12 +1408,12 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Force_damping(dt, Amort, t, T);
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    if(t < T/2.)
+    /*if(t < T/2.)
       P->solve_vitesse(dt, flag_2d, Amort, t , T);
     else
-    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);*/
     //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse(dt, flag_2d, Amort, t , T);
   }
   //Calcul des forces d'amortissement
   //Force_damping(dt, Amort, t, T);
@@ -1448,9 +1448,9 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
       faces[i].I_Dx = Vector_3(0., 0., 0.);
-      //double def_ref = 0.001 * t / T;
-      //faces[i].I_Dx = def_ref * faces[i].centre.z() * faces[i].normale;
-      faces[i].I_Dx = faces[i].I_Dx + displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale;
+      double def_ref = 0.001; // * t / T; //Solution statique
+      faces[i].I_Dx = def_ref * faces[i].centre.z() * faces[i].normale;
+      //faces[i].I_Dx = faces[i].I_Dx + displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale;
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
@@ -1674,7 +1674,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double x2 = (-contrainte * faces[F].normale)*t2 /(faces[F].S / V * mu);
 
       //Deplacement attendu
-      faces[F].I_Dx = x1*t1 + x2*t2 + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T)*n;
+      //faces[F].I_Dx = x1*t1 + x2*t2 + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T)*n;
+      double def_ref = 0.001; //Solution statique
+      faces[F].I_Dx = x1*t1 + x2*t2 + faces[F].centre.z() * def_ref * n;
       //cout << "face en " << faces[F].centre << " I_Dx=" << faces[F].I_Dx << endl;
       //getchar();
       //cout << "end" << endl;
@@ -2247,10 +2249,12 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
 	  P->Fi = P->Fi + faces[num_face].S * ((solide[part].contrainte * nIJ) * nIJ) * nIJ; //On ne met que le composante imposée
 	}
       }
-      /*cout << "Particule :" << P->first << endl;
-	cout << "Force : " << P->Fi << endl; */
     }
   }
+
+  for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Pour debug de la solution statique
+    cout << "Particule :" << P->id << " Force : " << P->Fi << endl;
+  
   //Mise a jour de l'integrale en temps des forces
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     P->Fi_int = P->Fi_int + weight*P->Fi;
