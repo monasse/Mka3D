@@ -24,7 +24,7 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins()
+Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
@@ -33,6 +33,11 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins()
   id = -1; //Face pas remplie
   split = false;
   face_pb = false;
+  vitesse.push_back(Vector_3(0.,0.,0.));
+  vitesse.push_back(Vector_3(0.,0.,0.));
+  Forces.push_back(Vector_3(0.,0.,0.));
+  Forces.push_back(Vector_3(0.,0.,0.));
+  m = 0.; //Mettre à jour lors de l'importation
 }
 
 Face & Face:: operator=(const Face &F){
@@ -111,6 +116,22 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   Vector_3 tt = Vector_3(v1, v3);
   tt = tt - (vec_tangent_1 * tt) * vec_tangent_1; //On fait en sorte d'avoir une BON
   vec_tangent_2 = tt / sqrt(tt.squared_length());
+}
+
+void Face::solve_position(const double &dt, const double& t, const double& T) {
+  I_Dx = I_Dx + u * dt;
+}
+
+void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
+  u = u  + F *  dt / m;
+  //Si interface pas rompue
+  vitesse[0] = u + Forces[0] / massses[0] * dt; //Vitesse mise à jour en tenant compte du fait que l'interface n'est pas encore rompue. Donc ancienne vitesse est celle des deux diamants.
+  vitesse[1] = u + Forces[1] / massses[1] * dt;
+
+  //Si interface rompue
+  //vitesse[0] = vitesse[0] + Forces[0] / massses[0] * dt;
+  //vitesse[1] = vitesse[1] + Forces[1] / massses[1] * dt;
+
 }
 
 #endif

@@ -1397,9 +1397,12 @@ bool Solide::voisins_face(int num_face) {
 }
 
 void Solide::Solve_position(const double& dt, const bool& flag_2d, const double& t, const double& T){
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++) {
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++) {
     if(not(P->split))
       P->solve_position(dt, flag_2d, t, T);
+  }*/
+  for(std::vector<Face>::iterator F=face.begin();F!=face.end();F++) {
+    F->solve_position(dt, t, T);
   }
 }
 
@@ -1407,21 +1410,24 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Mise a jour du coeff d'amortissement dans chaque particule
   //Force_damping(dt, Amort, t, T);
   //Predicteur
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    /*if(t < T/2.)
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(t < T/2.)
       P->solve_vitesse(dt, flag_2d, Amort, t , T);
     else
-    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);*/
+    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
     //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
     P->solve_vitesse(dt, flag_2d, Amort, t , T);
-  }
+  }*/
   //Calcul des forces d'amortissement
   //Force_damping(dt, Amort, t, T);
   //Correcteur
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     P->solve_vitesse_corrector(dt, flag_2d, Amort, t , T);
     }*/
-  
+
+  for(std::vector<Face>::iterator F=face.begin();F!=face.end();F++) {
+    F->solve_vitesse(dt, t, T);
+  }
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
@@ -1434,10 +1440,6 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   double theta=1.; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes(dt, theta, weight, t, T);
-  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    if(F->BC == -1)
-      F->Fi = F->Fi; // + Forces_externes(t,T); //Forces ext s'appliquent sur les faces !
-      }*/
 }
 
 void Solide::stresses(const double& theta, const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt

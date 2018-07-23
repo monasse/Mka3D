@@ -43,6 +43,8 @@ public:
 	return vertex.size();
   }
   void comp_quantities(Solide* Sol); //Computes the outward normal, the surface and the barycentre of the face
+  void solve_position(const double &dt, const double& t, const double& T);
+  void solve_vitesse(const double &dt, const double& t, const double& T);
 
   //Attributs
   Point_3 centre; //!< Centre de la face
@@ -52,10 +54,17 @@ public:
   double S; //Surface de la face
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
-  std::vector<int> voisins; //Donne le numéro des 2 voisins de la face 
+  std::vector<int> voisins; //Donne le numéro des 2 voisins de la face
+  std::vector<Vector_3> vitesse; //Donne les 2 vitesses pour le DDL associé à chaque particule
+  //Sert pour calculer le critère de fissuration
   std::vector<int> reconstruction; //Donne le numéro des 4 particules pour la reconstruction sur la face
   std::vector<double> c_reconstruction; //Coordonnées barycentriques des centres des particules pour calcul du gradient
+  double m; //Masse du DDL
+  std::vector<double> masses; //Masses associées à chaque diamant dans les 2 particules qui partagent la face
+  std::vector<Vector_3> Forces; //Forces sur chacun des 2 ddl...
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
+  Vector_3 u; //Vitesse des deux diamants associés
+  Vector_3 F; //Resultante des forces sur le DDL
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
 
   int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
