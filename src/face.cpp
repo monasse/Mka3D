@@ -55,6 +55,7 @@ Face & Face:: operator=(const Face &F){
   for(int i= 0; i<F.c_reconstruction.size(); i++){
     c_reconstruction[i] = F.c_reconstruction[i];
   }
+  m = F.m;
 }
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
@@ -125,8 +126,8 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u = u  + F *  dt / m;
   //Si interface pas rompue
-  vitesse[0] = u + Forces[0] / massses[0] * dt; //Vitesse mise à jour en tenant compte du fait que l'interface n'est pas encore rompue. Donc ancienne vitesse est celle des deux diamants.
-  vitesse[1] = u + Forces[1] / massses[1] * dt;
+  vitesse[0] = u + Forces[0] / masses[0] * dt; //Vitesse mise à jour en tenant compte du fait que l'interface n'est pas encore rompue. Donc ancienne vitesse est celle des deux diamants.
+  vitesse[1] = u + Forces[1] / masses[1] * dt;
 
   //Si interface rompue
   //vitesse[0] = vitesse[0] + Forces[0] / massses[0] * dt;

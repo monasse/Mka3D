@@ -523,6 +523,19 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
+  //Boucle pour donner une masse aux faces
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    if(F->BC != 0) {
+      int voisin = F->voisins[0];
+      F->m = -F->S * (solide[voisin].x0 - F->centre) * F->normale / 3. * rho;
+    }
+    else {
+      int voisin1 = F->voisins[0];
+      int voisin2 = F->voisins[1];
+      F->m = -F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho - F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho;
+    }
+  }
+
   //Il faudra refaire un peu les connectivités mais ça va...
   //Faire ici une boucle sur les particules pour vérifier le nombre de faces de Neumann qu'elles ont. S'il y en a plus d'une splitter la particule et avoir un hanging node. Les tetras voisins auront des hanging nodes mais c'est pas trop grave
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -2232,14 +2245,15 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
   }
 }
 void Solide::Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
-  stresses(theta, t, T);
+  stresses_bis(theta, t, T);
 
   for(std::vector<Face>::iterator F=face.begin(); F!=face.end(); F++) {
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
     F->F = F->S * (solide[voisin1].contrainte - solide[voisin2].contrainte) * F->normale;
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
-    F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
+    if(voisin >= 0) //cad face pas sur un bord
+      F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
   }
   
 
