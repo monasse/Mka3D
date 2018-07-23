@@ -1414,7 +1414,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
     if(not(P->split))
       P->solve_position(dt, flag_2d, t, T);
   }*/
-  for(std::vector<Face>::iterator F=face.begin();F!=face.end();F++) {
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     F->solve_position(dt, t, T);
   }
 }
@@ -1438,7 +1438,7 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     P->solve_vitesse_corrector(dt, flag_2d, Amort, t , T);
     }*/
 
-  for(std::vector<Face>::iterator F=face.begin();F!=face.end();F++) {
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     F->solve_vitesse(dt, t, T);
   }
 }
@@ -1458,8 +1458,9 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
     if(F->BC == 1) { //Dirichlet
-      double def_ref = 0.001; // * t / T; //Solution statique
-      F->I_Dx = def_ref * F->centre.z() * F->normale;
+      //double def_ref = 0.001; // * t / T; //Solution statique
+      //F->I_Dx = def_ref * F->centre.z() * F->normale;
+      F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
     /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */
@@ -2247,12 +2248,12 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 void Solide::Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
   stresses_bis(theta, t, T);
 
-  for(std::vector<Face>::iterator F=face.begin(); F!=face.end(); F++) {
+  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) {
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
     F->F = F->S * (solide[voisin1].contrainte - solide[voisin2].contrainte) * F->normale;
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
-    if(voisin >= 0) //cad face pas sur un bord
+    if(voisin2 >= 0) //cad face pas sur un bord
       F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
   }
   
