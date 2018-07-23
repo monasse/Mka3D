@@ -58,8 +58,10 @@ public:
   void Solve_vitesse(const double &dt, const bool &flag_2d, const double& Amort, const double& t, const double& T);
   void Forces(const int &N_dim, const double& dt, const double& t, const double& T);
   void Forces_internes(const double& dt, const double& theta, const double& weight, const double& t, const double& T);
+  void Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T);
   void Force_damping(const double& dt, const double& Amort, const double& t, const double& T);
   void stresses(const double& theta, const double& t, const double& T);
+  void stresses_bis(const double& theta, const double& t, const double& T);
   void update_triangles();
   const double Energie();
   const double Energie_potentielle();

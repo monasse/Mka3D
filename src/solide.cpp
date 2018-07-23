@@ -1439,7 +1439,52 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   //Point milieu
   double theta=1.; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
-  Forces_internes(dt, theta, weight, t, T);
+  Forces_internes_bis(dt, theta, weight, t, T);
+}
+
+void Solide::stresses_bis(const double& theta, const double& t, const double& T){
+  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
+    if(F->BC == 1) { //Dirichlet
+      double def_ref = 0.001; // * t / T; //Solution statique
+      F->I_Dx = def_ref * F->centre.z() * F->normale;
+    }
+    /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
+      F->F = F->F + //Contrainte Neumann sur la face !!! */
+  }
+
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //Calcul des déformations et des contraintes
+    P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
+    P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+    P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    P->discrete_sym_gradient.col2 = Vector_3(0., 0., 0.);
+    P->discrete_sym_gradient.col3 = Vector_3(0., 0., 0.);
+    for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      Vector_3 nIJ = faces[f].normale;
+      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
+	nIJ = -nIJ; //Normale pas dans le bon sens...
+      Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
+      Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
+      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+    }
+
+    //calcul des contraintes
+    P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p);
+
+    //Plastification si on dépasse le critère  
+    P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
+    if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
+      Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
+      double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
+      P->def_plas_cumulee += delta_p;
+      //cout << "delta_p : " << delta_p << endl;
+      P->epsilon_p += delta_p * n_elas;
+      //cout << "Def plas : " << P->epsilon_p.col1 << endl;
+      P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
+    }
+  }
 }
 
 void Solide::stresses(const double& theta, const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
@@ -2185,6 +2230,19 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     faces[Fp].I_Dx.vec[0] = x(3); faces[Fp].I_Dx.vec[1] = x(4); faces[Fp].I_Dx.vec[2] = x(5); //DeuxiÃ¨me face de Neumann
     faces[Fpp].I_Dx.vec[0] = x(6); faces[Fpp].I_Dx.vec[1] = x(7); faces[Fpp].I_Dx.vec[2] = x(8); //DeuxiÃ¨me face de Neumann
   }
+}
+void Solide::Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
+  stresses(theta, t, T);
+
+  for(std::vector<Face>::iterator F=face.begin(); F!=face.end(); F++) {
+    int voisin1 = F->voisins[0];
+    int voisin2 = F->voisins[1];
+    F->F = F->S * (solide[voisin1].contrainte - solide[voisin2].contrainte) * F->normale;
+    F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
+    F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
+  }
+  
+
 }
 
 
