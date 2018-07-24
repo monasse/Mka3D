@@ -331,9 +331,8 @@ int main(){
     ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
     cout<< "Energy variation: "<< S.Energie() - E0 << endl;
     //Time step
-    if(dt < pow(10., -10.))
-      dt = 1.*pow(10., -8.); //9. ref 6. ok pour ce calcul
-    dt = S.pas_temps(t,T,cfl, E, nu, rho);
+    if(dt < pow(10., -12.))//dt = 1.*pow(10., -8.); //9. ref 6. ok pour ce calcul
+      dt = S.pas_temps(t,T,cfl, E, nu, rho);
     //Position update for the MEMM Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of the integral of forces
