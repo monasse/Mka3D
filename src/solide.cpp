@@ -523,6 +523,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
+  //On fait en sorte que la normale aille de voisins[0] vers voisins[1]
+    for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+      if( F->normale * Vector_3(solide[F->voisins[0]].x0, solide[F->voisins[0]].x0) < 0.)
+	F->normale = -F->normale;
+    }
+
   //Boucle pour donner une masse aux faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC != 0) {
@@ -1460,9 +1466,12 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
     if(F->BC == 1) { //Dirichlet
-      //double def_ref = 0.001; // * t / T; //Solution statique
+      double def_ref = 0.001; // * t / T; //Solution statique
       //F->I_Dx = def_ref * F->centre.z() * F->normale;
-      F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
+      F->I_Dx.vec[2] = F->centre.z() * def_ref;
+      F->I_Dx.vec[0] = -0.3 * F->centre.x() * def_ref;
+      F->I_Dx.vec[1] = -0.3 * F->centre.y() * def_ref;
+      //F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
     /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */

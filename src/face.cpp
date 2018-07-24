@@ -121,11 +121,17 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 
 void Face::solve_position(const double &dt, const double& t, const double& T) {
   I_Dx = I_Dx + u * dt;
+  double def_ref = 0.001;
+  I_Dx.vec[0] = -0.3 * centre.x() * def_ref;
+  I_Dx.vec[1] = -0.3 * centre.y() * def_ref;
+  I_Dx.vec[2] = centre.z() * def_ref;
+  
 }
 
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
   u = u  + F *  dt / m;
+  u = Vector_3(0.,0.,0.); //Test en statique
   //Si interface pas rompue
   if(BC == 0) {
     vitesse[0] = u + Forces[0] / masses[0] * dt; //Vitesse mise à jour en tenant compte du fait que l'interface n'est pas encore rompue. Donc ancienne vitesse est celle des deux diamants.
