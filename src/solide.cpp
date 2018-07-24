@@ -1494,9 +1494,9 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
       Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
       double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-      P->def_plas_cumulee += delta_p;
+      //P->def_plas_cumulee += delta_p;
       //cout << "delta_p : " << delta_p << endl;
-      P->epsilon_p += delta_p * n_elas;
+      //P->epsilon_p += delta_p * n_elas;
       //cout << "Def plas : " << P->epsilon_p.col1 << endl;
       P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
     }
@@ -2039,7 +2039,7 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
       //Si tetra
       if(P->vertices.size()==4){
 	for(std::vector<int>::iterator V=P->vertices.begin();V!=P->vertices.end();V++){
-	  vtk << P->Dx + P->discrete_gradient*(vertex[*V].pos-P->x0) << endl;
+	  vtk << faces[P->faces[0]].I_Dx + P->discrete_gradient*(vertex[*V].pos - faces[P->faces[0]].centre) << endl;
 	}
       }
       else {
