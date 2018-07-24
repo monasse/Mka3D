@@ -533,6 +533,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       int voisin1 = F->voisins[0];
       int voisin2 = F->voisins[1];
       F->m = -F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho - F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho;
+      F->masses.push_back(-F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho);
+      F->masses.push_back(-F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho);
     }
   }
 
