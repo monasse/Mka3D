@@ -1443,7 +1443,6 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     F->solve_vitesse(dt, t, T);
   }
-  cout << "Ok vitesses" << endl;
 }
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
@@ -1796,7 +1795,7 @@ const double Solide::Energie(){
 
 const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
   double E = 0.;
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split))
       E += 1./2. * P->m * (P->u + P->u_prev) * (P->u + P->u_prev) / 4.;
     //E += 1./2. * P->m * P->u * P->u;
@@ -1804,9 +1803,13 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
       //cout << "Particule : " << P->id << " energie cinétique negative" << endl;
       //cout << "Volume : " << P->V << endl;
     }
+    }*/
+
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
   }
+  
   return E;
-  //return 0.;
 }
 
 const double Solide::Energie_potentielle(){

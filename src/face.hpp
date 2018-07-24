@@ -64,6 +64,7 @@ public:
   std::vector<Vector_3> Forces; //Forces sur chacun des 2 ddl...
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
   Vector_3 u; //Vitesse des deux diamants associés
+  Vector_3 u_prev; //Idem au pas de temps précédent
   Vector_3 F; //Resultante des forces sur le DDL
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
 

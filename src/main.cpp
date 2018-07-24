@@ -324,8 +324,11 @@ int main(){
     cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
-    for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
+    /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
       qdm = qdm+ P->m * P->u;
+      }*/
+    for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++){
+      qdm = qdm+ F->m * F->u;
     }
     
     ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
