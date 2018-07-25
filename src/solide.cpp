@@ -1447,7 +1447,9 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    F->solve_vitesse(dt, t, T);
+    if(F->BC != 1) //Déplacement imposé sur faces de Dirichlet
+      F->solve_vitesse(dt, t, T);
+    //Déplacement imposé que dans la direction normale ! Il faut intégrer le reste...
   }
 }
 
@@ -1471,11 +1473,11 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
     /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */
 
-    double def_ref = 0.001; // * t / T; //Solution statique
+    /*double def_ref = 0.001; // * t / T; //Solution statique
     //F->I_Dx = def_ref * F->centre.z() * F->normale;
     F->I_Dx.vec[2] = F->centre.z() * def_ref;
     F->I_Dx.vec[0] = -0.3 * F->centre.x() * def_ref;
-    F->I_Dx.vec[1] = -0.3 * F->centre.y() * def_ref;
+    F->I_Dx.vec[1] = -0.3 * F->centre.y() * def_ref;*/
   }
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //Calcul des déformations et des contraintes
@@ -1498,10 +1500,6 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
 
     //calcul des contraintes
     P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p);
-
-    cout << P->contrainte.col1 << endl;
-    cout << P->contrainte.col2 << endl;
-    cout << P->contrainte.col3 << endl;
 
     //Plastification si on dépasse le critère  
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
@@ -1684,10 +1682,12 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) {
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
-    F->F = F->S * (solide[voisin1].contrainte - solide[voisin2].contrainte) * F->normale;
+    F->F = F->S * solide[voisin1].contrainte * F->normale;
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
-    if(voisin2 >= 0) //cad face pas sur un bord
+    if(voisin2 >= 0) { //cad face pas sur un bord
       F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
+      F->F = F->F - F->S * solide[voisin2].contrainte * F->normale;
+    }
   }
   
 
