@@ -1466,15 +1466,16 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
     if(F->BC == 1) { //Dirichlet
-      double def_ref = 0.001; // * t / T; //Solution statique
-      //F->I_Dx = def_ref * F->centre.z() * F->normale;
-      F->I_Dx.vec[2] = F->centre.z() * def_ref;
-      F->I_Dx.vec[0] = -0.3 * F->centre.x() * def_ref;
-      F->I_Dx.vec[1] = -0.3 * F->centre.y() * def_ref;
-      //F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
+      F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
     /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */
+
+    double def_ref = 0.001; // * t / T; //Solution statique
+    //F->I_Dx = def_ref * F->centre.z() * F->normale;
+    F->I_Dx.vec[2] = F->centre.z() * def_ref;
+    F->I_Dx.vec[0] = -0.3 * F->centre.x() * def_ref;
+    F->I_Dx.vec[1] = -0.3 * F->centre.y() * def_ref;
   }
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //Calcul des déformations et des contraintes
@@ -1498,6 +1499,10 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
     //calcul des contraintes
     P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p);
 
+    cout << P->contrainte.col1 << endl;
+    cout << P->contrainte.col2 << endl;
+    cout << P->contrainte.col3 << endl;
+
     //Plastification si on dépasse le critère  
     P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
     if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
@@ -1507,7 +1512,7 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
       //cout << "delta_p : " << delta_p << endl;
       //P->epsilon_p += delta_p * n_elas;
       //cout << "Def plas : " << P->epsilon_p.col1 << endl;
-      P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
+      //P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
     }
   }
 }
