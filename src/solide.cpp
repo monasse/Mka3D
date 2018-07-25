@@ -1472,10 +1472,10 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
-      double def_ref = 0.001; // * t / T; //Solution statique
+      /*double def_ref = 0.001; // * t / T; //Solution statique
       faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
       faces[i].I_Dx.vec[0] = -0.3 * faces[i].centre.x() * def_ref;
-      faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref;
+      faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref;*/
     }
     else if(faces[i].BC == 0 && not(faces[i].split)) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].reconstruction.size() ; j++) {
@@ -1531,7 +1531,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	    cout << P->contrainte.col1 << endl;
 	  cout << P->contrainte.col2 << endl;
 	  cout << P->contrainte.col3 << endl;*/
-	  //reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
+	  reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
 	  
 	  //On recalcul le gradient discret
 	  P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
@@ -2262,7 +2262,7 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
   }
 
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Pour debug de la solution statique
-    cout << "Particule :" << P->id << " Force : " << P->Fi << endl;
+    //cout << "Particule :" << P->id << " Force : " << P->Fi << endl;
   
   //Mise a jour de l'integrale en temps des forces
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
