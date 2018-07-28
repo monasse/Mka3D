@@ -96,6 +96,11 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
   if(type == 3)
     aux.push_back(Sol->vertex[vertex[2]].pos);
   centre = centroid(aux.begin(),aux.end());
+  if(aux.size()!=3){
+    cout << aux.size() << endl;
+    getchar();
+  }
+  
   if(type == 2)
     S = 1./2. * sqrt(cross_product(Vector_3(v1,v2),Vector_3(v1,v3)).squared_length());
   else if(type == 3)
