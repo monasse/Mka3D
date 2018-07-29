@@ -2464,7 +2464,7 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   }
   vtk << "\n";
   //Min des coefficients de reconstruction
-  vtk << "SCALARS c_min double 1" << endl;
+  /*vtk << "SCALARS c_min double 1" << endl;
   vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
@@ -2481,7 +2481,7 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
       }
     }
   }
-  vtk << "\n";
+  vtk << "\n";*/
   vtk.close();
 }
 
