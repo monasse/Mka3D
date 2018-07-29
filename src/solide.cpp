@@ -493,7 +493,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	if(type == 5)
 	  (F->c_reconstruction).push_back(0.5); //Maillage de Voronoi
 	if(F->voisins.size() > 2) {
-	  cout << "NumÃ©ro face : " << F->id << endl;
+	  cout << "Numero face : " << F->id << endl;
 	  throw std::invalid_argument("Face a trop de voisins !");
 	}
       }
@@ -524,23 +524,23 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   }
 
   //On fait en sorte que la normale aille de voisins[0] vers voisins[1]
-    for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-      if( F->normale * Vector_3(solide[F->voisins[0]].x0, solide[F->voisins[0]].x0) < 0.)
-	F->normale = -F->normale;
-    }
+  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    if( F->normale * Vector_3(solide[F->voisins[0]].x0, solide[F->voisins[1]].x0) < 0.)
+      F->normale = -F->normale;
+      }*/
 
   //Boucle pour donner une masse aux faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC != 0) {
       int voisin = F->voisins[0];
-      F->m = -F->S * (solide[voisin].x0 - F->centre) * F->normale / 3. * rho;
+      F->m = sqrt(pow(-F->S * (solide[voisin].x0 - F->centre) * F->normale / 3. * rho, 2.));
     }
     else {
       int voisin1 = F->voisins[0];
       int voisin2 = F->voisins[1];
-      F->m = -F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho - F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho;
-      F->masses.push_back(-F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho);
-      F->masses.push_back(-F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho);
+      F->m = sqrt(pow(-F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho - F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho, 2.));
+      F->masses.push_back( sqrt(pow(-F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho, 2.)) );
+      F->masses.push_back( sqrt(pow(-F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho, 2.)) );
     }
   }
 
@@ -722,7 +722,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   
   
   //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
-  if(type == 4) { //Seulement pour tetra
+  /*if(type == 4) { //Seulement pour tetra
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
       if(F->BC == 0 && not(F->split)) {
 	//cout << "Face : " << F->id << endl;
@@ -733,9 +733,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	}
       }
     }
-  }
+    }*/
 
-  if(type == 4) { //Utilisation du Delaunay pour trouver les tÃ©tras associÃ©s Ã  chaque face
+  /*if(type == 4) { //Utilisation du Delaunay pour trouver les tÃ©tras associÃ©s Ã  chaque face
     bool calcul_pre_traitement = false;
     std::ifstream pre_traitement("tetra_faces.txt"); //,ios::in);
 
@@ -785,10 +785,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
 	  aux = getline(pre_traitement, ligne);
 	}
-	/*else {
-	  cout << "Fin fichier tetras associes faces !" << endl;
-	  break;
-	  }*/
       }
     }
     else {
@@ -869,10 +865,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  if(true){
 	    //cout << "Face : " << F->id << endl;
 	    //throw std::invalid_argument( " pas de tetra associe a une face !" );
-	    /*cout << "Face : " << F->id << endl;
-	      cout << "Voisins : " << F->voisins[0] << " " << F->voisins[1] << endl;
-	      cout << "BC : " << F->BC << endl;
-	      cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
 	    face_pb << F->id << " " << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
 	    //throw std::invalid_argument( " pas de tetra associe a la face !" );
 	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
@@ -885,8 +877,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	      cout << "Pas de tetra associe a une face" << endl;
 	    }
 	  }
-	  /*else
-	    cout << F->id << " : au bord" << endl;*/
       
 	//Sortie contenant les Ã©lÃ©ments associÃ©s Ã  chaque face pour faire le prÃ©-traitement une seule fois
 	//cout << "Enregistrement pret !" << endl;
@@ -894,7 +884,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	}
       }
     }
-  }
+  }*/
 }
 
 void Solide::splitting_elements(const int& num_part, const double& rho) {
@@ -1447,8 +1437,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    if(F->BC != 1) //Déplacement imposé sur faces de Dirichlet
-      F->solve_vitesse(dt, t, T);
+    //if(F->BC != 1) //Déplacement imposé sur faces de Dirichlet
+    F->solve_vitesse(dt, t, T);
     //Déplacement imposé que dans la direction normale ! Il faut intégrer le reste...
   }
 }
@@ -1468,7 +1458,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
     if(F->BC == 1) { //Dirichlet
-      //F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
+      F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
     /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */
@@ -1682,6 +1672,9 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) {
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
+    if(voisin2 >= 0 && Vector_3(solide[voisin1].x0, solide[voisin2].x0) * F->normale  < 0.)
+      //F->normale = -F->normale;
+      cout << "Probleme sens normales !" << endl;
     F->F = F->S * solide[voisin1].contrainte * F->normale;
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
     if(voisin2 >= 0) { //cad face pas sur un bord
@@ -2378,13 +2371,24 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   }
   vtk << "\n";
   vtk << "CELL_DATA " << nb_faces << endl;
-  //Deplacement interpolÃ© au centre de la face
-  vtk << "VECTORS deplacement_interp double" << endl;
+  //Deplacement au centre de la face
+  vtk << "VECTORS deplacement double" << endl;
   //vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
 	vtk << faces[*F].I_Dx << endl;
+      }
+    }
+  }
+  vtk << "\n";
+  //Vitesse au centre de la face
+  vtk << "VECTORS vitesse double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)){
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	vtk << faces[*F].u << endl;
       }
     }
   }
