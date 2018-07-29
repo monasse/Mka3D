@@ -98,11 +98,6 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
     Dx = displacement_BC;
   else if(pos.z() >= 4.8)
   Dx = diplacement_BC;*/
-
-  /*if(id == 45) { //Pour éviter translation en x ou y...
-    Dx.vec[0] = 0.;
-    Dx.vec[1] = 0.;
-    }*/
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //double def_ref = 0.001 * t / T;

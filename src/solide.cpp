@@ -1468,7 +1468,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
     if(F->BC == 1) { //Dirichlet
-      F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
+      //F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
     /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */
@@ -2385,6 +2385,17 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
 	vtk << faces[*F].I_Dx << endl;
+      }
+    }
+  }
+  vtk << "\n";
+  //Forces au centre de la face
+  vtk << "VECTORS Force double" << endl;
+  //vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)){
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	vtk << faces[*F].F << endl;
       }
     }
   }
