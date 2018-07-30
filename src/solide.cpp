@@ -714,7 +714,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   
   
   
-  //Calcul du tetrahÃ¨dre associÃ© Ã  chaque face pour le calcul du gradient
+  //Calcul du tetrahèdre associé à chaque face pour le calcul du gradient
   if(type == 4) { //Seulement pour tetra
     for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
       if(F->BC == 0 && not(F->split)) {
@@ -868,9 +868,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	      cout << "Num Vertex : " << F->vertex[0] << " " << F->vertex[1] << " " << F->vertex[2] << " " << endl;*/
 	    face_pb << F->id << " " << vertex[F->vertex[0]].pos << " " << vertex[F->vertex[1]].pos << " " << vertex[F->vertex[2]].pos << endl;
 	    //throw std::invalid_argument( " pas de tetra associe a la face !" );
-	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne mÃ©thode...
+	    bool test = voisins_face(F->id); //Dans ce cas, on va faire de l'extrapolation et utiliser l'ancienne méthode...
 	    //cout << "face ok !" << endl;
 	    if(not(test)) {
+	      F->face_pb = true;
 	      cout << "Nbr Faces : " << faces.size() << " Face : " << F->id << endl;
 	      //getchar();
 	      //throw std::invalid_argument( "Pas de tetra associe a une face" );
@@ -1496,17 +1497,19 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   //Force_damping(dt, Amort, t, T);
   //Predicteur
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);
-    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
-    //P->solve_vitesse(dt, flag_2d, Amort, t , T, *this);
+    /*if(t < T/2.)
+      P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    else
+    P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);*/
+    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse(dt, flag_2d, Amort, t , T);
   }
   //Calcul des forces d'amortissement
   //Force_damping(dt, Amort, t, T);
   //Correcteur
-  //for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //P->solve_vitesse_corrector(dt, flag_2d, Amort, t , T);
-  //}
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    P->solve_vitesse_corrector(dt, flag_2d, Amort, t , T);
+    }*/
   
 }
 
@@ -1517,7 +1520,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=0.5;
+  double theta=1.; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes(dt, theta, weight, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
@@ -1534,9 +1537,14 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
       faces[i].I_Dx = Vector_3(0., 0., 0.);
-      //double def_ref = 0.001 * t / T;
+      double def_ref = 0.001; // * t / T; //Solution statique
       //faces[i].I_Dx = def_ref * faces[i].centre.z() * faces[i].normale;
-      faces[i].I_Dx = faces[i].I_Dx + displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.) * faces[i].normale;
+      faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
+      faces[i].I_Dx.vec[0] = -0.3 * faces[i].centre.x() * def_ref;
+      faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref; //On impose les positions pour le test
+
+      
+      //faces[i].I_Dx = faces[i].I_Dx + displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale;
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
@@ -1553,6 +1561,10 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Neumann
       //faces[i].I_Dx = displacement_BC(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
       //faces[i].I_Dx.vec[2] = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, 0.);
+      /*double def_ref = 0.001; // * t / T; //Solution statique
+      faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
+      faces[i].I_Dx.vec[0] = -0.3 * faces[i].centre.x() * def_ref;
+      faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref;*/
     }
     else if(faces[i].BC == 0 && not(faces[i].split)) { //Cad particule dans le bulk. Donc reconstruction !
       for(int j=0; j<faces[i].reconstruction.size() ; j++) {
@@ -1572,13 +1584,14 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)) {
       bool test_continuer;
-      //do
-      {
+      int nb_iterations = 0;
+      do {
 	test_continuer = false;
+	nb_iterations++;
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
 	P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
-	P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice Ã  0.
+	P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
 	P->discrete_sym_gradient.col2 = Vector_3(0., 0., 0.);
 	P->discrete_sym_gradient.col3 = Vector_3(0., 0., 0.);
 	std::vector<int> num_faces; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
@@ -1599,7 +1612,6 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	    P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	    P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
 	  }
-	  //else if(faces[f].BC == 1) //On ajoute la partie Dirichlet imposée. Si toute la face était en dirichlet elle finirait comme une face intérieure au-dessus...
 	}
 
 	P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
@@ -1648,8 +1660,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  
 	}
 	
-	
-	P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
+	P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Contrainte complète
 	
 	/*for(int i=0 ; i < P->faces.size() ; i++){ //On recalcule les contraintes avec toutes les contributions
 	  int f = P->faces[i];
@@ -1657,26 +1668,43 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  cout << "ProblÃ¨me Neumann homogÃ¨ne : " << sqrt((P->contrainte * faces[f].normale).squared_length()) << ". Num face : " << faces[f].id << endl;
 	  }*/
 	
-	//Plastification si on dÃ©passe le critÃ¨re  
+	//Plastification si on dépasse le critère  
 	P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
-	if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine Ã©lastique.
-	  //while( (P->contrainte).VM() > A) { //On dÃ©passe le critÃ¨re plastique on refait un return mapping pour essayer de converger
+	if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
+	  //while( (P->contrainte).VM() > A) { //On dépasse le critère plastique on refait un return mapping pour essayer de converger
+	  //cout << "Plastification !!!!" << endl;
 	  //Plastification
-	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine Ã©lastique de Von Mises
+	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	  double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
 	  P->def_plas_cumulee += delta_p;
+	  //cout << "delta_p : " << delta_p << endl;
 	  P->epsilon_p += delta_p * n_elas;
-	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes aprÃ¨s plastification
+	  //cout << "Def plas : " << P->epsilon_p.col1 << endl;
+	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
-	if(num_faces.size() > 0) { //On vÃ©rifie qu'on a toujours les bonnes BC de Neumann
+	if(num_faces.size() > 0) { //On vérifie qu'on a toujours les bonnes BC de Neumann
 	  for(int i=0 ; i < num_faces.size() ; i++) {
-	    if( sqrt( (P->contrainte * faces[i].normale).squared_length()) > 1.) {
+	    if( faces[i].BC == -1 && sqrt((P->contrainte * faces[i].normale).squared_length()) > 1.) {
 	      test_continuer = true;
+	      //cout << "On continue la boucle 1 !" << endl;
+	      break;
+	    }
+	    //else if( sqrt( (P->contrainte * faces[i].normale - ((P->contrainte * faces[i].normale) * faces[i].normale) * faces[i].normale).squared_length()) > 1. && faces[i].BC == 1) {
+	    else if( faces[i].BC == 1 && sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_1, 2.)) > 1. && sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_2, 2.)) > 1. ) {
+	      test_continuer = true;
+	      /*cout << "On continue la boucle 2 !" << endl;
+	      cout << sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_1, 2.)) << " " << sqrt(pow((P->contrainte * faces[i].normale) * faces[i].vec_tangent_2, 2.)) << endl;
+	      cout << P->epsilon_p.col1 << endl;
+	      cout << P->epsilon_p.col2 << endl;
+	      cout << P->epsilon_p.col3 << endl;
+	      cout << P->def_plas_cumulee << endl;*/
 	      break;
 	    }
 	  }
 	}
-      } //while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer); //Ajouter dans le test que les conditions de bord doivent Ãªtre respectÃ©es ?
+      } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10); //nb_iterations < 10
+      //if(nb_iterations == 10)
+      //cout << "Particule : " << P->id << " pas de convergence entre plasticite et BC !" << endl;
       /*if((P->contrainte).VM() > P->seuil_elas)
 	cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
     }
@@ -1794,7 +1822,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double x2 = (-contrainte * faces[F].normale)*t2 /(faces[F].S / V * mu);
 
       //Deplacement attendu
-      faces[F].I_Dx = x1*t1 + x2*t2 + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.)*n;
+      //faces[F].I_Dx = x1*t1 + x2*t2 + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T)*n;
+      double def_ref = 0.001; //Solution statique
+      faces[F].I_Dx = x1*t1 + x2*t2 + faces[F].centre.z() * def_ref * n;
       //cout << "face en " << faces[F].centre << " I_Dx=" << faces[F].I_Dx << endl;
       //getchar();
       //cout << "end" << endl;
@@ -1991,7 +2021,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	throw std::invalid_argument( "Division by zero" );
       }
       Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Prend les contributions Neumann homogÃ¨ne sur les deux faces sauf une contribution Dirichlet selon la composante normale de la face F
-      double Dx_normal = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.);
+      double Dx_normal = displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T);
       b << -(contrainte*n)*t2,
 	-(contrainte*m)*v2 + 2*S/V*mu*c*s*Dx_normal,
 	-(contrainte*m)*m - S/V*(lambda+2*mu*c*c)*Dx_normal;
@@ -2108,8 +2138,8 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       } else {
 	throw std::invalid_argument( "Division by zero" );
       }
-      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Prend les contributions Neumann homogÃ¨ne sur les deux faces sauf une contribution Dirichlet selon la composante normale de la face F
-      double Dx_normal = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
+      Eigen::Matrix<double, 3, 1> b; //Vecteur second membre. Prend les contributions Neumann homogène sur les deux faces sauf une contribution Dirichlet selon la composante normale de la face F
+      double Dx_normal = displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, T);
       b << -(contrainte*n)*t2,
 	-(contrainte*m)*v2 + 2*S/V*mu*c*s*Dx_normal,
 	-(contrainte*m)*m - S/V*(lambda+2*mu*c*c)*Dx_normal;
@@ -2196,7 +2226,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     cout << "Trois faces !!!" << endl;
     getchar();
     //Il va falloir coder la partie pour conditions mixtes Neumann-Dirichlet !
-    cout << "Particule Ã  3 faces de Neumann !" << endl; //Reprendre l'Ã©criture des matrices !
+    cout << "Particule a 3 faces de Neumann !" << endl; //Reprendre l'Ã©criture des matrices !
     int F = num_faces[0];
     int Fp = num_faces[1];
     int Fpp = num_faces[2];
@@ -2265,7 +2295,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(2,6) = 0.;
       Mat(2,7) = 0.;
       Mat(2,8) = 0.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, 0.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.), ((-contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.), ((-contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
     }
     else if(faces[Fp].BC == 1) {
       Mat(5,0) = 0.;
@@ -2277,7 +2307,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(5,6) = 0.;
       Mat(5,7) = 0.;
       Mat(5,8) = 0.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.),  displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, T), ((-contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,0.,1.);
     }
     else if(faces[Fpp].BC == 1) {
       Mat(8,0) = 0.;
@@ -2289,7 +2319,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Mat(8,6) = 0.;
       Mat(8,7) = 0.;
       Mat(8,8) = 1.;
-      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.), ((-contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, 0.);
+      b << ((-contrainte) * faces[F].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[F].normale) * Vector_3(0.,0.,1.),  ((-contrainte) * faces[Fp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,1.,0.), ((-contrainte) * faces[Fp].normale) * Vector_3(0.,0.,1.), ((-contrainte) * faces[Fpp].normale) * Vector_3(1.,0.,0.), ((-contrainte) * faces[Fpp].normale) * Vector_3(0.,1.,0.), displacement_BC_bis(faces[Fp].centre, solide[faces[Fp].voisins[0]].Dx, t, T);
     }
 
     //Inversion du systÃ¨me !
@@ -2364,6 +2394,7 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
 	  /*if((faces[num_face].S * solide[part].contrainte * nIJ).squared_length() > 1.)
 	    cout << "Pb avec force sur bord de Neumann : " << (faces[num_face].S * solide[part].contrainte * nIJ).squared_length() << endl;*/
 	  P->Fi = P->Fi + faces[num_face].S * solide[part].contrainte * nIJ; //pow(10., 7.) * nIJ;
+	  //cout << "Force volume : " << P->Fi * nIJ << endl;
 	}
 	else if(faces[num_face].BC == 1) { //Calcul forces sur DDL bords Dirichlet. Vaut 0 exactement en Neumann Homogène. A vérifier... // == 1
 	  //cout << "Face au bord" << endl;
@@ -2372,10 +2403,12 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
 	  P->Fi = P->Fi + faces[num_face].S * ((solide[part].contrainte * nIJ) * nIJ) * nIJ; //On ne met que le composante imposée
 	}
       }
-      /*cout << "Particule :" << P->first << endl;
-	cout << "Force : " << P->Fi << endl; */
     }
   }
+
+  for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Pour debug de la solution statique
+    //cout << "Particule :" << P->id << " Force : " << P->Fi << endl;
+  
   //Mise a jour de l'integrale en temps des forces
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     P->Fi_int = P->Fi_int + weight*P->Fi;
@@ -2384,7 +2417,7 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
 
 void Solide::Force_damping(const double& dt, const double& Amort, const double& t, const double& T)
 {//Calcul des forces d'amortissement pour chaque particule
-  for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){ //Remet Ã  zÃ©ro des forces d'amortissement et de coefficients d'amortissement par lien
+  for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){ //Remet à zéro des forces d'amortissement et de coefficients d'amortissement par lien
     P->F_damp = Vector_3(0.,0.,0.);
     P->damping = 0.;
   }
@@ -2420,7 +2453,7 @@ const double Solide::Energie(){
   return Energie_cinetique()+Energie_potentielle();
 }
 
-const double Solide::Energie_cinetique(){
+const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
   double E = 0.;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split))
@@ -2452,7 +2485,7 @@ const double Solide::Energie_potentielle(){
       }
       }*/
     //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //OK Voronoi
-    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V; /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V;
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
     //}
   }
   //cout << "Energie potentielle : " << Ep << endl;
@@ -2460,7 +2493,6 @@ const double Solide::Energie_potentielle(){
   return Ep;
 }
 
-//Reprendre le calcul de la CFL !!!
 double Solide::pas_temps(const double& t, const double& T, const double& cfls, const double& E, const double& nu, const double& rhos){
   double eps = 1e-14;//std::numeric_limits<double>::epsilon();
   double dt = std::numeric_limits<double>::infinity();
@@ -3126,7 +3158,11 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
-	vtk << faces[*F].face_pb << endl;
+	if(faces[*F].face_pb)
+	  vtk << 1. << endl;
+	else
+	  vtk << 0. << endl;
+	  //vtk << faces[*F].face_pb << endl;
       }
     }
   }
