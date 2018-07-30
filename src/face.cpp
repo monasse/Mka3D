@@ -21,6 +21,7 @@
 #include "face.hpp"
 #include "vertex.hpp"
 #include "geometry.hpp"
+#include "vitesse.hpp"
 #ifndef FACE_CPP
 #define FACE_CPP
 
@@ -123,6 +124,7 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   if(BC != 1)
     I_Dx = I_Dx + u * dt;
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
+    I_Dx = displacement_BC_bis(centre, Vector_3(0.,0.,0.), t, T) * normale;
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
   }

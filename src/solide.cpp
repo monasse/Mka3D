@@ -1457,10 +1457,10 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
 
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
-    if(F->BC == 1) { //Dirichlet
+    /*if(F->BC == 1) { //Dirichlet
       F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
-    /*else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
+    else if(F->BC == -1) //On impose la contrainte voulue sur les faces Neumann
       F->F = F->F + //Contrainte Neumann sur la face !!! */
 
     /*double def_ref = 0.001; // * t / T; //Solution statique
@@ -1672,18 +1672,16 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) {
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
-    if(voisin2 >= 0 && Vector_3(solide[voisin1].x0, solide[voisin2].x0) * F->normale  < 0.)
+    /*if(voisin2 >= 0 && Vector_3(solide[voisin1].x0, solide[voisin2].x0) * F->normale  < 0.)
       //F->normale = -F->normale;
-      cout << "Probleme sens normales !" << endl;
-    F->F = F->S * solide[voisin1].contrainte * F->normale;
+      cout << "Probleme sens normales !" << endl;*/
+    F->F = F->S * solide[voisin1].contrainte * F->normale; //-
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
     if(voisin2 >= 0) { //cad face pas sur un bord
       F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
-      F->F = F->F - F->S * solide[voisin2].contrainte * F->normale;
+      F->F = F->F - F->S * solide[voisin2].contrainte * F->normale; //+
     }
   }
-  
-
 }
 
 
