@@ -534,11 +534,13 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     if(F->BC != 0) {
       int voisin = F->voisins[0];
       F->m = sqrt(pow(F->S * (F->centre - solide[voisin].x0) * F->normale / 3. * rho, 2.));
+      //cout << "Face : " << F->id << " masse : " << F->m << endl;
     }
     else {
       int voisin1 = F->voisins[0];
       int voisin2 = F->voisins[1];
       F->m = sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho + F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.));
+      //cout << "Face : " << F->id << " masse : " << F->m << endl;
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
     }
@@ -1687,7 +1689,7 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
     if(voisin2 >= 0) { //Pas de force sur faces au bord pour l'instant
       Vector_3 dep_voisin2 =  faces[solide[voisin2].faces[0]].I_Dx + solide[voisin2].discrete_gradient*(solide[voisin2].x0 - faces[solide[voisin2].faces[0]].centre);
 
-      F->F = 2 * mu * (dep_voisin2 - dep_voisin1); //OK flux à 2 points
+      F->F = -2 * mu * (dep_voisin2 - dep_voisin1) / 10.; //Flux à 2 points
     }
   } 
 }
