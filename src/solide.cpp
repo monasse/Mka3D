@@ -1683,14 +1683,15 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Forces flux à deux points
-    int voisin1 = F->voisins[0];
+    /*int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
     Vector_3 dep_voisin1 =  faces[solide[voisin1].faces[0]].I_Dx + solide[voisin1].discrete_gradient*(solide[voisin1].x0 - faces[solide[voisin1].faces[0]].centre);
     if(voisin2 >= 0) { //Pas de force sur faces au bord pour l'instant
       Vector_3 dep_voisin2 =  faces[solide[voisin2].faces[0]].I_Dx + solide[voisin2].discrete_gradient*(solide[voisin2].x0 - faces[solide[voisin2].faces[0]].centre);
 
-      F->F = -2 * mu * (dep_voisin2 - dep_voisin1) / 10.; //Flux à 2 points
-    }
+      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / 10.; //Flux à 2 points
+    }*/
+    F->F = -F->S * 2. * mu * F->I_Dx / h;
   } 
 }
 
