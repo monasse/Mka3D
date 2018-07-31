@@ -533,14 +533,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC != 0) {
       int voisin = F->voisins[0];
-      F->m = sqrt(pow(-F->S * (solide[voisin].x0 - F->centre) * F->normale / 3. * rho, 2.));
+      F->m = sqrt(pow(F->S * (F->centre - solide[voisin].x0) * F->normale / 3. * rho, 2.));
     }
     else {
       int voisin1 = F->voisins[0];
       int voisin2 = F->voisins[1];
-      F->m = sqrt(pow(-F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho - F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho, 2.));
-      F->masses.push_back( sqrt(pow(-F->S * (solide[voisin1].x0 - F->centre) * F->normale / 3. * rho, 2.)) );
-      F->masses.push_back( sqrt(pow(-F->S * (solide[voisin2].x0 - F->centre) * F->normale / 3. * rho, 2.)) );
+      F->m = sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho + F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.));
+      F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
+      F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
     }
   }
 
@@ -1669,19 +1669,26 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 void Solide::Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
   stresses_bis(theta, t, T);
 
-  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) {
+  /*for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Vraies forces
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
-    /*if(voisin2 >= 0 && Vector_3(solide[voisin1].x0, solide[voisin2].x0) * F->normale  < 0.)
-      //F->normale = -F->normale;
-      cout << "Probleme sens normales !" << endl;*/
     F->F = F->S * solide[voisin1].contrainte * F->normale; //-
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
     if(voisin2 >= 0) { //cad face pas sur un bord
       F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
       F->F = F->F - F->S * solide[voisin2].contrainte * F->normale; //+
     }
-  }
+    }*/
+
+  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Forces flux à deux points
+    int voisin1 = F->voisins[0];
+    int voisin2 = F->voisins[1];
+    Vector_3 dep_voisin1 =  faces[solide[voisin1].faces[0]].I_Dx + solide[voisin1].discrete_gradient*(solide[voisin1].x0 - faces[solide[voisin1].faces[0]].centre);
+    Vector_3 dep_voisin2 =  faces[solide[voisin2].faces[0]].I_Dx + solide[voisin2].discrete_gradient*(solide[voisin2].x0 - faces[solide[voisin2].faces[0]].centre);
+    
+
+    F->F = 2 * mu * (dep_voisin2 - dep_voisin1); //OK flux à 2 points
+  } 
 }
 
 
@@ -2068,7 +2075,8 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     if(not(P->split)) {
       //Si tetra
       if(P->vertices.size()==4){
-	vtk << P->Dx << endl;
+	//vtk << P->Dx << endl;
+	vtk << faces[P->faces[0]].I_Dx + P->discrete_gradient*(P->x0 - faces[P->faces[0]].centre) << endl;
       }
       else {
 	//Particule polyedrale : sortie des faces triangulaires
