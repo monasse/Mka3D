@@ -1689,16 +1689,16 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
     Vector_3 dep_voisin2 = Vector_3(0.,0.,0.); //idem
     for(int i=0 ; i < solide[voisin1].faces.size() ; i++){
       int f = solide[voisin1].faces[i];
-      dep_voisin1 =  dep_voisin1 + faces[f].m / solide[voisin1].m / 3. * faces[f].I_Dx;
+      dep_voisin1 =  dep_voisin1 + /*faces[f].m / solide[voisin1].m * */ faces[f].I_Dx / 4.;
     }
     if(voisin2 >= 0) { //Pas de force sur faces au bord pour l'instant
       for(int i=0 ; i < solide[voisin2].faces.size() ; i++){
       int f = solide[voisin2].faces[i];
-      dep_voisin2 =  dep_voisin2 + faces[f].m / solide[voisin1].m / 3. * faces[f].I_Dx;
+      dep_voisin2 =  dep_voisin2 + /*faces[f].m / solide[voisin1].m  * */ faces[f].I_Dx / 4.;
       }
-      //double distance = sqrt((solide[voisin2].x0 - solide[voisin1].x0).squared_length());
+      double distance = sqrt((solide[voisin2].x0 - solide[voisin1].x0).squared_length());
+      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / distance; // / distance; //Flux à 2 points
     }
-    F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / 10.; // / distance; //Flux à 2 points
     //F->F = -F->S * 2. * mu * F->I_Dx / h;
   } 
 }
@@ -2088,7 +2088,11 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
       //Si tetra
       if(P->vertices.size()==4){
 	//vtk << P->Dx << endl;
-	vtk << faces[P->faces[0]].I_Dx + P->discrete_gradient*(P->x0 - faces[P->faces[0]].centre) << endl;
+	Vector_3 dep = Vector_3(0.,0.,0.);
+	for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+	  dep = dep + faces[*F].I_Dx / 4.;
+	}
+	vtk << dep << endl;
       }
       else {
 	//Particule polyedrale : sortie des faces triangulaires
