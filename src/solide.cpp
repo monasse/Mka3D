@@ -1697,7 +1697,7 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	dep_voisin2 =  dep_voisin2 + faces[f].m / solide[voisin1].m  * faces[f].I_Dx; // / 4.;
       }
       double distance = sqrt((solide[voisin2].x0 - solide[voisin1].x0).squared_length());
-      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / distance; // / distance; //Flux à 2 points
+      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) * F->normale / distance * F->normale; // / distance; //Flux à 2 points
     }
     //F->F = -F->S * 2. * mu * F->I_Dx / h;
   } 
