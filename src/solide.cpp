@@ -1689,12 +1689,12 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
     Vector_3 dep_voisin2 = Vector_3(0.,0.,0.); //idem
     for(int i=0 ; i < solide[voisin1].faces.size() ; i++){
       int f = solide[voisin1].faces[i];
-      dep_voisin1 =  dep_voisin1 + /*faces[f].m / solide[voisin1].m * */ faces[f].I_Dx / 4.;
+      dep_voisin1 =  dep_voisin1 + faces[f].m / solide[voisin1].m * faces[f].I_Dx; // / 4.;
     }
     if(voisin2 >= 0) { //Pas de force sur faces au bord pour l'instant
       for(int i=0 ; i < solide[voisin2].faces.size() ; i++){
-      int f = solide[voisin2].faces[i];
-      dep_voisin2 =  dep_voisin2 + /*faces[f].m / solide[voisin1].m  * */ faces[f].I_Dx / 4.;
+	int f = solide[voisin2].faces[i];
+	dep_voisin2 =  dep_voisin2 + faces[f].m / solide[voisin1].m  * faces[f].I_Dx; // / 4.;
       }
       double distance = sqrt((solide[voisin2].x0 - solide[voisin1].x0).squared_length());
       F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / distance; // / distance; //Flux à 2 points
@@ -2111,7 +2111,12 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
       //for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++)
       //Si tetra
       if(P->vertices.size()==4){
-	vtk << P->u << endl;
+	Vector_3 vit = Vector_3(0.,0.,0.);
+	for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
+	  vit = vit + faces[*F].u / 4.;
+	}
+	vtk << vit << endl;
+	//vtk << P->u << endl;
       }
       else {
 	//Particule polyedrale : sortie des faces triangulaires
