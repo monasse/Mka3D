@@ -286,10 +286,10 @@ int main(){
   int nb_part = S.size();
 
   for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
-    if((F->centre).z() <= 0.1) //P->BC == 1 && 
-      (F->u).vec[2] = 0.005;
-    else if((F->centre).z() >= 4.9) //P->BC == 1 && 
+    if(F->BC == 1 && (F->centre).z() <= 0.1) //P->BC == 1 && 
       (F->u).vec[2] = -0.005;
+    else if(F->BC == 1 && (F->centre).z() >= 4.9) //P->BC == 1 && 
+      (F->u).vec[2] = 0.005;
     F->u_prev = F->u;
   }
 

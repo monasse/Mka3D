@@ -1674,11 +1674,11 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Vraies forces
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
-    F->F = F->S * solide[voisin1].contrainte * F->normale; //-
+    F->F = -F->S * solide[voisin1].contrainte * F->normale; //-
     F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
     if(voisin2 >= 0) { //cad face pas sur un bord
       F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
-      F->F = F->F - F->S * solide[voisin2].contrainte * F->normale; //+
+      F->F = F->F + F->S * solide[voisin2].contrainte * F->normale; //+
     }
   }
 

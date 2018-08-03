@@ -140,7 +140,11 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
 
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
-  u = u  + F *  dt / m;
+  //u = u  + F *  dt / m;
+
+  if(BC != 1)
+    u.vec[1] = u.vec[1]  + F.vec[1] *  dt / m;
+  
   /*if(BC != 1)
     u = u  + F *  dt / m;
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
