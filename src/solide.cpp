@@ -1671,7 +1671,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 void Solide::Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
   stresses_bis(theta, t, T);
 
-  /*for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Vraies forces
+  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Vraies forces
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
     F->F = F->S * solide[voisin1].contrainte * F->normale; //-
@@ -1680,9 +1680,9 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
       F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
       F->F = F->F - F->S * solide[voisin2].contrainte * F->normale; //+
     }
-    }*/
+  }
 
-  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Forces flux à deux points
+  /*for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Forces flux à deux points
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
     Vector_3 dep_voisin1 = Vector_3(0.,0.,0.); //déplacement reconstruit au centre de la particule
@@ -1697,10 +1697,11 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	dep_voisin2 =  dep_voisin2 + faces[f].m / solide[voisin1].m  * faces[f].I_Dx; // / 4.;
       }
       double distance = sqrt((solide[voisin2].x0 - solide[voisin1].x0).squared_length());
-      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) * F->normale / distance * F->normale; // / distance; //Flux à 2 points
+      //F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) * F->normale / distance * F->normale; // / distance; //Flux à 2 points
+      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / distance;
     }
     //F->F = -F->S * 2. * mu * F->I_Dx / h;
-  } 
+  }*/ 
 }
 
 

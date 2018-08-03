@@ -121,13 +121,15 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 }
 
 void Face::solve_position(const double &dt, const double& t, const double& T) {
-  if(BC != 1)
+  /*if(BC != 1)
     I_Dx = I_Dx + u * dt;
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
     I_Dx = displacement_BC_bis(centre, Vector_3(0.,0.,0.), t, T) * normale;
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
-  }
+    }*/
+
+  I_Dx = I_Dx + u * dt;
   
   /*double def_ref = 0.001;
   I_Dx.vec[0] = -0.3 * centre.x() * def_ref;
