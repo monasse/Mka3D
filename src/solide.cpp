@@ -1525,6 +1525,7 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
       
 	//On reconstruit la valeur du déplacement sur les faces de Neumann
+	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Pour test rang de la matrice
 	if(num_faces.size() > 0) {
 	  //cout << "Num particule : " << P->id << endl;
 	  /*cout << "Apres calcul : " << endl;
@@ -1716,6 +1717,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 	cout << "Position centre F : " << faces[F].centre << endl;
 	cout << "Position centre Fp : " << faces[Fp].centre << endl; */
 
+    //Ces Matrices fonctionnent bien !
     Eigen::MatrixXd A_FF(3,3); //Premier bloc diagonal
     A_FF << (lambda + mu) * faces[F].normale.x() * faces[F].normale.x() + mu,
       (lambda + mu) * faces[F].normale.x() * faces[F].normale.y(),
@@ -1776,11 +1778,37 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
     A_FpFp *= faces[Fp].S / V;
 
+    //test de l'inversibilité !
+    Eigen::MatrixXd M(3,3); //Bloc diagonal
+    M << 1, 0, 0, 0, 0.5, 0, 0, 0, 0.5;
+
+    Eigen::MatrixXd N(3,3); //Bloc hors-diagonale
+    Vector_3 nF = faces[F].normale;
+    Vector_3 sF = faces[F].vec_tangent_1;
+    Vector_3 tF = faces[F].vec_tangent_2;
+    Vector_3 nFp = faces[Fp].normale;
+    Vector_3 sFp = faces[Fp].vec_tangent_1;
+    Vector_3 tFp = faces[Fp].vec_tangent_2;
+    
+    N << (nF * nFp) * (nF * nFp), (nF * sFp) * (nFp * nF), (nF * tFp) * (nF * nFp), (nF * nFp) * (nFp * sF), 0.5 * ((nF * sFp) * (nFp * sF) + (nF * nFp) * (sFp * sF)), 0.5 * ((nF * tFp) * (nFp * sF) + (nF * nFp) * (tFp * sF)), (nF * nFp) * (nFp * tF), 0.5 * ((nF * sFp) * (nFp * tF) + (nF * nFp) * (sFp * tF)), 0.5 * ((nF * tFp) * (nFp * tF) + (nF * nFp) * (tFp * tF));
+
+    Mat.topLeftCorner<3,3>() = M;
+    Mat.topRightCorner<3,3>() = N;
+    Mat.bottomLeftCorner<3,3>() = N.transpose();
+    Mat.bottomRightCorner<3,3>() = M;
+
+    typedef Eigen::Matrix<double, 6, 6> Matrix6x6;
+    Eigen::FullPivLU<Matrix6x6> lu(Mat);
+    //if( lu.rank() == 6) //Test voir si systÃ¨me inversible...
+    cout << "Determinant : " << Mat.determinant() << endl;
+    cout << "Rang : " << lu.rank() << endl;
+
     if(faces[F].BC == -1 && faces[Fp].BC == -1) {
       Eigen::Matrix<double, 6, 6> Mat; //Matrice Ã  inverser
       Eigen::Matrix<double, 6, 1> b; //Vecteur second membre. Neumann homogÃ¨ne pour l'instant
 
       //Assemblage de la matrice
+      //Fonctionne Nickel
       Mat.topLeftCorner<3,3>() = A_FF;
       Mat.topRightCorner<3,3>() = A_FFp;
       Mat.bottomLeftCorner<3,3>() = A_FpF;
@@ -1793,6 +1821,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       Eigen::FullPivLU<Matrix6x6> lu(Mat);
       //if( lu.rank() == 6) //Test voir si systÃ¨me inversible...
       if(Mat.determinant()!=0.){
+	cout << "Determinant : " << Mat.determinant() << endl;
 	x = Mat.lu().solve(b); //ProblÃ¨me avec les valeurs de x !!!!
       }
       else { //Calcul de la pseudo-inverse pour minimisation de l'Ã©cart aux moindres carrÃ©s.
