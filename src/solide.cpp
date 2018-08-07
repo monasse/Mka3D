@@ -1501,8 +1501,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
       P->solve_vitesse(dt, flag_2d, Amort, t , T);
     else
     P->solve_vitesse_predictor(dt, flag_2d, Amort, t , T);*/
-    //P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
-    P->solve_vitesse(dt, flag_2d, Amort, t , T);
+    P->solve_vitesse_MEMM(dt, flag_2d, Amort, t , T);
+    //P->solve_vitesse(dt, flag_2d, Amort, t , T);
   }
   //Calcul des forces d'amortissement
   //Force_damping(dt, Amort, t, T);
@@ -1520,7 +1520,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=1.; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=0.5; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes(dt, theta, weight, t, T);
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
@@ -2479,7 +2479,8 @@ void Solide::Force_damping(const double& dt, const double& Amort, const double& 
 
 
 const double Solide::Energie(){
-  return Energie_cinetique()+Energie_potentielle();
+  //return Energie_cinetique()+Energie_potentielle(); //Verlet
+  return Energie_cinetique_MEMM()+Energie_potentielle(); //MEMM
 }
 
 const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
@@ -2492,6 +2493,16 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
       //cout << "Particule : " << P->id << " energie cinétique negative" << endl;
       //cout << "Volume : " << P->V << endl;
     }
+  }
+  return E;
+  //return 0.;
+}
+
+const double Solide::Energie_cinetique_MEMM(){ //Energie cinétique adaptée à MEMM
+  double E = 0.;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split))
+      E += 1./2. * P->m * (P->u * P->u_prev);
   }
   return E;
   //return 0.;
