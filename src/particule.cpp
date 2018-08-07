@@ -106,10 +106,10 @@ void Particule::solve_position(const double& dt, const bool& flag_2d, const doub
   
   //Dx = x0.z() * x0.z() / 9. * 4 * Vector_3(0., 0., 1.);
   //double def_ref = 0.001 * t / T;
-  double def_ref = 0.001; //Solution statique
+  /*double def_ref = 0.001; //Solution statique
   Dx.vec[2] = x0.z() * def_ref;
   Dx.vec[0] = -0.3 * x0.x() * def_ref;
-  Dx.vec[1] = -0.3 * x0.y() * def_ref; //On impose les positions pour le test
+  Dx.vec[1] = -0.3 * x0.y() * def_ref;*/ //On impose les positions pour le test
    
 
   //Mise a jour de la transformation donnant le mouvement de la particule
@@ -129,7 +129,7 @@ void Particule::solve_vitesse(const double& dt, const bool& flag_2d, const doubl
   //if(t < pow(10., -8.))
   //u.vec[2] = 0.; //Pour voir que ce qui se passe sur Neumann
 
-  u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
+  //u = Vector_3(0., 0., 0.); //On impose la solution quasi-statique
 }
 
 void Particule::solve_vitesse_predictor(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){

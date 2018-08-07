@@ -1537,14 +1537,14 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
       faces[i].I_Dx = Vector_3(0., 0., 0.);
-      double def_ref = 0.001; // * t / T; //Solution statique
+      //double def_ref = 0.001; // * t / T; //Solution statique
       //faces[i].I_Dx = def_ref * faces[i].centre.z() * faces[i].normale;
-      faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
+      /*faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
       faces[i].I_Dx.vec[0] = -0.3 * faces[i].centre.x() * def_ref;
-      faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref; //On impose les positions pour le test
+      faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref;*/ //On impose les positions pour le test
 
       
-      //faces[i].I_Dx = faces[i].I_Dx + displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale;
+      faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale;
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
@@ -1821,9 +1821,9 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
       double x2 = (-contrainte * faces[F].normale)*t2 /(faces[F].S / V * mu);
 
       //Deplacement attendu
-      //faces[F].I_Dx = x1*t1 + x2*t2 + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T)*n;
-      double def_ref = 0.001; //Solution statique
-      faces[F].I_Dx = x1*t1 + x2*t2 + faces[F].centre.z() * def_ref * n;
+      faces[F].I_Dx = x1*t1 + x2*t2 + displacement_BC_bis(faces[F].centre, solide[faces[F].voisins[0]].Dx, t, T)*n;
+      //double def_ref = 0.001; //Solution statique
+      //faces[F].I_Dx = x1*t1 + x2*t2 + faces[F].centre.z() * def_ref * n;
       //cout << "face en " << faces[F].centre << " I_Dx=" << faces[F].I_Dx << endl;
       //getchar();
       //cout << "end" << endl;
