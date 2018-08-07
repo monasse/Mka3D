@@ -277,6 +277,7 @@ int main(){
   if(rep){
     E0 -= dE0rep;
   }
+  
   /*S.Forces_internes(dt);
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
     if(P->contrainte.norme() > pow(10., -14.))

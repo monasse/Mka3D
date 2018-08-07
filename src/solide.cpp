@@ -1524,8 +1524,6 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 
 	P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Premier calcul pour calcul des déplacements sur bords de Neumann
       
-	//On reconstruit la valeur du déplacement sur les faces de Neumann
-	reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Pour test rang de la matrice
 	if(num_faces.size() > 0) {
 	  //cout << "Num particule : " << P->id << endl;
 	  /*cout << "Apres calcul : " << endl;
@@ -1778,6 +1776,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
     A_FpFp *= faces[Fp].S / V;
 
+    /*
     //test de l'inversibilité !
     Eigen::MatrixXd M(3,3); //Bloc diagonal
     M << 1, 0, 0, 0, 0.5, 0, 0, 0, 0.5;
@@ -1802,6 +1801,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
     //if( lu.rank() == 6) //Test voir si systÃ¨me inversible...
     cout << "Determinant : " << Mat.determinant() << endl;
     cout << "Rang : " << lu.rank() << endl;
+    */
 
     if(faces[F].BC == -1 && faces[Fp].BC == -1) {
       Eigen::Matrix<double, 6, 6> Mat; //Matrice Ã  inverser
