@@ -1529,14 +1529,14 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
       }*/
 }
 
-void Solide::stresses(const double& theta, const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
+void Solide::stresses(const double& theta, const double& dt, const double& t, const double& T){ //Calcul de la contrainte dans toutes les particules ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
   for(int i=0; i<faces.size(); i++){ //Calcul de la reconstruction sur chaque face
     if(faces[i].BC == 0) //cad face dans bulk et donc I_Dx reconstruit
       faces[i].I_Dx = Vector_3(0., 0., 0.); //Remise Ã  zÃ©ro. Si particule sur le bord, on a bien I_Dx = (0., 0., 0.)
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
-      faces[i].I_Dx = Vector_3(0., 0., 0.);
+      //faces[i].I_Dx = Vector_3(0., 0., 0.);
       //double def_ref = 0.001; // * t / T; //Solution statique
       //faces[i].I_Dx = def_ref * faces[i].centre.z() * faces[i].normale;
       /*faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
@@ -1544,7 +1544,10 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
       faces[i].I_Dx.vec[1] = -0.3 * faces[i].centre.y() * def_ref;*/ //On impose les positions pour le test
 
       
-      faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale;
+      //faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale; //Pour Verlet
+
+      faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t-dt/2., T) * faces[i].normale; //Pour MEMM
+      
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
       //cout << faces[i].I_Dx.vec[2] << endl;
@@ -1622,7 +1625,8 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	    cout << P->contrainte.col1 << endl;
 	  cout << P->contrainte.col2 << endl;
 	  cout << P->contrainte.col3 << endl;*/
-	  reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann
+	  //reconstruction_faces_neumann(num_faces, P->contrainte, t, P->V, T); //Calcul la valeur des déplacements sur faces de Neumann. Version Verlet !!!!
+	  reconstruction_faces_neumann(num_faces, P->contrainte, t-dt/2., P->V, T); //Calcul la valeur des déplacements sur faces de Neumann. Version MEMM !!!!
 	  
 	  //On recalcul le gradient discret
 	  P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
@@ -1675,9 +1679,9 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 	  //Plastification
 	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	  double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-	  P->def_plas_cumulee += delta_p;
+	  //P->def_plas_cumulee += delta_p;
 	  //cout << "delta_p : " << delta_p << endl;
-	  P->epsilon_p += delta_p * n_elas;
+	  //P->epsilon_p += delta_p * n_elas;
 	  //cout << "Def plas : " << P->epsilon_p.col1 << endl;
 	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
@@ -2368,7 +2372,7 @@ void Solide::reconstruction_faces_neumann(std::vector<int> num_faces, const Matr
 
 
 void Solide::Forces_internes(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
-  stresses(theta, t, T);
+  stresses(theta, dt, t, T);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++) //Remet Ã  zÃ©ro toutes les forces
     P->Fi = Vector_3(0.,0.,0.);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
