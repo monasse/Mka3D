@@ -392,7 +392,6 @@ Matrix& Matrix::operator*=(const double &rel) {
   return *this;
 }
 
-
 Matrix operator*(const double& rel, const Matrix& vec) {
   return Matrix(rel*vec.col1, rel*vec.col2, rel*vec.col3);
 }
