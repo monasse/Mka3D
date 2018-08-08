@@ -1439,9 +1439,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    //if(F->BC != 1) //Déplacement imposé sur faces de Dirichlet
-    F->solve_vitesse(dt, t, T);
-    //Déplacement imposé que dans la direction normale ! Il faut intégrer le reste...
+    //F->solve_vitesse(dt, t, T);
+    F->solve_vitesse_MEMM(dt, t , T);
   }
 }
 
@@ -1452,13 +1451,49 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=1.; //theta=0. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=0.5; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes_bis(dt, theta, weight, t, T);
 }
 
+void Solide::stresses_bis_MEMM(const double& theta, const double& t, const double& T){
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //Calcul des déformations et des contraintes
+    P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    P->discrete_gradient.col2 = Vector_3(0., 0., 0.);
+    P->discrete_gradient.col3 = Vector_3(0., 0., 0.);
+    P->discrete_sym_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
+    P->discrete_sym_gradient.col2 = Vector_3(0., 0., 0.);
+    P->discrete_sym_gradient.col3 = Vector_3(0., 0., 0.);
+    for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      Vector_3 nIJ = faces[f].normale;
+      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
+	nIJ = -nIJ; //Normale pas dans le bon sens...
+      Matrix Dij_n(tens(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
+      Matrix Dij_n_sym(tens_sym(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
+      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+      P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+    }
+
+    //calcul des contraintes
+    P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p);
+
+    //Plastification si on dépasse le critère  
+    P->seuil_elas = A; // + B * pow(P->def_plas_cumulee, n);
+    if((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas) { //On sort du domaine élastique.
+      Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
+      double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
+      //P->def_plas_cumulee += delta_p;
+      //cout << "delta_p : " << delta_p << endl;
+      //P->epsilon_p += delta_p * n_elas;
+      //cout << "Def plas : " << P->epsilon_p.col1 << endl;
+      //P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
+    }
+  }
+}
+
 void Solide::stresses_bis(const double& theta, const double& t, const double& T){
-  for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
+  //for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //On impose la velur des DDL sur des faces Neumann
     /*if(F->BC == 1) { //Dirichlet
       F->I_Dx = displacement_BC_bis(F->centre, Vector_3(0.,0.,0.), t, T) * F->normale;
     }
@@ -1470,7 +1505,7 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
     F->I_Dx.vec[2] = F->centre.z() * def_ref;
     F->I_Dx.vec[0] = -0.3 * F->centre.x() * def_ref;
     F->I_Dx.vec[1] = -0.3 * F->centre.y() * def_ref;*/
-  }
+  //}
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){ //Calcul des déformations et des contraintes
     P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
@@ -1669,7 +1704,10 @@ void Solide::stresses(const double& theta, const double& t, const double& T){ //
 }
 
 void Solide::Forces_internes_bis(const double& dt, const double& theta, const double& weight, const double& t, const double& T){ //Calcul des forces pour chaque particule ; theta indique qu'on calcule la force a partir de la position au temps t+theta*dt
-  stresses_bis(theta, t, T);
+  if(theta > 0.9) //Cad integration Verlet
+    stresses_bis(theta, t, T);
+  else if(theta > 0.4 && theta < 0.6) //Integration MEMM
+    stresses_bis_MEMM(theta, t, T);
 
   for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Vraies forces
     int voisin1 = F->voisins[0];

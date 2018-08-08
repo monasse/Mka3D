@@ -135,7 +135,6 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   I_Dx.vec[0] = -0.3 * centre.x() * def_ref;
   I_Dx.vec[1] = -0.3 * centre.y() * def_ref;
   I_Dx.vec[2] = centre.z() * def_ref;*/
-  
 }
 
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
@@ -163,6 +162,12 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   //vitesse[0] = vitesse[0] + Forces[0] / massses[0] * dt;
   //vitesse[1] = vitesse[1] + Forces[1] / massses[1] * dt;
 
+}
+
+void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T) {
+  u_prev2 = u_prev;
+  u_prev = u;
+  u = u_prev2 + 2 * F * dt / m;
 }
 
 #endif

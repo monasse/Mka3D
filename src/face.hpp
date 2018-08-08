@@ -45,6 +45,7 @@ public:
   void comp_quantities(Solide* Sol); //Computes the outward normal, the surface and the barycentre of the face
   void solve_position(const double &dt, const double& t, const double& T);
   void solve_vitesse(const double &dt, const double& t, const double& T);
+  void solve_vitesse_MEMM(const double &dt, const double& t, const double& T);
 
   //Attributs
   Point_3 centre; //!< Centre de la face
@@ -63,8 +64,10 @@ public:
   std::vector<double> masses; //Masses associées à chaque diamant dans les 2 particules qui partagent la face
   std::vector<Vector_3> Forces; //Forces sur chacun des 2 ddl...
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
+  Vector_3 I_Dx_prev; //Dx au pas de temps précédetn. Pour intégration MEMM
   Vector_3 u; //Vitesse des deux diamants associés
   Vector_3 u_prev; //Idem au pas de temps précédent
+  Vector_3 u_prev2; //Pour intégration MEMM
   Vector_3 F; //Resultante des forces sur le DDL
   int BC; //Vaut -1 si particule au bord et peut valoir 1,2,etc... selon la condition de bord
 
