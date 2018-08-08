@@ -6,14 +6,14 @@ DENSITY  		8960.
 POISSON_RATIO		0.
 YOUNG_MODULUS		124000000000.
 SIMULATION_TIME		0.0005
-CFL 			0.1
+CFL 			0.025
 N_PRINTS  		2
 MAX_STEPS		1000000000
 Reconstruction		0
 AMORTISSEMENT		50000.
 B_ecrouissage_JC 	292000000.
 n_ecrouissage_JC	.31
-A_limite_elas		450000.
+A_limite_elas		4500.
 H_ecrouissage_lineaire	600000000.
 mesh_type		1
 nom_fichier		cylindre_h_0_25

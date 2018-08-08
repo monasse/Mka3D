@@ -1679,9 +1679,9 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
 	  //Plastification
 	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	  double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-	  //P->def_plas_cumulee += delta_p;
+	  P->def_plas_cumulee += delta_p;
 	  //cout << "delta_p : " << delta_p << endl;
-	  //P->epsilon_p += delta_p * n_elas;
+	  P->epsilon_p += delta_p * n_elas;
 	  //cout << "Def plas : " << P->epsilon_p.col1 << endl;
 	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
@@ -1706,8 +1706,8 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
 	  }
 	}
       } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10); //nb_iterations < 10
-      //if(nb_iterations == 10)
-      //cout << "Particule : " << P->id << " pas de convergence entre plasticite et BC !" << endl;
+      if(nb_iterations == 10)
+	cout << "Particule : " << P->id << " pas de convergence entre plasticite et BC !" << endl;
       /*if((P->contrainte).VM() > P->seuil_elas)
 	cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
     }

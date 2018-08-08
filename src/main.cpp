@@ -322,7 +322,8 @@ int main(){
       next_timp += dtimp;
     }
     //Variation of energy
-    cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
+    //cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl; //Version Verlet
+    cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle() << " " << S.Energie() << endl; //Version MEMM
     //Variation of momentum
     Vector_3 qdm(0,0,0);
     for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
