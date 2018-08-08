@@ -292,6 +292,7 @@ int main(){
     else if((P->x0).z() >= 0.48) //P->BC == 1 && 
       (P->u).vec[2] = -0.005;
     P->u_prev = P->u;
+    P->u_prev2 = Vector_3(0.,0.,0.);
   }
 
   /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {

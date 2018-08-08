@@ -2513,6 +2513,10 @@ const double Solide::Energie_cinetique_MEMM(){ //Energie cinétique adaptée à 
   //return 0.;
 }
 
+const double Solide::Energie_potentielle_MEMM(){
+  
+}
+
 const double Solide::Energie_potentielle(){
   double Ep = 0.;
 
