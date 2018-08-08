@@ -253,7 +253,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //cylindre
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
       if(tag_1 == 1) //Dirichlet
-	F.BC = 1;
+	//F.BC = 1;
+	F.BC = -1; //Juste pour test de conservation de l'énergie.
       //else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
       else if(tag_1 == 2) //Neumann
 	F.BC = -1;
@@ -1536,7 +1537,7 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
     //cout << "BC : " << faces[i].BC << endl;
     //Vector_3 test_pos(0., 0., 0.);
     if(faces[i].BC == 1) { //Dirichlet
-      //faces[i].I_Dx = Vector_3(0., 0., 0.);
+      faces[i].I_Dx = Vector_3(0., 0., 0.);
       //double def_ref = 0.001; // * t / T; //Solution statique
       //faces[i].I_Dx = def_ref * faces[i].centre.z() * faces[i].normale;
       /*faces[i].I_Dx.vec[2] = faces[i].centre.z() * def_ref;
@@ -1546,7 +1547,7 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
       
       //faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t, T) * faces[i].normale; //Pour Verlet
 
-      faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t-dt/2., T) * faces[i].normale; //Pour MEMM
+      //faces[i].I_Dx = displacement_BC_bis(faces[i].centre, solide[faces[i].voisins[0]].Dx, t-dt/2., T) * faces[i].normale; //Pour MEMM
       
       //faces[i].I_Dx = solide[faces[i].voisins[0]].Dx; //Dirichlet BC imposée fortement dans Mka ! old...
       //faces[i].I_Dx.vec[2] = faces[i].centre.z() /  3. * 4.;
@@ -1588,7 +1589,7 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
     if(not(P->split)) {
       bool test_continuer;
       int nb_iterations = 0;
-      do {
+      //do {
 	test_continuer = false;
 	nb_iterations++;
 	P->discrete_gradient.col1 = Vector_3(0., 0., 0.); //Remet tous les coeffs de la matrice à 0.
@@ -1679,9 +1680,9 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
 	  //Plastification
 	  Matrix n_elas( 1. / ((P->contrainte).dev()).norme() * (P->contrainte).dev() ); //Normale au domaine élastique de Von Mises
 	  double delta_p = ((P->contrainte - H * P->epsilon_p).VM() - A) / (2*mu + H);
-	  P->def_plas_cumulee += delta_p;
+	  //P->def_plas_cumulee += delta_p;
 	  //cout << "delta_p : " << delta_p << endl;
-	  P->epsilon_p += delta_p * n_elas;
+	  //P->epsilon_p += delta_p * n_elas;
 	  //cout << "Def plas : " << P->epsilon_p.col1 << endl;
 	  P->contrainte = lambda * (P->discrete_sym_gradient - P->epsilon_p).tr() * unit() + 2*mu * (P->discrete_sym_gradient - P->epsilon_p); //Recalcul des contraintes après plastification
 	}
@@ -1705,7 +1706,7 @@ void Solide::stresses(const double& theta, const double& dt, const double& t, co
 	    }
 	  }
 	}
-      } while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10); //nb_iterations < 10
+	//} while((P->contrainte - H * P->epsilon_p).VM() > P->seuil_elas && test_continuer && nb_iterations < 10); //nb_iterations < 10
       if(nb_iterations == 10)
 	cout << "Particule : " << P->id << " pas de convergence entre plasticite et BC !" << endl;
       /*if((P->contrainte).VM() > P->seuil_elas)
