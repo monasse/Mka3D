@@ -2486,6 +2486,7 @@ void Solide::Force_damping(const double& dt, const double& Amort, const double& 
 const double Solide::Energie(const double &t, const double &T){
   //return Energie_cinetique()+Energie_potentielle(); //Verlet
   return Energie_cinetique_MEMM()+Energie_potentielle_MEMM(t, T); //MEMM
+  //return Energie_cinetique_MEMM()+Energie_potentielle(); //MEMM
 }
 
 const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
@@ -2662,6 +2663,15 @@ const double Solide::Energie_potentielle_MEMM(const double &t, const double &T){
 	cout << "Von Mises : " << (P->contrainte - H * P->epsilon_p).VM() << endl;*/
     }
   }
+
+  double Ep = 0.;
+
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
+    //}
+  }
+
+  return Ep;
 }
 
 const double Solide::Energie_potentielle(){
