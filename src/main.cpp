@@ -287,10 +287,10 @@ int main(){
   int nb_part = S.size();
 
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
-    if((P->x0).z() <= 0.02) //P->BC == 1 && 
-      (P->u).vec[2] = 0.005;
-    else if((P->x0).z() >= 0.48) //P->BC == 1 && 
+    if((P->x0).z() <= 0.2) //P->BC == 1 && 
       (P->u).vec[2] = -0.005;
+    else if((P->x0).z() >= 4.8) //P->BC == 1 && 
+      (P->u).vec[2] = 0.005;
     P->u_prev = P->u;
     P->u_prev2 = Vector_3(0.,0.,0.);
   }
