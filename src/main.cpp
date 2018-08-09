@@ -273,10 +273,7 @@ int main(){
   }
   kimp++;
 
-  double E0 = S.Energie(t, T);
-  if(rep){
-    E0 -= dE0rep;
-  }
+  
   
   /*S.Forces_internes(dt);
   for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++) {
@@ -293,6 +290,11 @@ int main(){
       (P->u).vec[2] = 0.005;
     P->u_prev = P->u;
     P->u_prev2 = Vector_3(0.,0.,0.);
+  }
+
+  double E0 = S.Energie(t, T);
+  if(rep){
+    E0 -= dE0rep;
   }
 
   /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
@@ -323,7 +325,7 @@ int main(){
       next_timp += dtimp;
     }
     //Variation of energy
-    //cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl; //Version Verlet
+    //cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle() << " " << S.Energie(t,T) << endl; //Version Verlet
     cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle_MEMM(t, T) << " " << S.Energie(t, T) << endl; //Version MEMM
     //Variation of momentum
     Vector_3 qdm(0,0,0);
@@ -331,7 +333,8 @@ int main(){
       qdm = qdm+ P->m * P->u;
     }
     
-    ener << t << " " << S.Energie(t, T) << " " << S.Energie(t, T)-E0 << " " << qdm <<endl;
+    //ener << t << " " << S.Energie(t, T) << " " << S.Energie(t, T)-E0 << " " << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << qdm <<endl;
+    ener << t << " " << S.Energie(t, T) << " " << S.Energie(t, T)-E0 << " " << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle_MEMM(t,T) << " " << qdm <<endl;
     cout<< "Energy variation: "<< S.Energie(t, T) - E0 << endl;
     //Time step
     if(dt < pow(10., -10.))
