@@ -61,10 +61,11 @@ public:
   void Force_damping(const double& dt, const double& Amort, const double& t, const double& T);
   void stresses(const double& theta, const double& dt, const double& t, const double& T);
   void update_triangles();
-  const double Energie();
-  const double Energie_potentielle();
+  const double Energie(const double &t, const double &T);
+  const double Energie_potentielle(); //Pour Verlet
   const double Energie_cinetique(); //Pour Verlet
   const double Energie_cinetique_MEMM(); //Pour MEMM
+  const double Energie_potentielle_MEMM(const double &t, const double &T); //Pour MEMM
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   bool voisins_face(int num_face); //Renvoie faux si trouve pas voisins pour reconstruction du gradient dans la face
   bool face_existe(Face f); //Renvoie vraie si la face testée est déjà das faces
