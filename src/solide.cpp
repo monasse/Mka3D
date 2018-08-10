@@ -1439,8 +1439,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    F->solve_vitesse(dt, t, T);
-    //F->solve_vitesse_MEMM(dt, t , T);
+    //F->solve_vitesse(dt, t, T);
+    F->solve_vitesse_MEMM(dt, t , T);
   }
 }
 
@@ -1451,7 +1451,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=1.; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=0.5; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes_bis(dt, theta, weight, t, T);
 }
@@ -1719,27 +1719,6 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
       F->F = F->F + F->S * solide[voisin2].contrainte * F->normale; //+
     }
   }
-
-  /*for(std::vector<Face>::iterator F=faces.begin(); F!=faces.end(); F++) { //Forces flux à deux points
-    int voisin1 = F->voisins[0];
-    int voisin2 = F->voisins[1];
-    Vector_3 dep_voisin1 = Vector_3(0.,0.,0.); //déplacement reconstruit au centre de la particule
-    Vector_3 dep_voisin2 = Vector_3(0.,0.,0.); //idem
-    for(int i=0 ; i < solide[voisin1].faces.size() ; i++){
-      int f = solide[voisin1].faces[i];
-      dep_voisin1 =  dep_voisin1 + faces[f].m / solide[voisin1].m * faces[f].I_Dx; // / 4.;
-    }
-    if(voisin2 >= 0) { //Pas de force sur faces au bord pour l'instant
-      for(int i=0 ; i < solide[voisin2].faces.size() ; i++){
-	int f = solide[voisin2].faces[i];
-	dep_voisin2 =  dep_voisin2 + faces[f].m / solide[voisin1].m  * faces[f].I_Dx; // / 4.;
-      }
-      double distance = sqrt((solide[voisin2].x0 - solide[voisin1].x0).squared_length());
-      //F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) * F->normale / distance * F->normale; // / distance; //Flux à 2 points
-      F->F = -F->S * 2. * mu * (dep_voisin2 - dep_voisin1) / distance;
-    }
-    //F->F = -F->S * 2. * mu * F->I_Dx / h;
-  }*/ 
 }
 
 

@@ -291,6 +291,7 @@ int main(){
     else if(F->BC == 1 && (F->centre).z() >= 4.9) //P->BC == 1 && 
       (F->u).vec[2] = 0.005;
     F->u_prev = F->u;
+    F->u_prev2 = Vector_3(0.,0.,0.);
   }
 
   /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
