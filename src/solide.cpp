@@ -1835,6 +1835,10 @@ const double Solide::Energie(){
   return Energie_cinetique()+Energie_potentielle();
 }
 
+const double Solide::Energie_MEMM(const double &t, const double &T){
+  return Energie_cinetique_MEMM()+Energie_potentielle_MEMM(t, T);
+}
+
 const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
   double E = 0.;
   /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
@@ -1854,28 +1858,36 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
   return E;
 }
 
+const double Solide::Energie_cinetique_MEMM(){ //Energie cinétique adaptée à MEMM
+  double E = 0.;
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    E += 0.5 * F->m * (F->u * F->u_prev);
+  }
+  
+  return E;
+}
+
 const double Solide::Energie_potentielle(){
   double Ep = 0.;
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    //Juste flux Ã  2 points
-    /*for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++){
-      int voisin;
-      int num_face = *F;
-      if(faces[num_face].BC == 0) {
-	if(P->id == faces[num_face].voisins[0])
-	  voisin = faces[num_face].voisins[1];
-	else if(P->id == faces[num_face].voisins[1])
-	  voisin = faces[num_face].voisins[0];
-	Ep += 0.25 * 2. * mu * (solide[voisin].Dx - P->Dx) * (solide[voisin].Dx - P->Dx);
-      }
-      }*/
-    //Ep += 0.5 * contraction_double(P->contrainte, P->discrete_gradient - P->epsilon_p) * P->V; //OK Voronoi
+    Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
+  }
+
+  return Ep;
+}
+
+const double Solide::Energie_potentielle_MEMM(const double &t, const double &T){ //On recalcule les contraintes et def au pas de temps entier pour avoir la conservation de l'énergie
+
+  stresses_bis(1., t, T); //Recalcul des contraintes au pas de temps entier
+
+  double Ep = 0.;
+
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
     //}
   }
-  //cout << "Energie potentielle : " << Ep << endl;
-  //return 0.;
+
   return Ep;
 }
 

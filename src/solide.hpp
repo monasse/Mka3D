@@ -64,9 +64,12 @@ public:
   void stresses_bis(const double& theta, const double& t, const double& T);
   void stresses_bis_MEMM(const double& theta, const double& t, const double& T);
   void update_triangles();
-  const double Energie();
-  const double Energie_potentielle();
-  const double Energie_cinetique();
+  const double Energie(); //Pour Verlet
+  const double Energie_MEMM(const double &t, const double &T);
+  const double Energie_potentielle(); //Pour Verlet
+  const double Energie_cinetique(); //Pour Verlet
+  const double Energie_potentielle_MEMM(const double &t, const double &T);
+  const double Energie_cinetique_MEMM();
   double pas_temps(const double &t, const double &T, const double &cfls, const double &E, const double &nu, const double &rhos);
   bool voisins_face(int num_face); //Renvoie faux si trouve pas voisins pour reconstruction du gradient dans la face
   bool face_existe(Face f); //Renvoie vraie si la face testée est déjà das faces
