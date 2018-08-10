@@ -129,7 +129,9 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
     }*/
 
+  I_Dx_prev = I_Dx;
   I_Dx = I_Dx + u * dt;
+  
   
   /*double def_ref = 0.001;
   I_Dx.vec[0] = -0.3 * centre.x() * def_ref;
