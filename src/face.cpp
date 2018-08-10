@@ -121,15 +121,15 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 }
 
 void Face::solve_position(const double &dt, const double& t, const double& T) {
-  if(BC != 1)
+  /*if(BC != 1)
     I_Dx = I_Dx + u * dt;
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
     I_Dx = displacement_BC_bis(centre, Vector_3(0.,0.,0.), t, T) * normale;
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
-  }
+    }*/
 
-  //I_Dx = I_Dx + u * dt;
+  I_Dx = I_Dx + u * dt;
   
   /*double def_ref = 0.001;
   I_Dx.vec[0] = -0.3 * centre.x() * def_ref;
@@ -153,10 +153,10 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
 
   //u = Vector_3(0.,0.,0.); //Test en statique
   //Si interface pas rompue
-  if(BC == 0) {
+  /*if(BC == 0) {
     vitesse[0] = u + Forces[0] / masses[0] * dt; //Vitesse mise à jour en tenant compte du fait que l'interface n'est pas encore rompue. Donc ancienne vitesse est celle des deux diamants.
     vitesse[1] = u + Forces[1] / masses[1] * dt;
-  }
+    }*/
 
   //Si interface rompue
   //vitesse[0] = vitesse[0] + Forces[0] / massses[0] * dt;

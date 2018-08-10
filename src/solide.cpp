@@ -1439,8 +1439,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    //F->solve_vitesse(dt, t, T);
-    F->solve_vitesse_MEMM(dt, t , T);
+    F->solve_vitesse(dt, t, T);
+    //F->solve_vitesse_MEMM(dt, t , T);
   }
 }
 
@@ -1451,7 +1451,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=0.5; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=1.; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes_bis(dt, theta, weight, t, T);
 }

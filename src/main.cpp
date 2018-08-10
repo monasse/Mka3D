@@ -285,13 +285,13 @@ int main(){
   S.Solve_vitesse(dt, false, 1.0, 0., 45.);*/
   int nb_part = S.size();
 
-  /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
+  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     if(F->BC == 1 && (F->centre).z() <= 0.1) //P->BC == 1 && 
       (F->u).vec[2] = -0.005;
     else if(F->BC == 1 && (F->centre).z() >= 4.9) //P->BC == 1 && 
       (F->u).vec[2] = 0.005;
     F->u_prev = F->u;
-    }*/
+  }
 
   /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     if(F->BC == 1 && (F->centre).z() <= 0.2) {
