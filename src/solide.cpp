@@ -1518,6 +1518,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   //Mise a zero de l'integrale des forces
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     P->Fi_int = Vector_3(0.,0.,0.);
+    P->Fi = Vector_3(0.,0.,0.);
   }
   //Integration par points de Gauss
   //Point milieu
@@ -2376,6 +2377,7 @@ void Solide::Forces_internes(const double& dt, const double& theta, const double
   stresses(theta, dt, t, T);
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){ //Remet Ã  zÃ©ro toutes les forces
     P->Fi = Vector_3(0.,0.,0.);
+    P->Fi_int = Vector_3(0.,0.,0.);
   }
   for(std::vector<Particule>::iterator P=solide.begin(); P!=solide.end(); P++){
     if(not(P->split)) {
@@ -2487,7 +2489,6 @@ void Solide::Force_damping(const double& dt, const double& Amort, const double& 
 const double Solide::Energie(const double &t, const double &T){
   //return Energie_cinetique()+Energie_potentielle(); //Verlet
   return Energie_cinetique_MEMM()+Energie_potentielle_MEMM(t, T); //MEMM
-  //return Energie_cinetique_MEMM()+Energie_potentielle(); //MEMM
 }
 
 const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
