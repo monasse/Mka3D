@@ -1446,8 +1446,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   //Mise a zero de l'integrale des forces
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
-    P->Fi_int = Vector_3(0.,0.,0.);
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    F->F = Vector_3(0.,0.,0.);
   }
   //Integration par points de Gauss
   //Point milieu

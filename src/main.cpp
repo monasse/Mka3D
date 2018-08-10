@@ -338,7 +338,7 @@ int main(){
     //ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
     //cout<< "Energy variation: "<< S.Energie() - E0 << endl;
     ener << t << " " << S.Energie_MEMM(t,T) << " " << S.Energie_MEMM(t,T)-E0 << " " << qdm <<endl;
-    cout<< "Energy variation: "<< S.Energie_MEMM(t,T) - E0 << endl;
+    cout << "Energy variation: "<< S.Energie_MEMM(t,T) - E0 << endl;
     //Time step
     if(dt < pow(10., -12.))//dt = 1.*pow(10., -8.); //9. ref 6. ok pour ce calcul
       dt = S.pas_temps(t,T,cfl, E, nu, rho);
