@@ -2486,8 +2486,8 @@ void Solide::Force_damping(const double& dt, const double& Amort, const double& 
 
 const double Solide::Energie(const double &t, const double &T){
   //return Energie_cinetique()+Energie_potentielle(); //Verlet
-  //return Energie_cinetique_MEMM()+Energie_potentielle_MEMM(t, T); //MEMM
-  return Energie_cinetique_MEMM()+Energie_potentielle(); //MEMM
+  return Energie_cinetique_MEMM()+Energie_potentielle_MEMM(t, T); //MEMM
+  //return Energie_cinetique_MEMM()+Energie_potentielle(); //MEMM
 }
 
 const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
