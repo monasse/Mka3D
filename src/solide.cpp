@@ -252,11 +252,17 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.type = 2;
       //cylindre
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
-      if(tag_1 == 1) //Dirichlet
+      if(tag_1 == 40) //Traction 1
 	F.BC = 1;
       //else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
-      else if(tag_1 == 2) //Neumann
+      else if(tag_1 == 43) //Neumann homogène
 	F.BC = -1;
+      else if(tag_1 == 39) //Fissure déjà présente et Neumann Homogène
+	F.BC = -1; //-2 ???
+      else if(tag_1 == 41) //Traction 2
+	F.BC = 2;
+      else if(tag_1 == 42) //Déplacements dans le plan bloqués
+	F.BC = 3; 
       //Poutre section carré
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
 	F.BC = -1; //Tout en Neumann pour ce test

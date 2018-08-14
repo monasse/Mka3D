@@ -16,5 +16,5 @@ n_ecrouissage_JC	.31
 A_limite_elas		450000.
 H_ecrouissage_lineaire	600000000.
 mesh_type		1
-nom_fichier		cylindre_h_0_5
+nom_fichier		plaque_rectangulaire
 
