@@ -1450,6 +1450,12 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   }
 }
 
+void Solide::test_fissuration() {
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
+    F->test_fissuration();
+  }
+}
+
 void Solide::Forces(const int& N_dim, const double& dt, const double& t, const double& T){
   //Mise a zero de l'integrale des forces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
@@ -1525,10 +1531,23 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
       Vector_3 nIJ = faces[f].normale;
       if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	nIJ = -nIJ; //Normale pas dans le bon sens...
-      Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
-      Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
-      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+      if(not(fissure)) {
+	Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
+	Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+      }
+      else if(fissure) {
+	int voi;
+	if(P->id == faces[f].voisins[0])
+	  voi = 0;
+	else if(P->id == faces[f].voisins[1])
+	  voi = 1;
+	Matrix Dij_n(tens(faces[f].Dx[voi],  nIJ));
+	Matrix Dij_n_sym(tens_sym(faces[f].Dx[voi],  nIJ));
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+      }
     }
 
     //calcul des contraintes
@@ -1719,9 +1738,9 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
     int voisin1 = F->voisins[0];
     int voisin2 = F->voisins[1];
     F->F = -F->S * solide[voisin1].contrainte * F->normale; //-
-    F->Forces[0] = F->S * solide[voisin1].contrainte * F->normale;
+    F->Forces[0] = -F->S * solide[voisin1].contrainte * F->normale;
     if(voisin2 >= 0) { //cad face pas sur un bord
-      F->Forces[1] = -F->S * solide[voisin2].contrainte * F->normale;
+      F->Forces[1] = F->S * solide[voisin2].contrainte * F->normale;
       F->F = F->F + F->S * solide[voisin2].contrainte * F->normale; //+
     }
   }

@@ -25,7 +25,7 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F()
+Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
@@ -139,8 +139,16 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
   }
-  else {
+  else if(BC == -1) {
     I_Dx = I_Dx + u * dt; //Déplacement libre
+  }
+  else if(BC == 0) {
+    if(not(fissure))
+      I_Dx = I_Dx + u * dt; //Déplacement libre
+    else { //Déplacement libre
+      Dx.vec[0] = Dx.vec[0] + vitesse.vec[0] * dt;
+      Dx.vec[1] = Dx.vec[1] + vitesse.vec[1] * dt;
+    }
   }
 
   /*I_Dx_prev = I_Dx;
@@ -155,14 +163,14 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
 
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
-  u = u  + F *  dt / m;
+  //u = u  + F *  dt / m;
   
-  /*if(BC != 1)
+  if(not(fissure))
     u = u  + F *  dt / m;
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
     u.vec[0] = u.vec[0]  + F.vec[0] *  dt / m;
     u.vec[1] = u.vec[1]  + F.vec[1] *  dt / m;
-    }*/
+  }
 
   //u = Vector_3(0.,0.,0.); //Test en statique
   //Si interface pas rompue
@@ -181,6 +189,13 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
   u_prev2 = u_prev;
   u_prev = u;
   u = u_prev2 + 2 * F * dt / m;
+}
+
+void Face::test_fissuration() {
+  if(0.125 * m * (u + u_prev) * (u + u_prev) > 2. * Gc * S) {
+    fissure = true;
+    u = ???; //Il faut activer les autres ddl en déplacement et citesse de la fasse !
+  }
 }
 
 #endif
