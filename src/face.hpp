@@ -75,6 +75,8 @@ public:
   double D0; //Distance centre face. Sera utile pour CFL...
   double h; //Diamètre de la face
 
+  bool fissure; //Pour savoir si face a fissurée ou non
+
   //Booléen pour savoir si face a été splitée et doit donc être exclue des calculs
   bool split;
   //Pour indiquer s'il y a un probleme de reconstruction

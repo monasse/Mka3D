@@ -39,6 +39,7 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F()
   Forces.push_back(Vector_3(0.,0.,0.));
   Forces.push_back(Vector_3(0.,0.,0.));
   m = 0.; //Mettre à jour lors de l'importation
+  fissure = false;
 }
 
 Face & Face:: operator=(const Face &F){
@@ -57,6 +58,7 @@ Face & Face:: operator=(const Face &F){
     c_reconstruction[i] = F.c_reconstruction[i];
   }
   m = F.m;
+  fissure = F.fissure;
 }
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
@@ -121,16 +123,28 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 }
 
 void Face::solve_position(const double &dt, const double& t, const double& T) {
-  /*if(BC != 1)
+  I_Dx_prev = I_Dx;
+  
+  if(BC == 3) {
     I_Dx = I_Dx + u * dt;
-  else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
-    I_Dx = displacement_BC_bis(centre, Vector_3(0.,0.,0.), t, T) * normale;
+    I_Dx.vec[2] = I_Dx.vec[2]  + u.vec[2] *  dt; //Déplacement que dans le plan z
+  }
+  else if(BC == 1) {
+    I_Dx = traction(...) * Vector_3(0.,0.,1.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
-    }*/
+  }
+  else if(BC == 2) {
+    I_Dx = -traction(...) * Vector_3(0.,0.,1.);;
+    I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
+    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
+  }
+  else {
+    I_Dx = I_Dx + u * dt; //Déplacement libre
+  }
 
-  I_Dx_prev = I_Dx;
-  I_Dx = I_Dx + u * dt;
+  /*I_Dx_prev = I_Dx;
+    I_Dx = I_Dx + u * dt;*/
   
   
   /*double def_ref = 0.001;
@@ -142,9 +156,6 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
   u = u  + F *  dt / m;
-
-  //if(BC != 1)
-  //u.vec[1] = u.vec[1]  + F.vec[1] *  dt / m;
   
   /*if(BC != 1)
     u = u  + F *  dt / m;
