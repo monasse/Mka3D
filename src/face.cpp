@@ -192,9 +192,14 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
 }
 
 void Face::test_fissuration() {
-  if(0.125 * m * (u + u_prev) * (u + u_prev) > 2. * Gc * S) {
+  double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S;
+  if(C > 0.) {
     fissure = true;
-    u = ???; //Il faut activer les autres ddl en déplacement et citesse de la fasse !
+    Vector_3 dir = F / sqrt(F.squared_length());
+    u = Vector_3(0.,0.,0.);
+    double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
+    vitesse[0] = -norme * dir;
+    vitesse[1] = masses[1] / masses[0] * norme * dir;
   }
 }
 
