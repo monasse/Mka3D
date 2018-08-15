@@ -259,7 +259,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       else if(tag_1 == 43) //Neumann homogène
 	F.BC = -1;
       else if(tag_1 == 39) { //Fissure déjà présente et Neumann Homogène
-	F.BC = -1;
+	F.BC = -2;
 	F.fissure = true;
       }
       else if(tag_1 == 41) //Traction 2
@@ -487,8 +487,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   taille_maillage(); //Calcul de la taille du maillage
 
-  cout << "nombre particules : " << solide.size() << endl;
-  cout << "Nombre total de faces : " << faces.size() << endl;
+  //cout << "nombre particules : " << solide.size() << endl;
+  //cout << "Nombre total de faces : " << faces.size() << endl;
 
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
@@ -497,7 +497,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	//cout << "Particule : " << P->id << endl;
 	P->faces.push_back(F->id);
 	(F->voisins).push_back(P->id);
-	if(F->BC == 1 || F->BC == -1)
+	if(F->BC != 0 && F->BC != -2)
 	  (F->voisins).push_back(-1); //Car face au bord
 	if(type == 5)
 	  (F->c_reconstruction).push_back(0.5); //Maillage de Voronoi
@@ -520,7 +520,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     if(F->BC == 0)
       part_2 = F->voisins[1];
 
-    //VÃ©rification du sens de la normale
+    //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
       if(Vector_3(solide[part_1].x0, solide[part_2].x0) * F->normale  < 0.)
 	F->normale = -F->normale;
