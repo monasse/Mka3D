@@ -254,17 +254,17 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.type = 2;
       //cylindre
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
-      if(tag_1 == 76) //Traction 1
+      if(tag_1 == 84) //Traction 1
 	F.BC = 1;
-      else if(tag_1 == 50) { //Fissure déjà présente et Neumann Homogène
+      else if(tag_1 == 83) { //Fissure déjà présente et Neumann Homogène
 	F.BC = -2;
 	F.fissure = true;
       }
-      else if(tag_1 == 54) //Traction 2
+      else if(tag_1 == 85) //Traction 2
 	F.BC = 2;
-      else if(tag_1 == 24) //Déplacements dans le plan bloqués
+      else if(tag_1 == 82) //Déplacements dans le plan bloqués
 	F.BC = 3;
-      else //if(tag_1 == 43) //Neumann homogène
+      else if(tag_1 == 86) //Neumann homogène
 	F.BC = -1;
       //Poutre section carré
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
@@ -487,8 +487,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   taille_maillage(); //Calcul de la taille du maillage
 
-  cout << "nombre particules : " << solide.size() << endl;
-  cout << "Nombre total de faces : " << faces.size() << endl;
+  //cout << "nombre particules : " << solide.size() << endl;
+  //cout << "Nombre total de faces : " << faces.size() << endl;
 
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
@@ -503,16 +503,14 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  (F->c_reconstruction).push_back(0.5); //Maillage de Voronoi
       }
     }
-    cout << "BC : " << F->BC << endl;
     if(F->voisins.size() > 2) {
-      cout << "Numero face : " << F->id << endl;
+      cout << "Numero face : " << F->id << " " << F->voisins.size() << endl;
       throw std::invalid_argument("Face a trop de voisins !");
     }
     else if(F->voisins.size() < 2) {
-      cout << "Numero face : " << F->id << endl;
+      cout << "Numero face : " << F->id << " " << F->voisins.size() << endl;
       throw std::invalid_argument("Face a pas assez de voisins !");
     }
-    cout << "ok connectivite : " << F->id << endl;
 
     /*if(F->voisins.size() == 1) {
       F->voisins.push_back(-1); // Cad face au bord
@@ -521,12 +519,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     else
     F->BC = 0;*/
 
-    cout << F->voisins.size() << endl;
     int part_1 = F->voisins[0];
     int part_2 = -1;
     if(F->BC == 0 || F->BC == -2)
       part_2 = F->voisins[1];
-    cout << part_1 << " " << part_2 << endl;
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
@@ -546,10 +542,9 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F->normale = -F->normale;
       }*/
 
-  cout << "Debut masses faces" << endl;
   //Boucle pour donner une masse aux faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->BC != 0) {
+    if(F->BC != 0 && F->BC != -2) {
       int voisin = F->voisins[0];
       F->m = sqrt(pow(F->S * (F->centre - solide[voisin].x0) * F->normale / 3. * rho, 2.));
       //cout << "Face : " << F->id << " masse : " << F->m << endl;
@@ -562,7 +557,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
     }
-    cout << "ok face : " << F->id << endl; 
   }
 
   //Il faudra refaire un peu les connectivités mais ça va...
