@@ -165,8 +165,11 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
   //u = u  + F *  dt / m;
   
-  if(not(fissure))
+  if(not(fissure)) {
+    if(m < pow(10.,-5.))
+      throw std::invalid_argument( "Masse nulle" );
     u = u  + F *  dt / m;
+  }
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
     vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0];
     vitesse[1] = vitesse[1]  + Forces[1] *  dt / masses[1];

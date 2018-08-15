@@ -556,6 +556,8 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //cout << "Face : " << F->id << " masse : " << F->m << endl;
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
+      if(F->masses[0] < pow(10.,-10.) || F->masses[1] < pow(10.,-10.))
+	throw std::invalid_argument( "Masse nulle" );
     }
   }
 
@@ -1452,8 +1454,8 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    //F->solve_vitesse(dt, t, T);
-    F->solve_vitesse_MEMM(dt, t , T);
+    F->solve_vitesse(dt, t, T);
+    //F->solve_vitesse_MEMM(dt, t , T);
   }
 }
 
