@@ -1438,6 +1438,12 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     F->solve_position(dt, t, T);
   }
+
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++) {
+    if(not(P->split)) {
+      P->Dx = (faces[P->faces[0]].I_Dx + faces[P->faces[1]].I_Dx + faces[P->faces[2]].I_Dx + faces[P->faces[3]].I_Dx) / 4.;
+    }
+  }
 }
 
 void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& Amort, const double& t, const double& T){
@@ -2437,7 +2443,8 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
     if(not(P->split)){
       for(std::vector<int>::iterator F=(P->faces).begin();F!=(P->faces).end();F++) {
 	for(std::vector<int>::iterator V=faces[*F].vertex.begin();V!=faces[*F].vertex.end();V++){
-	  vtk << P->mvt_t(vertex[*V].pos) << endl;
+	  //vtk << P->mvt_t(vertex[*V].pos) << endl;
+	  vtk << vertex[*V].pos + P->Dx << endl;
 	}
       }
     }
