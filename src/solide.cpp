@@ -547,13 +547,19 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     if(F->BC != 0 && F->BC != -2) {
       int voisin = F->voisins[0];
       F->m = sqrt(pow(F->S * (F->centre - solide[voisin].x0) * F->normale / 3. * rho, 2.));
-      //cout << "Face : " << F->id << " masse : " << F->m << endl;
+      if(F->m < pow(10.,-10.)) {
+	cout << "Face : " << F->id << " masse : " << F->m << endl;
+	throw std::invalid_argument( "Masse nulle" );
+      }
     }
     else {
       int voisin1 = F->voisins[0];
       int voisin2 = F->voisins[1];
-      F->m = sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho + F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.));
-      //cout << "Face : " << F->id << " masse : " << F->m << endl;
+      F->m = sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3., 2.)) * rho + sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) * rho;
+      if(F->m < pow(10.,-14.)) {
+	cout << "Face : " << F->id << " BC : " << F->BC << " masse : " << F->m << endl;
+	throw std::invalid_argument( "Masse nulle" );
+      }
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
       if(F->masses[0] < pow(10.,-10.) || F->masses[1] < pow(10.,-10.))

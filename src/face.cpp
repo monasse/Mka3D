@@ -166,7 +166,7 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   //u = u  + F *  dt / m;
   
   if(not(fissure)) {
-    if(m < pow(10.,-5.))
+    if(m < pow(10.,-10.))
       throw std::invalid_argument( "Masse nulle" );
     u = u  + F *  dt / m;
   }
