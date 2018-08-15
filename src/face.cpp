@@ -146,8 +146,8 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     if(not(fissure))
       I_Dx = I_Dx + u * dt; //Déplacement libre
     else { //Déplacement libre
-      Dx.vec[0] = Dx.vec[0] + vitesse.vec[0] * dt;
-      Dx.vec[1] = Dx.vec[1] + vitesse.vec[1] * dt;
+      Dx[0] = Dx[0] + vitesse[0] * dt;
+      Dx[1] = Dx[1] + vitesse[1] * dt;
     }
   }
 
@@ -168,8 +168,8 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   if(not(fissure))
     u = u  + F *  dt / m;
   else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
-    u.vec[0] = u.vec[0]  + F.vec[0] *  dt / m;
-    u.vec[1] = u.vec[1]  + F.vec[1] *  dt / m;
+    vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0];
+    vitesse[1] = vitesse[1]  + Forces[1] *  dt / masses[1];
   }
 
   //u = Vector_3(0.,0.,0.); //Test en statique
@@ -191,7 +191,7 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
   u = u_prev2 + 2 * F * dt / m;
 }
 
-void Face::test_fissuration() {
+void Face::test_fissuration(double const& Gc) {
   double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S;
   if(C > 0.) {
     fissure = true;

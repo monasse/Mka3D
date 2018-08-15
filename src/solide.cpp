@@ -39,13 +39,14 @@
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
-Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const int& recon){
+Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const double& G, const int& recon){
   lambda = E * nu / (1.+nu) / (1. - 2.*nu);
   mu = E / 2. / (1.+nu);
   A = A1;
   B = B1;
   n = n1;
   H = H1;
+  Gc = G;
   h = 0.;
   reconstruction = recon;
 }
@@ -58,6 +59,7 @@ Solide::Solide(){
   n = 0.;
   H = 0.;
   h = 0.;
+  Gc = 0.;
   reconstruction = 0;
 }
 
@@ -257,8 +259,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
       else if(tag_1 == 43) //Neumann homogène
 	F.BC = -1;
-      else if(tag_1 == 39) //Fissure déjà présente et Neumann Homogène
-	F.BC = -1; //-2 ???
+      else if(tag_1 == 39) { //Fissure déjà présente et Neumann Homogène
+	F.BC = -1;
+	F.fissure = true;
+      }
       else if(tag_1 == 41) //Traction 2
 	F.BC = 2;
       else if(tag_1 == 42) //Déplacements dans le plan bloqués
@@ -1452,7 +1456,7 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 
 void Solide::test_fissuration() {
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    F->test_fissuration();
+    F->test_fissuration(Gc);
   }
 }
 
@@ -1531,13 +1535,13 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
       Vector_3 nIJ = faces[f].normale;
       if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	nIJ = -nIJ; //Normale pas dans le bon sens...
-      if(not(fissure)) {
+      if(not(faces[f].fissure)) {
 	Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
 	Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
 	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
       }
-      else if(fissure) {
+      else if(faces[f].fissure) {
 	int voi;
 	if(P->id == faces[f].voisins[0])
 	  voi = 0;

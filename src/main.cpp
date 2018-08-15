@@ -150,9 +150,9 @@ int main(){
   }
   string s, nom_fichier;
   int numrep1, N_dim1, nimp1, Nmax1, mt, recon;
-  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1;
+  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1,G1;
   bool rep1, flag2d1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> recon >> s >> Amort >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1 >> s >> mt >> s >> nom_fichier;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> recon >> s >> Amort >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1 >> s >> G1 >> s >> mt >> s >> nom_fichier;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -172,6 +172,7 @@ int main(){
   const double n = n1; //Pour écrouissage isotrope de JC
   const double A = A1; //Limite élastique initiale
   const double H = H1; //Module d'écrouissage linéaire
+  const double G = G1; //Energie surfacique fissuration
   
   char temps_it[]="temps.dat";
   char temps_reprise[]="temps_reprise.dat";
@@ -239,7 +240,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S(E, nu, B, n, A, H, reconstruction);
+  Solide S(E, nu, B, n, A, H, G, reconstruction);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   // if(mesh_type == 0)
   //   S.Init((nom_fichier+".1.node").c_str(), (nom_fichier+".1.ele").c_str(), (nom_fichier+".1.face").c_str(), rep, numrep, rho);

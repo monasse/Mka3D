@@ -46,7 +46,7 @@ public:
   void solve_position(const double &dt, const double& t, const double& T);
   void solve_vitesse(const double &dt, const double& t, const double& T);
   void solve_vitesse_MEMM(const double &dt, const double& t, const double& T);
-  void test_fissuration();
+  void test_fissuration(double const& Gc);
 
   //Attributs
   Point_3 centre; //!< Centre de la face
