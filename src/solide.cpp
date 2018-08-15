@@ -254,18 +254,18 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.type = 2;
       //cylindre
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
-      if(tag_1 == 40) //Traction 1
+      if(tag_1 == 76) //Traction 1
 	F.BC = 1;
-      else if(tag_1 == 43) //Neumann homogène
-	F.BC = -1;
-      else if(tag_1 == 39) { //Fissure déjà présente et Neumann Homogène
+      else if(tag_1 == 50) { //Fissure déjà présente et Neumann Homogène
 	F.BC = -2;
 	F.fissure = true;
       }
-      else if(tag_1 == 41) //Traction 2
+      else if(tag_1 == 54) //Traction 2
 	F.BC = 2;
-      else if(tag_1 == 42) //Déplacements dans le plan bloqués
+      else if(tag_1 == 24) //Déplacements dans le plan bloqués
 	F.BC = 3;
+      else //if(tag_1 == 43) //Neumann homogène
+	F.BC = -1;
       //Poutre section carré
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
 	F.BC = -1; //Tout en Neumann pour ce test
@@ -487,7 +487,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   taille_maillage(); //Calcul de la taille du maillage
 
-  //cout << "nombre particules : " << solide.size() << endl;
+  cout << "nombre particules : " << solide.size() << endl;
   cout << "Nombre total de faces : " << faces.size() << endl;
 
   //Création des connectivités entre éléments
