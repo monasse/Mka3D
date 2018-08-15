@@ -488,7 +488,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   taille_maillage(); //Calcul de la taille du maillage
 
   //cout << "nombre particules : " << solide.size() << endl;
-  //cout << "Nombre total de faces : " << faces.size() << endl;
+  cout << "Nombre total de faces : " << faces.size() << endl;
 
   //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
@@ -501,12 +501,18 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	  (F->voisins).push_back(-1); //Car face au bord
 	if(type == 5)
 	  (F->c_reconstruction).push_back(0.5); //Maillage de Voronoi
-	if(F->voisins.size() > 2) {
-	  cout << "Numero face : " << F->id << endl;
-	  throw std::invalid_argument("Face a trop de voisins !");
-	}
       }
     }
+    cout << "BC : " << F->BC << endl;
+    if(F->voisins.size() > 2) {
+      cout << "Numero face : " << F->id << endl;
+      throw std::invalid_argument("Face a trop de voisins !");
+    }
+    else if(F->voisins.size() < 2) {
+      cout << "Numero face : " << F->id << endl;
+      throw std::invalid_argument("Face a pas assez de voisins !");
+    }
+    cout << "ok connectivite : " << F->id << endl;
 
     /*if(F->voisins.size() == 1) {
       F->voisins.push_back(-1); // Cad face au bord
@@ -515,10 +521,12 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     else
     F->BC = 0;*/
 
+    cout << F->voisins.size() << endl;
     int part_1 = F->voisins[0];
     int part_2 = -1;
-    if(F->BC == 0)
+    if(F->BC == 0 || F->BC == -2)
       part_2 = F->voisins[1];
+    cout << part_1 << " " << part_2 << endl;
 
     //Vérification du sens de la normale
     if(part_1 != -1 && part_2 != -1) { //Face pas au bord
