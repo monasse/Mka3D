@@ -246,7 +246,7 @@ int main(){
   //   S.Init((nom_fichier+".1.node").c_str(), (nom_fichier+".1.ele").c_str(), (nom_fichier+".1.face").c_str(), rep, numrep, rho);
   // //S.Init("poutre.1.node", "poutre.1.ele", "poutre.1.face", rep, numrep, rho);
   // else if(mesh_type == 1)
-    S.Init((nom_fichier+".msh").c_str(), rep, numrep, rho);
+  S.Init((nom_fichier+".msh").c_str(), rep, numrep, rho);
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
@@ -282,17 +282,17 @@ int main(){
   S.Solve_vitesse(dt, false, 1.0, 0., 45.);*/
   int nb_part = S.size();
 
-  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
-    if(F->BC == 1 && (F->centre).z() <= 0.1) //P->BC == 1 && 
+  /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
+    if(F->BC == 1 && (F->centre).z() <= 0.1)
       (F->u).vec[2] = -0.005;
-    else if(F->BC == 1 && (F->centre).z() >= 4.9) //P->BC == 1 && 
+    else if(F->BC == 1 && (F->centre).z() >= 4.9)
       (F->u).vec[2] = 0.005;
     F->u_prev = F->u;
     F->u_prev2 = Vector_3(0.,0.,0.);
-  }
+    }*/
 
-  //double E0 = S.Energie();
-  double E0 = S.Energie_MEMM(t,T);
+  double E0 = S.Energie();
+  //double E0 = S.Energie_MEMM(t,T);
   if(rep){
     E0 -= dE0rep;
   }
@@ -325,8 +325,8 @@ int main(){
       next_timp += dtimp;
     }
     //Variation of energy
-    //cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
-    cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle_MEMM(t,T) << " " << S.Energie_MEMM(t,T) << endl;
+    cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
+    //cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle_MEMM(t,T) << " " << S.Energie_MEMM(t,T) << endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
     /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
@@ -336,10 +336,10 @@ int main(){
       qdm = qdm+ F->m * F->u;
     }
     
-    //ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
-    //cout<< "Energy variation: "<< S.Energie() - E0 << endl;
-    ener << t << " " << S.Energie_MEMM(t,T) << " " << S.Energie_MEMM(t,T)-E0 << " " << qdm <<endl;
-    cout << "Energy variation: "<< S.Energie_MEMM(t,T) - E0 << endl;
+    ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
+    cout<< "Energy variation: "<< S.Energie() - E0 << endl;
+    //ener << t << " " << S.Energie_MEMM(t,T) << " " << S.Energie_MEMM(t,T)-E0 << " " << qdm <<endl;
+    //cout << "Energy variation: "<< S.Energie_MEMM(t,T) - E0 << endl;
     //Time step
     if(dt < pow(10., -12.))//dt = 1.*pow(10., -8.); //9. ref 6. ok pour ce calcul
       dt = S.pas_temps(t,T,cfl, E, nu, rho);
@@ -362,7 +362,7 @@ int main(){
   //Final output
   cout << "Final time of the simulation: " << t<<endl;
   cout << "Computational time: " << (double) (end-start)/CLOCKS_PER_SEC << endl; 
-  //cout << "Energy variation: " << S.Energie() - E0 << endl;
-  cout << "Energy variation: " << S.Energie_MEMM(t,T) - E0 << endl;
+  cout << "Energy variation: " << S.Energie() - E0 << endl;
+  //cout << "Energy variation: " << S.Energie_MEMM(t,T) - E0 << endl;
   return 0;
 }

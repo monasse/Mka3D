@@ -228,7 +228,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   //Importation des Vertex
   while(getline(maillage, ligne) && ligne != "$EndNodes") {
     istringstream  stm(ligne);
-    int id; //NumÃ©ro du vertex
+    int id; //Numéro du vertex
     double x,y,z;
     stm >> id >> x >> y >> z;
     vertex.push_back(Vertex(Point_3(x,y,z), id-1)); //Vertex sont donnÃ©s dans l'ordre
@@ -256,7 +256,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
       if(tag_1 == 40) //Traction 1
 	F.BC = 1;
-      //else if(tag_2 == 20 || tag_2 == 24 || tag_2 == 28 || tag_2 == 32) //Neumann
       else if(tag_1 == 43) //Neumann homogène
 	F.BC = -1;
       else if(tag_1 == 39) { //Fissure déjà présente et Neumann Homogène
@@ -266,7 +265,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       else if(tag_1 == 41) //Traction 2
 	F.BC = 2;
       else if(tag_1 == 42) //Déplacements dans le plan bloqués
-	F.BC = 3; 
+	F.BC = 3;
       //Poutre section carré
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
 	F.BC = -1; //Tout en Neumann pour ce test
@@ -294,7 +293,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       vertex[v3-1].particules.push_back(solide.size());
       vertex[v4-1].particules.push_back(solide.size());
 
-      //Calcul des quantitÃ©s volumiques (liÃ©es particule)
+      //Calcul des quantités volumiques (liées particules)
       p.barycentre(this, type); //Calcul du barycentre
       p.volume(this, type); //calcul du volume
       p.m = rho * p.V;
@@ -328,7 +327,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  //CrÃ©ation des faces
+  //Création des faces
   if(type == 5) { //Hexa
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       //face 1
@@ -488,10 +487,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   taille_maillage(); //Calcul de la taille du maillage
 
-  //cout << "nombre particules : " << solide.size() << endl;
-  //cout << "Nombre total de faces : " << faces.size() << endl;
+  cout << "nombre particules : " << solide.size() << endl;
+  cout << "Nombre total de faces : " << faces.size() << endl;
 
-  //CrÃ©ation des connectivitÃ©s entre Ã©lÃ©ments
+  //Création des connectivités entre éléments
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){ //Boucle sur toutes les faces
     for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
       if(P->contient_face(*F)) { //On ajoute les numÃ©ros de la face dans la particule et rÃ©ciproquement
@@ -539,6 +538,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F->normale = -F->normale;
       }*/
 
+  cout << "Debut masses faces" << endl;
   //Boucle pour donner une masse aux faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->BC != 0) {
@@ -554,6 +554,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
     }
+    cout << "ok face : " << F->id << endl; 
   }
 
   //Il faudra refaire un peu les connectivités mais ça va...
