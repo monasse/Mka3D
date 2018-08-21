@@ -567,7 +567,27 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     }
   }
 
-  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+  //Test pour avoir les faces ayant des edges en commun avec face considérée
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    for(std::vector<Face>::iterator G=F+1;G!=faces.end();G++){
+      if(edge_commun(*F,*G)) {
+	F->faces_voisines.push_back(G->id);
+	G->faces_voisines.push_back(F->id);
+      }
+    }
+  }
+
+  //Test pour voir si bien fait
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    int nb_faces_voisines = F->faces_voisines.size();
+    if(nb_faces_voisines > 3 || nb_faces_voisines < 1) {
+      cout << "Face : " << F->id << " a " << nb_faces_voisines << " faces voisines !" << endl;
+      throw std::invalid_argument( "Trop de faces voisines !" );
+    }
+  }
+  
+  //Pour Splitting
+  /*for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     int nb_faces = 0; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
@@ -579,7 +599,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //cout << "On appelle le splitting !" << endl;
       //splitting_elements(P->id, rho);
     }
-  }
+    }
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)) {
@@ -591,7 +611,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	}
       }
     }
-  }
+    }*/
   //cout << "On a splitte tout ce qu'il faut !" << endl;
   //getchar();
 
@@ -2530,12 +2550,15 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   }
   vtk << "\n";
   // Indique si face a cassé ou pas
-  vtk << "SCALARS Fissure int 1" << endl;
+  vtk << "SCALARS Fissure double 1" << endl;
   vtk << "LOOKUP_TABLE default" << endl;
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
-	vtk << faces[*F].fissure << endl;
+	if(faces[*F].fissure)
+	  vtk << 1. << endl;
+        else
+	  vtk << 0. << endl;
       }
     }
   }

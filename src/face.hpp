@@ -57,6 +57,7 @@ public:
   std::vector<int> vertex; //Les sommets de la face.
   int id; //Numéro de la face
   std::vector<int> voisins; //Donne le numéro des 2 voisins de la face
+  std::vector<int> faces_voisines; //contient les numéros des faces qui partagent un edge avec cette face
   std::vector<Vector_3> vitesse; //Donne les 2 vitesses pour le DDL associé à chaque particule
   //Sert pour calculer le critère de fissuration
   std::vector<int> reconstruction; //Donne le numéro des 4 particules pour la reconstruction sur la face
@@ -78,6 +79,7 @@ public:
   double h; //Diamètre de la face
 
   bool fissure; //Pour savoir si face a fissurée ou non
+  double t_fissure; //Temps où face a fissuré
 
   //Booléen pour savoir si face a été splitée et doit donc être exclue des calculs
   bool split;
@@ -86,5 +88,6 @@ public:
 };
 
 bool operator==(const Face &F1, const Face &F2); //Compare les faces
+bool edge_commun(const Face &F1, const Face &F2); //Test si les faces ont un edge en commun
 
 #endif

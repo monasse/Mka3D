@@ -25,7 +25,7 @@
 #ifndef FACE_CPP
 #define FACE_CPP
 
-Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx()
+Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx(), faces_voisines()
 {
   centre = Point_3(0.,0.,0.);
   normale = Vector_3(1.,0.,0.);
@@ -42,6 +42,7 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx
   Dx.push_back(Vector_3(0.,0.,0.));
   m = 0.; //Mettre à jour lors de l'importation
   fissure = false;
+  t_fissure = 0.;
 }
 
 Face & Face:: operator=(const Face &F){
@@ -92,6 +93,23 @@ bool operator==(const Face &F1, const Face &F2) { //Compare les faces
 	else
 	  return true;
       }
+    }
+  }
+}
+
+bool edge_commun(const Face &F1, const Face &F2) {
+  for(std::vector<int>::const_iterator V=F1.vertex.begin();V!=F1.vertex.end();V++){
+    int nb_vertex_communs = 0;
+    for(std::vector<int>::const_iterator W=F2.vertex.begin();W!=F2.vertex.end();W++){
+      if(*V == *W) { //cad même vertex
+	nb_vertex_communs++;
+      }
+    }
+    if(nb_vertex_communs == 2) {
+      return true;
+    }
+    else if(nb_vertex_communs > 2) {
+      throw std::invalid_argument( "Meme face !" );
     }
   }
 }
