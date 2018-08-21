@@ -562,8 +562,6 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
-      //F->vitesse.push_back(Vector_3(0.,0.,0.)); //Initialisation des vitesses après fissuration de la face si nécessaire...
-      //F->vitesse.push_back(Vector_3(0.,0.,0.));
       if(F->masses[0] < pow(10.,-14.) || F->masses[1] < pow(10.,-14.))
 	throw std::invalid_argument( "Masse nulle" );
     }
@@ -2531,6 +2529,17 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
     }
   }
   vtk << "\n";
+  // Indique si face a cassé ou pas
+  vtk << "SCALARS Fissure int 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)){
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	vtk << faces[*F].fissure << endl;
+      }
+    }
+  }
+  vtk << endl;
   //Indicateur de splitting sur la face
   vtk << "SCALARS split double 1" << endl;
   vtk << "LOOKUP_TABLE default" << endl;
