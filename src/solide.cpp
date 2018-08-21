@@ -2139,7 +2139,8 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
       //Si tetra
       if(P->vertices.size()==4){
 	for(std::vector<int>::iterator V=P->vertices.begin();V!=P->vertices.end();V++){
-	  vtk << faces[P->faces[0]].I_Dx + P->discrete_gradient*(vertex[*V].pos - faces[P->faces[0]].centre) << endl;
+	  //vtk << faces[P->faces[0]].I_Dx + P->discrete_gradient*(vertex[*V].pos - faces[P->faces[0]].centre) << endl;
+	  vtk << P->Dx + P->discrete_gradient*(vertex[*V].pos-P->x0) << endl;
 	}
       }
       else {
