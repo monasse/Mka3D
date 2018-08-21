@@ -146,8 +146,10 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     if(not(fissure))
       I_Dx = I_Dx + u * dt; //Déplacement libre
     else { //Déplacement libre
+      cout << "Passe ";
       Dx[0] = Dx[0] + vitesse[0] * dt;
       Dx[1] = Dx[1] + vitesse[1] * dt;
+      cout << " ici ?" << endl;
     }
   }
 
@@ -170,7 +172,7 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
       throw std::invalid_argument( "Masse nulle" );
     u = u  + F *  dt / m;
   }
-  else { //Car déplacement dans la direction 2 imposé par les BC de Dirichlet
+  else {
     vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0];
     vitesse[1] = vitesse[1]  + Forces[1] *  dt / masses[1];
   }
@@ -196,11 +198,16 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
 
 void Face::test_fissuration(double const& Gc) {
   double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S;
-  if(C > 0.) {
+  if(C > 0. && BC == 0) {
     fissure = true;
     Vector_3 dir = F / sqrt(F.squared_length());
+    cout << "BC : " << BC << endl;
     u = Vector_3(0.,0.,0.);
+    cout << "Masses : ";
+    cout << masses[0];
+    cout << " " << masses[1] << endl;
     double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
+    cout << "Face : " << id << " casse !" << endl;
     vitesse[0] = -norme * dir;
     vitesse[1] = masses[1] / masses[0] * norme * dir;
   }

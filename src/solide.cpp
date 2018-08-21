@@ -562,13 +562,13 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       }
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin1].x0) * F->normale / 3. * rho, 2.)) );
       F->masses.push_back( sqrt(pow(F->S * (F->centre - solide[voisin2].x0) * F->normale / 3. * rho, 2.)) );
-      if(F->masses[0] < pow(10.,-10.) || F->masses[1] < pow(10.,-10.))
+      //F->vitesse.push_back(Vector_3(0.,0.,0.)); //Initialisation des vitesses après fissuration de la face si nécessaire...
+      //F->vitesse.push_back(Vector_3(0.,0.,0.));
+      if(F->masses[0] < pow(10.,-14.) || F->masses[1] < pow(10.,-14.))
 	throw std::invalid_argument( "Masse nulle" );
     }
   }
 
-  //Il faudra refaire un peu les connectivités mais ça va...
-  //Faire ici une boucle sur les particules pour vérifier le nombre de faces de Neumann qu'elles ont. S'il y en a plus d'une splitter la particule et avoir un hanging node. Les tetras voisins auront des hanging nodes mais c'est pas trop grave
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     int nb_faces = 0; //Sert à récupérer le numéro des faces avec BC de Neumann si nécessaire
     for(int i=0 ; i < P->faces.size() ; i++){
