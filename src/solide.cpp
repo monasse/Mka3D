@@ -580,7 +580,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
   //Test pour voir si bien fait
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     int nb_faces_voisines = F->faces_voisines.size();
-    if(nb_faces_voisines > 3 || nb_faces_voisines < 1) {
+    if(nb_faces_voisines < 3) {
       cout << "Face : " << F->id << " a " << nb_faces_voisines << " faces voisines !" << endl;
       throw std::invalid_argument( "Pb faces voisines !" );
     }
