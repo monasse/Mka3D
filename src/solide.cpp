@@ -582,7 +582,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
     int nb_faces_voisines = F->faces_voisines.size();
     if(nb_faces_voisines > 3 || nb_faces_voisines < 1) {
       cout << "Face : " << F->id << " a " << nb_faces_voisines << " faces voisines !" << endl;
-      throw std::invalid_argument( "Trop de faces voisines !" );
+      throw std::invalid_argument( "Pb faces voisines !" );
     }
   }
   

@@ -111,6 +111,9 @@ bool edge_commun(const Face &F1, const Face &F2) {
     else if(nb_vertex_communs > 2) {
       throw std::invalid_argument( "Meme face !" );
     }
+    else if(nb_vertex_communs < 2) {
+      return false;
+    }
   }
 }
 
