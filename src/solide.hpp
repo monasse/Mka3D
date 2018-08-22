@@ -77,7 +77,7 @@ public:
   //void reconstruction_faces_neumann(std::vector<int> num_faces, const Matrix& contrainte, const double& t, const double& V, const double& T);
   void splitting_elements(const int& num_part, const double& rho);
   void taille_maillage(); //Calcul le h du maillage comme max de tous les h des particules
-  void test_fissuration(); //Test s'il y a des fissures dans le solide et les gère s'il y en a
+  void test_fissuration(const double& t); //Test s'il y a des fissures dans le solide et les gère s'il y en a
 
   
   // private :

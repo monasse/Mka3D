@@ -1489,9 +1489,11 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
   }
 }
 
-void Solide::test_fissuration() {
+void Solide::test_fissuration(const double& t) {
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
-    F->test_fissuration(Gc);
+    if(BC == 0) { //On ne casse pas de faces au bord !
+      F->test_fissuration(Gc, t, solide[F->voisins[0]].contrainte, solide[F->voisins[1]].contrainte);
+    }
   }
 }
 
