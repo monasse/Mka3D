@@ -98,23 +98,23 @@ bool operator==(const Face &F1, const Face &F2) { //Compare les faces
 }
 
 bool edge_commun(const Face &F1, const Face &F2) {
+  int nb_vertex_communs = 0;
   for(std::vector<int>::const_iterator V=F1.vertex.begin();V!=F1.vertex.end();V++){
-    int nb_vertex_communs = 0;
     for(std::vector<int>::const_iterator W=F2.vertex.begin();W!=F2.vertex.end();W++){
       //cout << "Numéros vertex : " << *V << " et " << *W << endl;
       if(*V == *W) { //cad même vertex
 	nb_vertex_communs++;
       }
     }
-    if(nb_vertex_communs == 2) {
-      return true;
-    }
-    else if(nb_vertex_communs > 2) {
-      throw std::invalid_argument( "Meme face !" );
-    }
-    else if(nb_vertex_communs < 2) {
-      return false;
-    }
+  }
+  if(nb_vertex_communs == 2) {
+    return true;
+  }
+  else if(nb_vertex_communs > 2) {
+    throw std::invalid_argument( "Meme face !" );
+  }
+  else if(nb_vertex_communs < 2) {
+    return false;
   }
 }
 
