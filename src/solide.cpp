@@ -544,7 +544,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 
   //Boucle pour donner une masse aux faces
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->BC != 0 && F->BC != -2) {
+    if(F->BC != 0 || F->BC != -2) {
       int voisin = F->voisins[0];
       F->m = sqrt(pow(F->S * (F->centre - solide[voisin].x0) * F->normale / 3. * rho, 2.));
       if(F->m < pow(10.,-10.)) {
