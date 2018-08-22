@@ -218,27 +218,35 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
   u = u_prev2 + 2 * F * dt / m;
 }
 
-void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2) {
+void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
   //Chercher si dans faces voisines de la face on a des fasses fissurées
-  
-  //Direction de la force
-  //Vector_3 dir = F / sqrt(F.squared_length());
-  //Direction de la dernière vitesse
-  Vector_3 dir = u / sqrt(u.squared_length());
-  double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
-  vitesse[0] = -norme * dir;
-  vitesse[1] = masses[1] / masses[0] * norme * dir;
-    
+  double t_ref = 0.;
+  std::vector<Face>::const_iterator F = faces_begin;
+  while(F != faces_end) {
+    if(F->fissure && F->t_fissure > t_ref)
+      t_ref = F->t_fissure;
+    F++;
+  }
+
   double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S; //Excès d'énergie cinétique
+  if( C > 0.) {
+    //Direction de la force
+    //Vector_3 dir = F / sqrt(F.squared_length());
+    //Direction de la dernière vitesse
+    Vector_3 dir = u / sqrt(u.squared_length());
+    double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
+    vitesse[0] = -norme * dir;
+    vitesse[1] = masses[1] / masses[0] * norme * dir;
     
-  double puissance1 = S * (contrainte1 * normale) * (vitesse[0] - u); //Variation de puissance pour premier demi-diamant
-  double puissance2 = -S * (contrainte2 * normale) * (vitesse[1] - u); //Variation de puissance pour second demi-diamant
-  double puissance_fissuration = 2. * Gc * S / (t - );
-  if(C > 0. && -(puissance1 - puissance2) > ) {
-    cout << "Face : " << id << " casse !" << endl;
-    fissure = true;
-    u = Vector_3(0.,0.,0.);
-    t_fissure = t;  //Moment ou face a fissuré
+    double puissance1 = S * (contrainte1 * normale) * (vitesse[0] - u); //Variation de puissance pour premier demi-diamant
+    double puissance2 = -S * (contrainte2 * normale) * (vitesse[1] - u); //Variation de puissance pour second demi-diamant
+    double puissance_fissuration = 2. * Gc * S / (t - t_ref);
+    if(-(puissance1 - puissance2) > puissance_fissuration) {
+      cout << "Face : " << id << " casse !" << endl;
+      fissure = true;
+      u = Vector_3(0.,0.,0.);
+      t_fissure = t;  //Moment ou face a fissuré
+    }
   }
 }
 
