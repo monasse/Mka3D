@@ -43,6 +43,8 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx
   m = 0.; //Mettre à jour lors de l'importation
   fissure = false;
   t_fissure = 0.;
+  masses.push_back(0.);
+  masses.push_back(0.);
 }
 
 Face & Face:: operator=(const Face &F){
@@ -190,7 +192,7 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   //u = u  + F *  dt / m;
   
   if(not(fissure)) {
-    if(m < pow(10.,-10.))
+    if(m < pow(10.,-14.))
       throw std::invalid_argument( "Masse nulle" );
     u = u  + F *  dt / m;
   }

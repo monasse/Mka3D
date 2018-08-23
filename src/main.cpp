@@ -350,6 +350,7 @@ int main(){
     S.Forces(N_dim, dt, t , T);
     //Velocity update for the MEMM Scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T);
+    cout << "Avant test fissuration !" << endl;
     S.test_fissuration(t); //Test et gère fissuration s'il y en a
     //Update of time
     t+= dt;
