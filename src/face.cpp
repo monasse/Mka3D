@@ -152,18 +152,20 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   I_Dx_prev = I_Dx;
   
   if(BC == 3) {
-    I_Dx = I_Dx + u * dt;
+    //I_Dx = I_Dx + u * dt;
     I_Dx.vec[2] = I_Dx.vec[2]  + u.vec[2] *  dt; //Déplacement que dans le plan z
   }
   else if(BC == 1) {
-    I_Dx = traction(t,T) * Vector_3(0.,0.,1.);
+    /*I_Dx = traction(t,T) * Vector_3(0.,0.,1.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
-    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
+    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;*/
+    I_Dx = I_Dx + u * dt;
   }
   else if(BC == 2) {
-    I_Dx = traction(t,T) * Vector_3(0.,0.,-1.);;
+    /*I_Dx = traction(t,T) * Vector_3(0.,0.,-1.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
-    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
+    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;*/
+    I_Dx = I_Dx + u * dt;
   }
   else if(BC == -1) {
     I_Dx = I_Dx + u * dt; //Déplacement libre
@@ -175,6 +177,10 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
       Dx[0] = Dx[0] + vitesse[0] * dt;
       Dx[1] = Dx[1] + vitesse[1] * dt;
     }
+  }
+  else if(BC == -1) {
+    Dx[0] = Dx[0] + vitesse[0] * dt;
+    Dx[1] = Dx[1] + vitesse[1] * dt;
   }
 
   /*I_Dx_prev = I_Dx;
