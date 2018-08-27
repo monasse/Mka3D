@@ -262,8 +262,10 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
 
 void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
   //double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S; //Excès d'énergie cinétique
-  double en_tot = 0.125 * m * (u + u_prev) * (u + u_prev) + F * I_Dx - 2. * Gc * S; //Energie totale disponible pour fissuration
-  if( en_tot > 0. && not(fissure)) {
+  //double en_tot = 0.125 * m * (u + u_prev) * (u + u_prev) + F * I_Dx - 2. * Gc * S; //Energie totale disponible pour fissuration
+  double ep = F * I_Dx; //Energie potentielle
+  //if( en_tot > 0. && not(fissure)) {
+  if( ep > 0. && not(fissure)) {
     //Direction de la force
     //Direction de la dernière vitesse
 
@@ -275,7 +277,8 @@ void Face::test_fissuration(double const& Gc, const double& t, Matrix const& con
     //Vector_3 dir = u / sqrt(u.squared_length());
     Vector_3 dir = F / sqrt(F.squared_length());
     //double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
-    double norme = sqrt(2. * en_tot / (masses[1] * (1. + masses[1]/masses[0])));
+    //double norme = sqrt(2. * en_tot / (masses[1] * (1. + masses[1]/masses[0])));
+    double norme = sqrt(2. * ep / (masses[1] * (1. + masses[1]/masses[0])));
     vitesse[0] = -norme * dir;
     vitesse[1] = masses[1] / masses[0] * norme * dir;
    

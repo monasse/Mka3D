@@ -2228,6 +2228,25 @@ void Solide::Impression(const int &n){ //Sortie au format vtk
     }
   }
   vtk << "\n";
+  // Indique si face a cassé ou pas
+  vtk << "SCALARS Fissure double 1" << endl;
+  vtk << "LOOKUP_TABLE default" << endl;
+  for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
+    if(not(P->split)){
+      bool face_fissuree = false;
+      for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
+	if(faces[*F].fissure) {
+	  face_fissuree = true;
+	  break;
+	}
+      }
+      if(face_fissuree)
+	vtk << 1. << endl;
+      else
+	vtk << 0. << endl;
+    }
+  }
+  vtk << endl;
   /*Normale
   // vtk << "VECTORS normale double" << endl;
   // //vtk << "LOOKUP_TABLE default" << endl;
