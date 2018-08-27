@@ -153,19 +153,21 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   
   if(BC == 3) {
     //I_Dx = I_Dx + u * dt;
+    I_Dx.vec[0] = 0.;
+    I_Dx.vec[1] = 0.;
     I_Dx.vec[2] = I_Dx.vec[2]  + u.vec[2] *  dt; //Déplacement que dans le plan z
   }
   else if(BC == 1) {
-    /*I_Dx = traction(t,T) * Vector_3(0.,0.,1.);
+    I_Dx = traction(t,T) * Vector_3(0.,1.,0.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
-    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;*/
-    I_Dx = I_Dx + u * dt;
+    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
+    //I_Dx = I_Dx + u * dt;
   }
   else if(BC == 2) {
-    /*I_Dx = traction(t,T) * Vector_3(0.,0.,-1.);
+    I_Dx = traction(t,T) * Vector_3(0.,-1.,0.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
-    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;*/
-    I_Dx = I_Dx + u * dt;
+    I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
+    //I_Dx = I_Dx + u * dt;
   }
   else if(BC == -1) {
     I_Dx = I_Dx + u * dt; //Déplacement libre
@@ -226,7 +228,7 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
   u = u_prev2 + 2 * F * dt / m;
 }
 
-void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
+/*void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
   //Chercher si dans faces voisines de la face on a des fasses fissurées
   double t_ref = 0.;
   std::vector<Face>::const_iterator F = faces_begin;
@@ -255,6 +257,28 @@ void Face::test_fissuration(double const& Gc, const double& t, Matrix const& con
       u = Vector_3(0.,0.,0.);
       t_fissure = t;  //Moment ou face a fissuré
     }
+  }
+  }*/
+
+void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
+  //double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S; //Excès d'énergie cinétique
+  double en_tot = 0.125 * m * (u + u_prev) * (u + u_prev) + F * I_Dx - 2. * Gc * S; //Energie totale disponible pour fissuration
+  if( en_tot > 0. && not(fissure)) {
+    //Direction de la force
+    //Direction de la dernière vitesse
+
+    cout << "Face : " << id << " casse !" << endl;
+    fissure = true;
+    u = Vector_3(0.,0.,0.);
+    t_fissure = t;  //Moment où face a fissuré
+    
+    //Vector_3 dir = u / sqrt(u.squared_length());
+    Vector_3 dir = F / sqrt(F.squared_length());
+    //double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
+    double norme = sqrt(2. * en_tot / (masses[1] * (1. + masses[1]/masses[0])));
+    vitesse[0] = -norme * dir;
+    vitesse[1] = masses[1] / masses[0] * norme * dir;
+   
   }
 }
 
