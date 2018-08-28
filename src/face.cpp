@@ -173,8 +173,9 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     I_Dx = I_Dx + u * dt; //Déplacement libre
   }
   else if(BC == 0) {
-    if(not(fissure))
+    if(not(fissure)) {
       I_Dx = I_Dx + u * dt; //Déplacement libre
+    }
     else { //Déplacement libre
       Dx[0] = Dx[0] + vitesse[0] * dt;
       Dx[1] = Dx[1] + vitesse[1] * dt;
