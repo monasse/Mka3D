@@ -1458,9 +1458,32 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
   }
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++) {
-    if(not(P->split)) {
+    bool fissure = false;
+    for(int i=0 ; i < P->faces.size() ; i++){
+      int f = P->faces[i];
+      if(faces[f].fissure) {
+	fissure = true;
+	break;
+      }
+    }
+    
+    if(fissure) {
+      P->Dx = Vector_3(0.,0.,0.);
+      for(int i=0 ; i < P->faces.size() ; i++){
+	int f = P->faces[i];
+	if(faces[f].fissure) {
+	  if(faces[f].voisins[0] == P->id)
+	    P->Dx = P->Dx + faces[f].Dx[0] / 4.;
+	  else if(faces[f].voisins[1] == P->id)
+	    P->Dx = P->Dx + faces[f].Dx[1] / 4.;
+	}
+	else
+	  P->Dx = P->Dx + faces[f].I_Dx / 4.;
+      }
       P->Dx = (faces[P->faces[0]].I_Dx + faces[P->faces[1]].I_Dx + faces[P->faces[2]].I_Dx + faces[P->faces[3]].I_Dx) / 4.;
     }
+    else
+      P->Dx = (faces[P->faces[0]].I_Dx + faces[P->faces[1]].I_Dx + faces[P->faces[2]].I_Dx + faces[P->faces[3]].I_Dx) / 4.;
   }
 }
 
@@ -2525,7 +2548,14 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
-	vtk << faces[*F].I_Dx << endl;
+	if(not(faces[*F].fissure))
+	  vtk << faces[*F].I_Dx << endl;
+	else if(faces[*F].fissure) {
+	  if(faces[*F].voisins[0] == P->id)
+	    vtk << faces[*F].Dx[0] << endl;
+	  else if(faces[*F].voisins[1] == P->id)
+	    vtk << faces[*F].Dx[1] << endl;
+	}
       }
     }
   }

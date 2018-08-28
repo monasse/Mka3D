@@ -2,12 +2,12 @@ RECOVERY		0
 NUM_RECOVERY	     	18
 N_DIM  			3
 FLAG2D 			0
-DENSITY  		8960. 
+DENSITY  		1. 
 POISSON_RATIO		0.3
-YOUNG_MODULUS		124000000000.
-SIMULATION_TIME		0.00001
+YOUNG_MODULUS		0.52
+SIMULATION_TIME		1.
 CFL 			0.013
-N_PRINTS  		2
+N_PRINTS  		10
 MAX_STEPS		1000000000
 Reconstruction		0
 AMORTISSEMENT		50000.
@@ -15,7 +15,7 @@ B_ecrouissage_JC 	292000000.
 n_ecrouissage_JC	.31
 A_limite_elas		450000.
 H_ecrouissage_lineaire	600000000.
-Gc			1.
+Gc			0.01
 mesh_type		1
 nom_fichier		plaque_rectangulaire
 

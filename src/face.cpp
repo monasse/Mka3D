@@ -158,13 +158,13 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     I_Dx.vec[2] = I_Dx.vec[2]  + u.vec[2] *  dt; //Déplacement que dans le plan z
   }
   else if(BC == 1) {
-    I_Dx = traction(t,T) * Vector_3(0.,1.,0.);
+    I_Dx = traction(t,T) * Vector_3(0.,0.,1.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
     //I_Dx = I_Dx + u * dt;
   }
   else if(BC == 2) {
-    I_Dx = traction(t,T) * Vector_3(0.,-1.,0.);
+    I_Dx = traction(t,T) * Vector_3(0.,0.,-1.);
     I_Dx.vec[0] = I_Dx.vec[0]  + u.vec[0] *  dt;
     I_Dx.vec[1] = I_Dx.vec[1]  + u.vec[1] *  dt;
     //I_Dx = I_Dx + u * dt;
@@ -180,7 +180,7 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
       Dx[1] = Dx[1] + vitesse[1] * dt;
     }
   }
-  else if(BC == -1) {
+  else if(BC == -2) {
     Dx[0] = Dx[0] + vitesse[0] * dt;
     Dx[1] = Dx[1] + vitesse[1] * dt;
   }
@@ -262,10 +262,10 @@ void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T
 
 void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
   //double C = 0.125 * m * (u + u_prev) * (u + u_prev) - 2. * Gc * S; //Excès d'énergie cinétique
-  //double en_tot = 0.125 * m * (u + u_prev) * (u + u_prev) + F * I_Dx - 2. * Gc * S; //Energie totale disponible pour fissuration
-  double ep = F * I_Dx; //Energie potentielle
-  //if( en_tot > 0. && not(fissure)) {
-  if( ep > 0. && not(fissure)) {
+  double en_tot = 0.125 * m * (u + u_prev) * (u + u_prev) + F * I_Dx - 2. * Gc * S; //Energie totale disponible pour fissuration
+  //double ep = F * I_Dx; //Energie potentielle
+  if( en_tot > 0. && not(fissure)) {
+    //if( ep > 0. && not(fissure)) {
     //Direction de la force
     //Direction de la dernière vitesse
 
@@ -277,8 +277,8 @@ void Face::test_fissuration(double const& Gc, const double& t, Matrix const& con
     //Vector_3 dir = u / sqrt(u.squared_length());
     Vector_3 dir = F / sqrt(F.squared_length());
     //double norme = sqrt(2. * C / (masses[1] * (1. + masses[1]/masses[0])));
-    //double norme = sqrt(2. * en_tot / (masses[1] * (1. + masses[1]/masses[0])));
-    double norme = sqrt(2. * ep / (masses[1] * (1. + masses[1]/masses[0])));
+    double norme = sqrt(2. * en_tot / (masses[1] * (1. + masses[1]/masses[0])));
+    //double norme = sqrt(2. * ep / (masses[1] * (1. + masses[1]/masses[0])));
     vitesse[0] = -norme * dir;
     vitesse[1] = masses[1] / masses[0] * norme * dir;
    
