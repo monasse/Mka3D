@@ -300,6 +300,23 @@ int main(){
     F->u_prev2 = Vector_3(0.,0.,0.);
     }*/
 
+  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
+    if(F->fissure) {
+      F->Dx[0] = Vector_3(0.,0.,1.) * (F->centre.x() - 1.5) / 1. * 0.1;
+      F->Dx[1] = Vector_3(0.,0.,-1.) * (F->centre.x() - 1.5) / 1. * 0.1;
+    }
+    else if(not(F->fissure)) {
+      if((F->centre).x() > 1.5 && (F->centre).y() > 0.) {
+	F->I_Dx = Vector_3(0.,0.,1.) * (F->centre.x() - 1.5) / 1. * 0.1;
+      }
+      else if((F->centre).x() > 1.5 && (F->centre).y() < 0.)
+        F->I_Dx = Vector_3(0.,0.,-1.) * (F->centre.x() - 1.5) / 1. * 0.1;
+    }
+    F->u = Vector_3(0.,0.,0.);
+    F->u_prev = F->u;
+    F->u_prev2 = Vector_3(0.,0.,0.);
+  }
+
   double E0 = S.Energie();
   //double E0 = S.Energie_MEMM(t,T);
   if(rep){
