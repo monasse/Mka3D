@@ -1531,7 +1531,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=0.5; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=1.; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes_bis(dt, theta, weight, t, T);
 }
