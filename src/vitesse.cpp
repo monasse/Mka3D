@@ -153,7 +153,8 @@ double displacement_BC_bis(const Point_3 &p, const Vector_3 &Dx, const double& t
 }
 
 double traction(const double& t, const double& T) {
-  double k = 0.01; //Vitesse de traction
+  double k = 0.1; //Vitesse de traction
+  //double k = 0.;
 
   return k * t;
 }

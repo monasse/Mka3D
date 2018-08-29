@@ -266,11 +266,13 @@ void Face::test_fissuration(double const& Gc, const double& t, Matrix const& con
   //double en_tot = 0.125 * m * (u + u_prev) * (u + u_prev) + F * I_Dx - 2. * Gc * S; //Energie totale disponible pour fissuration
   double ep = F * I_Dx; //Energie potentielle
   //if( en_tot > 0. && not(fissure)) {
-  if( ep > 0. && not(fissure)) {
+  if( ep > 2.*Gc && not(fissure)) {
     //Direction de la force
     //Direction de la dernière vitesse
 
     cout << "Face : " << id << " casse !" << endl;
+    //cout << "Ep : " << ep << endl;
+    //cout << "Gc : " << Gc << endl;
     fissure = true;
     u = Vector_3(0.,0.,0.);
     t_fissure = t;  //Moment où face a fissuré
