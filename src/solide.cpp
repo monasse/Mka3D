@@ -1549,10 +1549,23 @@ void Solide::stresses_bis_MEMM(const double& theta, const double& t, const doubl
       Vector_3 nIJ = faces[f].normale;
       if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	nIJ = -nIJ; //Normale pas dans le bon sens...
-      Matrix Dij_n(tens(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
-      Matrix Dij_n_sym(tens_sym(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
-      P->discrete_gradient += faces[f].S /  P->V * Dij_n;
-      P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+      if(not(faces[f].fissure)) {
+	Matrix Dij_n(tens(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
+	Matrix Dij_n_sym(tens_sym(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+      }
+      else if(faces[f].fissure) {
+	int voi;
+	if(P->id == faces[f].voisins[0])
+	  voi = 0;
+	else if(P->id == faces[f].voisins[1])
+	  voi = 1;
+	Matrix Dij_n(tens(0.5 * (faces[f].Dx[voi] + faces[f].Dx_prev[voi]),  nIJ));
+	Matrix Dij_n_sym(tens_sym(0.5 * (faces[f].Dx[voi] + faces[f].Dx_prev[voi]),  nIJ));
+	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
+	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
+      }
     }
 
     //calcul des contraintes
@@ -1948,7 +1961,7 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
     if(not(F->fissure))
       E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
     else if(F->fissure)
-      E += 0.5 * F->masses[0] * (F->vitesse[0] + F->vitesse_prev[1]) * (F->vitesse[0] + F->vitesse_prev[0]) / 4. + 0.5 * F->masses[1] * (F->vitesse[1] + F->vitesse_prev[1]) * (F->vitesse[1] + F->vitesse_prev[1]) / 4.;
+      E += 0.5 * F->masses[0] * (F->vitesse[0] + F->vitesse_prev[0]) * (F->vitesse[0] + F->vitesse_prev[0]) / 4. + 0.5 * F->masses[1] * (F->vitesse[1] + F->vitesse_prev[1]) * (F->vitesse[1] + F->vitesse_prev[1]) / 4.;
   }
   
   return E;
@@ -1957,7 +1970,10 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
 const double Solide::Energie_cinetique_MEMM(){ //Energie cinétique adaptée à MEMM
   double E = 0.;
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    E += 0.5 * F->m * (F->u * F->u_prev);
+    if(not(F->fissure))
+      E += 0.5 * F->m * (F->u * F->u_prev);
+    else if(F->fissure)
+      E += 0.5 * F->masses[0] * (F->vitesse[0] * F->vitesse_prev[0]) + 0.5 * F->masses[1] * (F->vitesse[1] * F->vitesse_prev[1]);
   }
   
   return E;
@@ -1970,10 +1986,10 @@ const double Solide::Energie_potentielle(){
     Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
   }
 
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->fissure)
       Ep += 2. * Gc * F->S;
-  }
+      }*/
 
   return Ep;
 }

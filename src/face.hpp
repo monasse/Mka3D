@@ -69,6 +69,7 @@ public:
   std::vector<Vector_3> Forces; //Forces sur chacun des 2 ddl...
   Vector_3 I_Dx; //Dx calculé sur la face par interpolation avec valeurs des particules du tétra
   std::vector<Vector_3> Dx; //Déplacement de cheque côté après fissuration
+  std::vector<Vector_3> Dx_prev; //Pour intégration MEMM
   Vector_3 I_Dx_prev; //Dx au pas de temps précédetn. Pour intégration MEMM
   Vector_3 u; //Vitesse des deux diamants associés
   Vector_3 u_prev; //Idem au pas de temps précédent

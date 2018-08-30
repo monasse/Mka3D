@@ -42,6 +42,8 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx
   Forces.push_back(Vector_3(0.,0.,0.));
   Dx.push_back(Vector_3(0.,0.,0.));
   Dx.push_back(Vector_3(0.,0.,0.));
+  Dx_prev.push_back(Vector_3(0.,0.,0.));
+  Dx_prev.push_back(Vector_3(0.,0.,0.));
   m = 0.; //Mettre à jour lors de l'importation
   fissure = false;
   t_fissure = 0.;

@@ -292,10 +292,10 @@ int main(){
     }*/
 
   for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
-    if((F->centre).x() > 1.5 && (F->centre).y() > 0.)
-      (F->u).vec[1] = 1.;
-    else if((F->centre).x() > 1.5 && (F->centre).y() < 0.)
-      (F->u).vec[1] = -1.;
+    if((F->centre).x() > 2. && (F->centre).y() > 0.)
+      (F->u).vec[1] = 0.1;
+    else if((F->centre).x() > 2. && (F->centre).y() < 0.)
+      (F->u).vec[1] = -0.1;
     F->u_prev = F->u;
     F->u_prev2 = Vector_3(0.,0.,0.);
   }
@@ -377,7 +377,7 @@ int main(){
     S.Forces(N_dim, dt, t , T);
     //Velocity update for the MEMM Scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T);
-    S.test_fissuration(t); //Test et gère fissuration s'il y en a
+    //S.test_fissuration(t); //Test et gère fissuration s'il y en a
     //Update of time
     t+= dt;
   }
