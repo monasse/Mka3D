@@ -192,7 +192,7 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     Dx[1] = Dx[1] + vitesse[1] * dt;
     }*/
 
-  I_Dx_prev = I_Dx;
+  //I_Dx_prev = I_Dx;
   I_Dx = I_Dx + u * dt;
 
 
