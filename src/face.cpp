@@ -36,6 +36,8 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx
   face_pb = false;
   vitesse.push_back(Vector_3(0.,0.,0.));
   vitesse.push_back(Vector_3(0.,0.,0.));
+  vitesse_prev.push_back(Vector_3(0.,0.,0.));
+  vitesse_prev.push_back(Vector_3(0.,0.,0.));
   Forces.push_back(Vector_3(0.,0.,0.));
   Forces.push_back(Vector_3(0.,0.,0.));
   Dx.push_back(Vector_3(0.,0.,0.));
@@ -151,7 +153,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 void Face::solve_position(const double &dt, const double& t, const double& T) {
   I_Dx_prev = I_Dx;
   
-  if(BC == 3) {
+  /*if(BC == 3) {
     //I_Dx = I_Dx + u * dt;
     I_Dx.vec[0] = 0.;
     I_Dx.vec[1] = 0.;
@@ -186,10 +188,19 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   else if(BC == -2) {
     Dx[0] = Dx[0] + vitesse[0] * dt;
     Dx[1] = Dx[1] + vitesse[1] * dt;
-  }
+    }*/
 
   /*I_Dx_prev = I_Dx;
     I_Dx = I_Dx + u * dt;*/
+
+
+  if(BC == -2 || fissure) {
+    Dx[0] = Dx[0] + vitesse[0] * dt;
+    Dx[1] = Dx[1] + vitesse[1] * dt;
+  }
+  else
+    I_Dx = I_Dx + u * dt;
+  
   
   
   /*double def_ref = 0.001;
@@ -200,6 +211,8 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
 
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
+  vitesse_prev[0] = vitesse[0];
+  vitesse_prev[1] = vitesse[1];
   //u = u  + F *  dt / m;
   
   if(not(fissure)) {

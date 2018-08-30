@@ -60,6 +60,8 @@ public:
   std::vector<int> faces_voisines; //contient les numéros des faces qui partagent un edge avec cette face
   std::vector<Vector_3> vitesse; //Donne les 2 vitesses pour le DDL associé à chaque particule
   //Sert pour calculer le critère de fissuration
+  std::vector<Vector_3> vitesse_prev; //Donne les 2 vitesses pour le DDL associé à chaque particule
+  //Sert pour calculer le critère de fissuration
   std::vector<int> reconstruction; //Donne le numéro des 4 particules pour la reconstruction sur la face
   std::vector<double> c_reconstruction; //Coordonnées barycentriques des centres des particules pour calcul du gradient
   double m; //Masse du DDL

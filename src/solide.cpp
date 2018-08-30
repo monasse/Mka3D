@@ -1945,7 +1945,10 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
     }*/
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
+    if(not(F->fissure))
+      E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
+    else if(F->fissure)
+      E += 0.5 * F->masses[0] * (F->vitesse[0] + F->vitesse_prev[1]) * (F->vitesse[0] + F->vitesse_prev[0]) / 4. + 0.5 * F->masses[1] * (F->vitesse[1] + F->vitesse_prev[1]) * (F->vitesse[1] + F->vitesse_prev[1]) / 4.;
   }
   
   return E;
@@ -1965,6 +1968,11 @@ const double Solide::Energie_potentielle(){
 
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
+  }
+
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    if(F->fissure)
+      Ep += 2. * Gc * F->S;
   }
 
   return Ep;
