@@ -1612,12 +1612,12 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
       Vector_3 nIJ = faces[f].normale;
       if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	nIJ = -nIJ; //Normale pas dans le bon sens...
-      //if(not(faces[f].fissure)) {
+      if(not(faces[f].fissure)) {
 	Matrix Dij_n(tens(faces[f].I_Dx,  nIJ));
 	Matrix Dij_n_sym(tens_sym(faces[f].I_Dx,  nIJ));
 	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
-	/*}
+      }
       else if(faces[f].fissure) {
 	int voi;
 	if(P->id == faces[f].voisins[0])
@@ -1628,7 +1628,7 @@ void Solide::stresses_bis(const double& theta, const double& t, const double& T)
 	Matrix Dij_n_sym(tens_sym(faces[f].Dx[voi],  nIJ));
 	P->discrete_gradient += faces[f].S /  P->V * Dij_n;
 	P->discrete_sym_gradient += faces[f].S /  P->V * Dij_n_sym;
-	}*/
+      }
     }
 
     //calcul des contraintes
@@ -1957,16 +1957,16 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
     }
     }*/
 
-  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
-  }
-
   /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
+    }*/
+
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(not(F->fissure))
       E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
     else if(F->fissure)
       E += 0.5 * F->masses[0] * (F->vitesse[0] + F->vitesse_prev[0]) * (F->vitesse[0] + F->vitesse_prev[0]) / 4. + 0.5 * F->masses[1] * (F->vitesse[1] + F->vitesse_prev[1]) * (F->vitesse[1] + F->vitesse_prev[1]) / 4.;
-  }*/
+  }
   
   return E;
 }

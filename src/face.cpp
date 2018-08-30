@@ -193,15 +193,15 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     }*/
 
   //I_Dx_prev = I_Dx;
-  I_Dx = I_Dx + u * dt;
+  //I_Dx = I_Dx + u * dt;
 
 
-  /*if(fissure) {
+  if(fissure) {
     Dx[0] = Dx[0] + vitesse[0] * dt;
     Dx[1] = Dx[1] + vitesse[1] * dt;
   }
   else
-  I_Dx = I_Dx + u * dt;*/
+    I_Dx = I_Dx + u * dt;
   
   
   
@@ -215,9 +215,9 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
   vitesse_prev[0] = vitesse[0];
   vitesse_prev[1] = vitesse[1];
-  u = u  + F *  dt / m;
+  //u = u  + F *  dt / m;
   
-  /*if(not(fissure)) {
+  if(not(fissure)) {
     if(m < pow(10.,-14.))
       throw std::invalid_argument( "Masse nulle" );
     u = u  + F *  dt / m;
@@ -225,7 +225,7 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   else {
     vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0];
     vitesse[1] = vitesse[1]  + Forces[1] *  dt / masses[1];
-    }*/
+  }
 
   //u = Vector_3(0.,0.,0.); //Test en statique
   //Si interface pas rompue
