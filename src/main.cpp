@@ -150,9 +150,9 @@ int main(){
   }
   string s, nom_fichier;
   int numrep1, N_dim1, nimp1, Nmax1, mt, recon;
-  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1,G1;
+  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1,G1,sig1,t1;
   bool rep1, flag2d1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> recon >> s >> Amort >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1 >> s >> G1 >> s >> mt >> s >> nom_fichier;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> recon >> s >> Amort >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1 >> s >> G1 >> s >> sig1 >> s >> t1 >> s >> mt >> s >> nom_fichier;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -173,6 +173,8 @@ int main(){
   const double A = A1; //Limite élastique initiale
   const double H = H1; //Module d'écrouissage linéaire
   const double G = G1; //Energie surfacique fissuration
+  const double sig_f = sig1; //Contrainte début fissure normale
+  const double t_f = t1; //contrainte début fissure tangentielle
   
   char temps_it[]="temps.dat";
   char temps_reprise[]="temps_reprise.dat";
@@ -240,7 +242,7 @@ int main(){
   if(rep){
     t = temps[numrep];
   }
-  Solide S(E, nu, B, n, A, H, G, reconstruction);
+  Solide S(E, nu, B, n, A, H, G, sig_f, t_f, reconstruction);
   //Initialization from file "maillage*.dat", with possible restart depending on rep
   // if(mesh_type == 0)
   //   S.Init((nom_fichier+".1.node").c_str(), (nom_fichier+".1.ele").c_str(), (nom_fichier+".1.face").c_str(), rep, numrep, rho);
@@ -291,17 +293,17 @@ int main(){
     F->u_prev2 = Vector_3(0.,0.,0.);
     }*/
 
-  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
+  /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     if((F->centre).x() > 2. && (F->centre).y() > 0.)
       (F->u).vec[1] = 0.1;
     else if((F->centre).x() > 2. && (F->centre).y() < 0.)
       (F->u).vec[1] = -0.1;
     F->u_prev = F->u;
     F->u_prev2 = Vector_3(0.,0.,0.);
-  }
+    }*/
 
-  /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
-    double hauteur = 0.05;
+  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
+    double hauteur = 0.5;
     if(F->fissure) {
       F->Dx[0] = Vector_3(0.,0.,1.) * (F->centre.x() - 1.5) / 1. * hauteur;
       F->Dx[1] = Vector_3(0.,0.,-1.) * (F->centre.x() - 1.5) / 1. * hauteur;
@@ -316,7 +318,7 @@ int main(){
     F->u = Vector_3(0.,0.,0.);
     F->u_prev = F->u;
     F->u_prev2 = Vector_3(0.,0.,0.);
-    }*/
+  }
 
   double E0 = S.Energie();
   //double E0 = S.Energie_MEMM(t,T);
@@ -377,7 +379,7 @@ int main(){
     S.Forces(N_dim, dt, t , T);
     //Velocity update for the MEMM Scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T);
-    //S.test_fissuration(t); //Test et gère fissuration s'il y en a
+    S.test_fissuration(t); //Test et gère fissuration s'il y en a
     //Update of time
     t+= dt;
   }

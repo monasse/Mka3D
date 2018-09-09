@@ -39,7 +39,7 @@
 #ifndef SOLIDE_CPP
 #define SOLIDE_CPP
 
-Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const double& G, const int& recon){
+Solide::Solide(const double& E, const double& nu, const double& B1, const double& n1, const double& A1, const double& H1, const double& G, const double& sig_f, const double& t_f, const int& recon){
   lambda = E * nu / (1.+nu) / (1. - 2.*nu);
   mu = E / 2. / (1.+nu);
   A = A1;
@@ -47,6 +47,8 @@ Solide::Solide(const double& E, const double& nu, const double& B1, const double
   n = n1;
   H = H1;
   Gc = G;
+  sigma_f = sig_f;
+  tau_f = t_f;
   h = 0.;
   reconstruction = recon;
 }
@@ -60,6 +62,8 @@ Solide::Solide(){
   H = 0.;
   h = 0.;
   Gc = 0.;
+  sigma_f = 0.;
+  tau_f = 0.;
   reconstruction = 0;
 }
 
@@ -1515,11 +1519,18 @@ void Solide::Solve_vitesse(const double& dt, const bool& flag_2d, const double& 
 void Solide::test_fissuration(const double& t) {
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++) {
     if(F->BC == 0) { //On ne casse pas de faces au bord !
-      std::vector<Face> f;
+      /*std::vector<Face> f;
       for(std::vector<int>::iterator G=F->faces_voisines.begin();G!=F->faces_voisines.end();G++) {
 	f.push_back(faces[*G]);
       }
-      F->test_fissuration(Gc, t, solide[F->voisins[0]].contrainte, solide[F->voisins[1]].contrainte, f.begin(), f.end());
+      F->test_fissuration(Gc, t, solide[F->voisins[0]].contrainte, solide[F->voisins[1]].contrainte, f.begin(), f.end());*/
+      int voisin1 = F->voisins[0];
+      int voisin2 = F->voisins[1];
+      Vector_3 normal_stress = 0.5 * (solide[voisin1].contrainte + solide[voisin2].contrainte) * F->normale;
+
+      if(normal_stress * F->normale > sigma_f || normal_stress * F->vec_tangent_1 > tau_f ||normal_stress * F->vec_tangent_2 > tau_f) {
+	F->fissure = true; //Faire mieux. Il faut état endommagé pour complètement rompue.
+      }
     }
   }
 }

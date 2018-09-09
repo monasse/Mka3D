@@ -155,7 +155,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 void Face::solve_position(const double &dt, const double& t, const double& T) {
   I_Dx_prev = I_Dx;
   
-  /*if(BC == 3) {
+  if(BC == 3) {
     //I_Dx = I_Dx + u * dt;
     I_Dx.vec[0] = 0.;
     I_Dx.vec[1] = 0.;
@@ -190,18 +190,18 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   else if(BC == -2) {
     Dx[0] = Dx[0] + vitesse[0] * dt;
     Dx[1] = Dx[1] + vitesse[1] * dt;
-    }*/
+  }
 
   //I_Dx_prev = I_Dx;
   //I_Dx = I_Dx + u * dt;
 
 
-  if(fissure) {
+  /*if(fissure) {
     Dx[0] = Dx[0] + vitesse[0] * dt;
     Dx[1] = Dx[1] + vitesse[1] * dt;
   }
   else
-    I_Dx = I_Dx + u * dt;
+  I_Dx = I_Dx + u * dt;*/
   
   
   
