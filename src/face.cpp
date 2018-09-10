@@ -45,8 +45,9 @@ Face::Face() : I_Dx(), vec_tangent_1(), vec_tangent_2(), voisins(), u(), F(), Dx
   Dx_prev.push_back(Vector_3(0.,0.,0.));
   Dx_prev.push_back(Vector_3(0.,0.,0.));
   m = 0.; //Mettre à jour lors de l'importation
-  fissure = false;
+  fissure = -1;
   t_fissure = 0.;
+  energie_dissipee = 0.;
   masses.push_back(0.);
   masses.push_back(0.);
 }
@@ -68,6 +69,7 @@ Face & Face:: operator=(const Face &F){
   }
   m = F.m;
   fissure = F.fissure;
+  energie_dissipee = F.energie_dissipee;
 }
 
 bool operator==(const Face &F1, const Face &F2) { //Compare les faces
@@ -179,7 +181,7 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
     I_Dx = I_Dx + u * dt; //Déplacement libre
   }
   else if(BC == 0) {
-    if(not(fissure)) {
+    if(fissure < 0) {
       I_Dx = I_Dx + u * dt; //Déplacement libre
     }
     else { //Déplacement libre
@@ -217,10 +219,21 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   vitesse_prev[1] = vitesse[1];
   //u = u  + F *  dt / m;
   
-  if(not(fissure)) {
+  if(fissure == -1) { //Face pas endommagée
     if(m < pow(10.,-14.))
       throw std::invalid_argument( "Masse nulle" );
     u = u  + F *  dt / m;
+  }
+  else if(fissure == 0) {//Face endommagée. Ajout des forces de Barenblett...
+    Forces[0] = Forces[0] + kappa_p(Dx[0] - Dx[1]) * S * normale;
+    Forces[1] = Forces[1] - kappa_p(Dx[0] - Dx[1]) * S * normale;
+
+    //Comment coder kappa_p ????
+
+    //Test dissipation énergie de Barenblatt ici ?
+
+    vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0]; //MAJ des vitesses
+    vitesse[1] = vitesse[1]  + Forces[1] *  dt / masses[1];
   }
   else {
     vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0];
@@ -290,7 +303,7 @@ void Face::test_fissuration(double const& Gc, const double& t, Matrix const& con
     cout << "Face : " << id << " casse !" << endl;
     //cout << "Ep : " << ep << endl;
     //cout << "Gc : " << Gc << endl;
-    fissure = true;
+    fissure = 1;
     u = Vector_3(0.,0.,0.);
     t_fissure = t;  //Moment où face a fissuré
     

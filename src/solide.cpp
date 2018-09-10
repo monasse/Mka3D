@@ -262,7 +262,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
 	F.BC = 1;
       else if(tag_1 == 83) { //Fissure déjà présente et Neumann Homogène
 	F.BC = -2;
-	F.fissure = true;
+	F.fissure = 1;
       }
       else if(tag_1 == 85) //Traction 2
 	F.BC = 2;
@@ -1465,7 +1465,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
     bool fissure = false;
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
-      if(faces[f].fissure) {
+      if(faces[f].fissure >= 0) {
 	fissure = true;
 	break;
       }
@@ -1475,7 +1475,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
       P->Dx = Vector_3(0.,0.,0.);
       for(int i=0 ; i < P->faces.size() ; i++){
 	int f = P->faces[i];
-	if(faces[f].fissure) {
+	if(faces[f].fissure >= 0) {
 	  if(faces[f].voisins[0] == P->id)
 	    P->Dx = P->Dx + faces[f].Dx[0] / 4.;
 	  else if(faces[f].voisins[1] == P->id)
@@ -1484,7 +1484,7 @@ void Solide::Solve_position(const double& dt, const bool& flag_2d, const double&
 	else
 	  P->Dx = P->Dx + faces[f].I_Dx / 4.;
       }
-      P->Dx = (faces[P->faces[0]].I_Dx + faces[P->faces[1]].I_Dx + faces[P->faces[2]].I_Dx + faces[P->faces[3]].I_Dx) / 4.;
+      //P->Dx = (faces[P->faces[0]].I_Dx + faces[P->faces[1]].I_Dx + faces[P->faces[2]].I_Dx + faces[P->faces[3]].I_Dx) / 4.;
     }
     else
       P->Dx = (faces[P->faces[0]].I_Dx + faces[P->faces[1]].I_Dx + faces[P->faces[2]].I_Dx + faces[P->faces[3]].I_Dx) / 4.;
@@ -1528,8 +1528,13 @@ void Solide::test_fissuration(const double& t) {
       int voisin2 = F->voisins[1];
       Vector_3 normal_stress = 0.5 * (solide[voisin1].contrainte + solide[voisin2].contrainte) * F->normale;
 
-      if(normal_stress * F->normale > sigma_f || normal_stress * F->vec_tangent_1 > tau_f ||normal_stress * F->vec_tangent_2 > tau_f) {
-	F->fissure = true; //Faire mieux. Il faut état endommagé pour complètement rompue.
+      if(F-> fissure == -1 || normal_stress * F->normale > sigma_f || normal_stress * F->vec_tangent_1 > tau_f ||normal_stress * F->vec_tangent_2 > tau_f) {
+	F->fissure = 0; //Face endommagée. On aura les forces de Barenblatt en plus dans le bilan des forces
+      }
+      else if(F->fissure == 0) {
+	//Dissiper énergie de la fissure Barenblatt ici ou dans le solve_vitesse ?
+	if(F->energie_dissipee > F->S * Gc) //Test pour voir si on a dissipé tout Gc !!!
+	  F->fissure = 1; //Fissure complètement ouverte
       }
     }
   }

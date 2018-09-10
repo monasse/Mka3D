@@ -81,8 +81,9 @@ public:
   double D0; //Distance centre face. Sera utile pour CFL...
   double h; //Diamètre de la face
 
-  bool fissure; //Pour savoir si face a fissurée ou non
+  int fissure; //-1 pas fissurée, 0 endommagée, 1 fissurée
   double t_fissure; //Temps où face a fissuré
+  double energie_dissipee; //Toute l'énergie dissipée par le Barenblat...
 
   //Booléen pour savoir si face a été splitée et doit donc être exclue des calculs
   bool split;
