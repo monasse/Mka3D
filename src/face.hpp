@@ -47,6 +47,8 @@ public:
   void solve_vitesse(const double &dt, const double& t, const double& T);
   void solve_vitesse_MEMM(const double &dt, const double& t, const double& T);
   void test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end); //Reçoit un itérateur sur les faces voisines de la face considérée
+  double cohesive_energy(const Vector_3& jump); //Renvoie la valeur de l'énergie dissipée par la fissure pour un jump donné
+  double kappa_p(const Vector_3& jump); //Renvoie la dérivée de l'énergie cohésive pour avoir les contraintes
 
   //Attributs
   Point_3 centre; //!< Centre de la face

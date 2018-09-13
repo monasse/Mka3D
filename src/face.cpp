@@ -213,6 +213,28 @@ void Face::solve_position(const double &dt, const double& t, const double& T) {
   I_Dx.vec[2] = centre.z() * def_ref;*/
 }
 
+double Face::cohesive_energy(const Vector_3& jump) {
+  double sigma_f = 0.04;
+  double Gc = 0.01;
+  double xl = 1.5 * Gc / sigma_f;
+  double a = -Gc / (xl * xl);
+
+  double norm_jump = sqrt(jump.squared_length());
+  
+  return 0.5 * a * norm_jump * norm_jump + sigma_f * norm_jump;
+}
+
+double Face::kappa_p(const Vector_3& jump) {
+  double sigma_f = 0.04;
+  double Gc = 0.01;
+  double xl = 1.5 * Gc / sigma_f;
+  double a = -Gc / (xl * xl);
+  
+  double norm_jump = sqrt(jump.squared_length());
+
+  return sigma_f + a * norm_jump;
+}
+
 void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   u_prev = u;
   vitesse_prev[0] = vitesse[0];
@@ -227,10 +249,6 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
   else if(fissure == 0) {//Face endommagée. Ajout des forces de Barenblett...
     Forces[0] = Forces[0] + kappa_p(Dx[0] - Dx[1]) * S * normale;
     Forces[1] = Forces[1] - kappa_p(Dx[0] - Dx[1]) * S * normale;
-
-    //Comment coder kappa_p ????
-
-    //Test dissipation énergie de Barenblatt ici ?
 
     vitesse[0] = vitesse[0]  + Forces[0] *  dt / masses[0]; //MAJ des vitesses
     vitesse[1] = vitesse[1]  + Forces[1] *  dt / masses[1];

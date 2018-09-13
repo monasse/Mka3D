@@ -376,10 +376,11 @@ int main(){
     //Position update for the MEMM Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of the integral of forces
+    S.test_fissuration(t); //Test et gère fissuration s'il y en a
     S.Forces(N_dim, dt, t , T);
     //Velocity update for the MEMM Scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T);
-    S.test_fissuration(t); //Test et gère fissuration s'il y en a
+    //S.test_fissuration(t); //Test et gère fissuration s'il y en a
     //Update of time
     t+= dt;
   }

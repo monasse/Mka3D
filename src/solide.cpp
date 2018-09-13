@@ -1533,7 +1533,8 @@ void Solide::test_fissuration(const double& t) {
       }
       else if(F->fissure == 0) {
 	//Dissiper énergie de la fissure Barenblatt ici ou dans le solve_vitesse ?
-	if(F->energie_dissipee > F->S * Gc) //Test pour voir si on a dissipé tout Gc !!!
+	//if(F->energie_dissipee > F->S * Gc) //Test pour voir si on a dissipé tout Gc !!!
+	if(F->cohesive_energy(F->Dx[1] - F->Dx[0]) > F->S * Gc) //Test pour voir si on a dissipé tout Gc !!!
 	  F->fissure = 1; //Fissure complètement ouverte
       }
     }
