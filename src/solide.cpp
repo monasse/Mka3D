@@ -2010,10 +2010,9 @@ const double Solide::Energie_potentielle(){
     Ep += 0.5 * contraction_double(P->contrainte, P->discrete_sym_gradient - P->epsilon_p) * P->V /*+ B * pow(((P->second)).def_plas_cumulee, 1. + n) / (n + 1.)*/ + A * P->def_plas_cumulee * P->V + 0.5 * contraction_double(H * P->epsilon_p, P->epsilon_p) * P->V;
   }
 
-  /*for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    if(F->fissure)
-      Ep += 2. * Gc * F->S;
-      }*/
+  for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
+    Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_sym_gradient - solide[F->voisins[1]].discrete_sym_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_sym_gradient - solide[F->voisins[1]].discrete_sym_gradient).T() );
+  }
 
   return Ep;
 }

@@ -150,9 +150,9 @@ int main(){
   }
   string s, nom_fichier;
   int numrep1, N_dim1, nimp1, Nmax1, mt, recon;
-  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1,G1,sig1,t1;
+  double rho1,nu1,E1,T1,cfl1,Amort, B1,n1,A1,H1,G1,sig1,t1,penalisation;
   bool rep1, flag2d1;
-  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> recon >> s >> Amort >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1 >> s >> G1 >> s >> sig1 >> s >> t1 >> s >> mt >> s >> nom_fichier;
+  param >> s >> rep1 >> s >> numrep1 >> s >> N_dim1 >> s >> flag2d1 >> s >> rho1 >> s >> nu1 >> s >> E1 >> s >> T1 >> s >> cfl1 >> s >> nimp1 >> s >> Nmax1 >> s >> recon >> s >> Amort >> s >> penalisation >> s >> B1 >> s >> n1 >> s >> A1 >> s >> H1 >> s >> G1 >> s >> sig1 >> s >> t1 >> s >> mt >> s >> nom_fichier;
   const bool rep = rep1; //Recovery flag
   const int numrep = numrep1; //File number from which to possibly restart
   const int N_dim=N_dim1; //Number of dimensions of the problem
@@ -163,6 +163,7 @@ int main(){
   const double E = E1; //Young modulus
   const double T = T1;   //Total simulation time
   const double cfl = cfl1; //CFL condition number (must be less than 1)
+  const double eta = penalisation; //valeur paramètre pénalisation
   const int nimp = nimp1; //Number of outputs
   const double dtimp = T/nimp;        //Time-step between two consecutive outputs
   const int Nmax = Nmax1;           //Maximal number of time-steps
@@ -252,12 +253,7 @@ int main(){
 
   cout << "Lecture des fichiers de maillage terminée !" << endl;
 
-  double eta = 0.;
-  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++){
-    eta = max(eta, F->h);
-  }
-  S.eta = eta; //Pour l'instant on prend eta qui vaut la valeur max des taille de faces
-  //eta = 10.; //Test
+  S.eta = eta; //Paramètre de pénalisation vient du fichier param.dat
   	
   //Initialization of time measurements
   int iter=0;	

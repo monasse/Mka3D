@@ -82,6 +82,7 @@ public:
   int type; //Pour savoir si triangle ou quad. Utilise notation gmsh
   double D0; //Distance centre face. Sera utile pour CFL...
   double h; //Diamètre de la face
+  Matrix inertie; //Pseudo-matrice d'inertie utile pour la pénalisation
 
   int fissure; //-1 pas fissurée, 0 endommagée, 1 fissurée
   double t_fissure; //Temps où face a fissuré
