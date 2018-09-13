@@ -1528,14 +1528,17 @@ void Solide::test_fissuration(const double& t) {
       int voisin2 = F->voisins[1];
       Vector_3 normal_stress = 0.5 * (solide[voisin1].contrainte + solide[voisin2].contrainte) * F->normale;
 
-      if(F-> fissure == -1 || normal_stress * F->normale > sigma_f || normal_stress * F->vec_tangent_1 > tau_f ||normal_stress * F->vec_tangent_2 > tau_f) {
+      if(F-> fissure == -1 && (normal_stress * F->normale > sigma_f || normal_stress * F->vec_tangent_1 > tau_f ||normal_stress * F->vec_tangent_2 > tau_f)) {
 	F->fissure = 0; //Face endommagée. On aura les forces de Barenblatt en plus dans le bilan des forces
+	cout << "Face : " << F->id << " endommagée !" << endl;
       }
       else if(F->fissure == 0) {
 	//Dissiper énergie de la fissure Barenblatt ici ou dans le solve_vitesse ?
 	//if(F->energie_dissipee > F->S * Gc) //Test pour voir si on a dissipé tout Gc !!!
-	if(F->cohesive_energy(F->Dx[1] - F->Dx[0]) > F->S * Gc) //Test pour voir si on a dissipé tout Gc !!!
+	if(F->cohesive_energy(F->Dx[1] - F->Dx[0]) > F->S * Gc) { //Test pour voir si on a dissipé tout Gc !!!
 	  F->fissure = 1; //Fissure complètement ouverte
+	  cout << "Face : " << F->id << " fissurée !" << endl;
+	}
       }
     }
   }
@@ -2593,9 +2596,9 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
-	if(not(faces[*F].fissure))
+	if(faces[*F].fissure != -1)
 	  vtk << faces[*F].I_Dx << endl;
-	else if(faces[*F].fissure) {
+	else if(faces[*F].fissure == 0 || faces[*F].fissure == 1) {
 	  if(faces[*F].voisins[0] == P->id)
 	    vtk << faces[*F].Dx[0] << endl;
 	  else if(faces[*F].voisins[1] == P->id)
@@ -2655,10 +2658,12 @@ void Solide::Impression_faces(const int &n){ //Sortie au format vtk des interpol
   for(std::vector<Particule>::iterator P=solide.begin();P!=solide.end();P++){
     if(not(P->split)){
       for(std::vector<int>::iterator F=P->faces.begin();F!=P->faces.end();F++){
-	if(faces[*F].fissure)
-	  vtk << 1. << endl;
-        else
+	if(faces[*F].fissure == -1)
+	  vtk << -1. << endl;
+        else if(faces[*F].fissure == 0)
 	  vtk << 0. << endl;
+	else if(faces[*F].fissure == 1)
+	  vtk << 1. << endl;
       }
     }
   }
