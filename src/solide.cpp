@@ -2031,7 +2031,11 @@ const double Solide::Energie_potentielle(){
   }
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
-    Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient).T() );
+    int voisin2 = F->voisins[1];
+    if(voisin2 != -1)
+      Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient).T() );
+    else if(voisin2 == -2)
+      Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
   }
 
   return Ep;
