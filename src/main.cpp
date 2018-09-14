@@ -298,7 +298,7 @@ int main(){
     F->u_prev2 = Vector_3(0.,0.,0.);
     }*/
 
-  for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
+  /*for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
     double hauteur = 0.05;
     if(F->fissure != -1) {
       F->Dx[0] = Vector_3(0.,0.,1.) * (F->centre.x() - 1.5) / 1. * hauteur;
@@ -314,7 +314,7 @@ int main(){
     F->u = Vector_3(0.,0.,0.);
     F->u_prev = F->u;
     F->u_prev2 = Vector_3(0.,0.,0.);
-  }
+    }*/
 
   double E0 = S.Energie();
   //double E0 = S.Energie_MEMM(t,T);
@@ -372,7 +372,7 @@ int main(){
     //Position update for the MEMM Scheme
     S.Solve_position(dt,flag_2d, t, T);
     //Computation of the integral of forces
-    //S.test_fissuration(t); //Test et gère fissuration s'il y en a
+    S.test_fissuration(t); //Test et gère fissuration s'il y en a
     S.Forces(N_dim, dt, t , T);
     //Velocity update for the MEMM Scheme
     S.Solve_vitesse(dt,flag_2d, Amortissement, t, T);
