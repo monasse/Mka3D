@@ -1853,15 +1853,20 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	Vector_3 nIJ = faces[i].normale;
 	if(nIJ * Vector_3(solide[voisin1].x0, faces[i].centre) < 0.)
 	    nIJ = -nIJ;
-	faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	if(voisin2 >= 0)
+	  faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	else //face au bord
+	  faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient) * faces[i].inertie) * nIJ;
       }
     }
-    for(int i=0 ; i<solide[voisin2].faces.size() ; i++){
-      if(i != F->id) {
-	Vector_3 nIJ = faces[i].normale;
-	if(nIJ * Vector_3(solide[voisin2].x0, faces[i].centre) < 0.)
+    if(voisin2 >= 0) { //Cad face pas sur un bord
+      for(int i=0 ; i<solide[voisin2].faces.size() ; i++){
+	if(i != F->id) {
+	  Vector_3 nIJ = faces[i].normale;
+	  if(nIJ * Vector_3(solide[voisin2].x0, faces[i].centre) < 0.)
 	    nIJ = -nIJ;
-	faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	  faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	}
       }
     }
   }
