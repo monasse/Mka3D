@@ -1854,9 +1854,9 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	if(nIJ * Vector_3(solide[voisin1].x0, faces[i].centre) < 0.)
 	    nIJ = -nIJ;
 	if(voisin2 >= 0)
-	  faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	  faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin1].V) * ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
 	else //face au bord
-	  faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient) * faces[i].inertie) * nIJ;
+	  faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin1].V) * ((solide[voisin1].discrete_gradient) * faces[i].inertie) * nIJ;
       }
     }
     if(voisin2 >= 0) { //Cad face pas sur un bord
@@ -1865,7 +1865,7 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	  Vector_3 nIJ = faces[i].normale;
 	  if(nIJ * Vector_3(solide[voisin2].x0, faces[i].centre) < 0.)
 	    nIJ = -nIJ;
-	  faces[i].F = faces[i].F + ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	  faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin2].V) * ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
 	}
       }
     }
@@ -2038,9 +2038,9 @@ const double Solide::Energie_potentielle(){
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     int voisin2 = F->voisins[1];
     if(voisin2 != -1)
-      Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient).T() );
+      Ep += mu * eta / F->h * F->S * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient).T() );
     else if(voisin2 == -2)
-      Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
+      Ep += mu * eta / F->h * F->S * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
   }
 
   return Ep;
