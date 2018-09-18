@@ -1567,7 +1567,7 @@ void Solide::stresses_bis_MEMM(const double& theta, const double& t, const doubl
     for(int i=0 ; i < P->faces.size() ; i++){
       int f = P->faces[i];
       Vector_3 nIJ = faces[f].normale;
-      if(faces[f].BC == 0 && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
+      if((faces[f].BC == 0 || faces[f].BC == -2) && nIJ * Vector_3(P->x0, faces[f].centre) < 0.)
 	nIJ = -nIJ; //Normale pas dans le bon sens...
       if(faces[f].fissure == -1) {
 	Matrix Dij_n(tens(0.5 * (faces[f].I_Dx + faces[f].I_Dx_prev),  nIJ));
