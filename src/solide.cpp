@@ -1858,8 +1858,8 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	    nIJ = -nIJ;
 	  if(voisin2 >= 0)
 	    faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin1].V) * ((solide[voisin1].discrete_gradient - solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ; // -
-	  //else //face au bord
-	    //faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin1].V) * ((solide[voisin1].discrete_gradient) * faces[i].inertie) * nIJ;
+	  else //face au bord
+	    faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin1].V) * ((solide[voisin1].discrete_gradient) * faces[i].inertie) * nIJ;
 	}
       }
       if(voisin2 >= 0) { //Cad face pas sur un bord
@@ -1873,7 +1873,7 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	}
       }
     }
-    /*else if(F->fissure == 1) {//On pénalise comme si 2 faces étaient sur le bord !
+    else if(F->fissure == 1) {//On pénalise comme si 2 faces étaient sur le bord !
       for(int i=0 ; i<solide[voisin1].faces.size() ; i++){
 	if(i != F->id) {
 	  Vector_3 nIJ = faces[i].normale;
@@ -1887,10 +1887,10 @@ void Solide::Forces_internes_bis(const double& dt, const double& theta, const do
 	  Vector_3 nIJ = faces[i].normale;
 	  if(nIJ * Vector_3(solide[voisin2].x0, faces[i].centre) < 0.)
 	    nIJ = -nIJ;
-	  faces[i].F = faces[i].F - 2.*mu * eta * faces[i].S / (F->h * solide[voisin2].V) * ((solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
+	  faces[i].F = faces[i].F + 2.*mu * eta * faces[i].S / (F->h * solide[voisin2].V) * ((solide[voisin2].discrete_gradient) * faces[i].inertie) * nIJ;
 	}
       }
-    }*/
+    }
 
     
   }
@@ -2093,13 +2093,13 @@ const double Solide::Energie_potentielle_MEMM(const double &t, const double &T){
       int voisin2 = F->voisins[1];
       if(voisin2 != -1)
 	Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[voisin2].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[voisin2].discrete_gradient).T() ); // * F->S
-      /*else if(voisin2 == -1)
-	Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() ); */
+      else if(voisin2 == -1)
+	Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
     }
-    /*else if(F->fissure == 1) { //On pénalise comme si les 2 ddl étaient sur le bord !
+    else if(F->fissure == 1) { //On pénalise comme si les 2 ddl étaient sur le bord !
       Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
       Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[1]].discrete_gradient).T() );
-      }*/
+    }
   }
 
   return Ep;
