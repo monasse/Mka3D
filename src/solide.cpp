@@ -2063,13 +2063,13 @@ const double Solide::Energie_potentielle(){
     if(F->fissure < 1) { //On pénalise quand face pas fissurée
       int voisin2 = F->voisins[1];
       if(voisin2 != -1)
-	Ep += mu * eta / F->h * F->S * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient).T() );
+	Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient - solide[F->voisins[1]].discrete_gradient).T() ); //F->S
       else if(voisin2 == -1)
-	Ep += mu * eta / F->h * F->S * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
+	Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
     }
     else if(F->fissure == 1) { //On pénalise comme si les 2 ddl étaient sur le bord !
-      Ep += mu * eta / F->h * F->S * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
-      Ep += mu * eta / F->h * F->S * contraction_double( (solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[1]].discrete_gradient).T() );
+      Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[0]].discrete_gradient) * F-> inertie, (solide[F->voisins[0]].discrete_gradient).T() );
+      Ep += mu * eta / F->h * contraction_double( (solide[F->voisins[1]].discrete_gradient) * F-> inertie, (solide[F->voisins[1]].discrete_gradient).T() );
     }
   }
 

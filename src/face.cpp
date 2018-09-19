@@ -155,6 +155,7 @@ void Face::comp_quantities(Solide* Sol) { //, const Point_3& ext) {
 
   Vector_3 v0 = v1 - centre; //Point de référence pour calcul de la matrice qui ressemble à l'inertie
   inertie = 0.5 * tens(v0,v0) + 1/12. * tens(s,s) + 1/12. * tens(tt,tt) + 1/6. * tens(v0,tt) + 1/6. * tens(v0,s) + 1/24. * tens(s,tt) +  1/6. * tens(tt,v0) + 1/6. * tens(s,v0) + 1/24. * tens(tt,s);
+  inertie = S * inertie;
 }
 
 void Face::solve_position(const double &dt, const double& t, const double& T) {
