@@ -261,10 +261,10 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       if(tag_1 == 84) //Traction 1
 	F.BC = 1;
       else if(tag_1 == 83) { //Fissure déjà présente et Neumann Homogène
-	F.BC = -2;
-	  F.fissure = 1;
-	  /*F.BC = 0;
-	    F.fissure = -1;*/
+	/*F.BC = -2;
+	  F.fissure = 1;*/
+	F.BC = 0;
+	F.fissure = -1;
       }
       else if(tag_1 == 85) //Traction 2
 	F.BC = 2;
