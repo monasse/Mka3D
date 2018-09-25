@@ -259,6 +259,7 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       //cylindre
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
       F.BC = -1;
+      F.fissure = -1;
       /*if(tag_1 == 84) //Traction 1
 	F.BC = 1;
       else if(tag_1 == 83) { //Fissure déjà présente et Neumann Homogène
