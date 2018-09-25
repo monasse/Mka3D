@@ -11,7 +11,7 @@ N_PRINTS  		10
 MAX_STEPS		1000000000
 Reconstruction		0
 AMORTISSEMENT		50000.
-penalisation		0.01
+penalisation		0.
 B_ecrouissage_JC 	292000000.
 n_ecrouissage_JC	.31
 A_limite_elas		450000.
@@ -20,5 +20,5 @@ Gc			0.01
 sigma_f			0.04
 tau_f			0.04
 mesh_type		1
-nom_fichier		plaque_rectangulaire
+nom_fichier		cylindre_h_0_5
 

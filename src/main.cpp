@@ -299,10 +299,10 @@ int main(){
     }*/
 
   for(std::vector<Face>::iterator F=S.faces.begin();F!=S.faces.end();F++) {
-    if((F->centre).x() > 2.)
-      (F->u).vec[0] = 0.1;
-    else if((F->centre).x() < -2.)
-      (F->u).vec[0] = -0.1;
+    if((F->centre).z() > 4.5)
+      (F->u).vec[2] = 0.1;
+    else if((F->centre).x() < 0.5)
+      (F->u).vec[2] = -0.1;
     F->u_prev = F->u;
     F->u_prev2 = Vector_3(0.,0.,0.);
   }

@@ -258,20 +258,19 @@ void Solide::Init(const char* s1, const bool& rep, const int& numrep, const doub
       F.type = 2;
       //cylindre
       //if(tag_2 == 11 || tag_2 == 33) //Dirichlet
-      if(tag_1 == 84) //Traction 1
+      F.BC = -1;
+      /*if(tag_1 == 84) //Traction 1
 	F.BC = 1;
       else if(tag_1 == 83) { //Fissure déjà présente et Neumann Homogène
-	/*F.BC = -2;
-	  F.fissure = 1;*/
-	F.BC = 0;
-	F.fissure = -1;
+	F.BC = -2;
+	  F.fissure = 1;
       }
       else if(tag_1 == 85) //Traction 2
 	F.BC = 2;
       else if(tag_1 == 82) //Déplacements dans le plan bloqués
 	F.BC = 3;
       else if(tag_1 == 86) //Neumann homogène
-	F.BC = -1;
+      F.BC = -1;*/
       //Poutre section carré
       /*if(tag_2 == 6 || tag_2 == 28) //Dirichlet
 	F.BC = -1; //Tout en Neumann pour ce test
