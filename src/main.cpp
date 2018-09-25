@@ -325,8 +325,8 @@ int main(){
     F->u_prev2 = Vector_3(0.,0.,0.);
     }*/
 
-  // double E0 = S.Energie();
-  double E0 = S.Energie_MEMM(t,T);
+  double E0 = S.Energie();
+  //double E0 = S.Energie_MEMM(t,T);
   if(rep){
     E0 -= dE0rep;
   }
@@ -359,8 +359,8 @@ int main(){
       next_timp += dtimp;
     }
     //Variation of energy
-    //cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
-    cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle_MEMM(t,T) << " " << S.Energie_MEMM(t,T) << endl;
+    cout<< "Solid energy:" << S.Energie_cinetique() << " " << S.Energie_potentielle() << " " << S.Energie() << endl;
+    //cout<< "Solid energy:" << S.Energie_cinetique_MEMM() << " " << S.Energie_potentielle_MEMM(t,T) << " " << S.Energie_MEMM(t,T) << endl;
     //Variation of momentum
     Vector_3 qdm(0,0,0);
     /*for(std::vector<Particule>::iterator P=S.solide.begin();P!=S.solide.end();P++){
@@ -370,10 +370,10 @@ int main(){
       qdm = qdm+ F->m * F->u;
     }
     
-    //ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
-    //cout<< "Energy variation: "<< S.Energie() - E0 << endl;
-    ener << t << " " << S.Energie_MEMM(t,T) << " " << S.Energie_MEMM(t,T)-E0 << " " << qdm <<endl;
-    cout << "Energy variation: "<< S.Energie_MEMM(t,T) - E0 << endl;
+    ener << t << " " << S.Energie() << " " << S.Energie()-E0 << " " << qdm <<endl;
+    cout<< "Energy variation: "<< S.Energie() - E0 << endl;
+    //ener << t << " " << S.Energie_MEMM(t,T) << " " << S.Energie_MEMM(t,T)-E0 << " " << qdm <<endl;
+    //cout << "Energy variation: "<< S.Energie_MEMM(t,T) - E0 << endl;
     //Time step
     if(dt < pow(10., -12.))//dt = 1.*pow(10., -8.); //9. ref 6. ok pour ce calcul
       dt = S.pas_temps(t,T,cfl, E, nu, rho);
@@ -397,7 +397,7 @@ int main(){
   //Final output
   cout << "Final time of the simulation: " << t <<endl;
   cout << "Computational time: " << (double) (end-start)/CLOCKS_PER_SEC << endl; 
-  //cout << "Energy variation: " << S.Energie() - E0 << endl;
-  cout << "Energy variation: " << S.Energie_MEMM(t,T) - E0 << endl;
+  cout << "Energy variation: " << S.Energie() - E0 << endl;
+  //cout << "Energy variation: " << S.Energie_MEMM(t,T) - E0 << endl;
   return 0;
 }

@@ -1553,7 +1553,7 @@ void Solide::Forces(const int& N_dim, const double& dt, const double& t, const d
   }
   //Integration par points de Gauss
   //Point milieu
-  double theta=0.5; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
+  double theta=1.; //theta=1. pour intégration Verlet //Theta=0.5 pour MEMM
   double weight = 1.;
   Forces_internes_bis(dt, theta, weight, t, T);
 }
@@ -2032,7 +2032,7 @@ const double Solide::Energie_cinetique(){ //Energie pas adaptée à MEMM non ?
 
   for(std::vector<Face>::iterator F=faces.begin();F!=faces.end();F++){
     if(F->fissure == -1)
-      E += 0.5 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev) / 4.;
+      E += 0.125 * F->m * (F->u + F->u_prev) * (F->u + F->u_prev);
     else if(F->fissure != -1)
       E += 0.5 * F->masses[0] * (F->vitesse[0] + F->vitesse_prev[0]) * (F->vitesse[0] + F->vitesse_prev[0]) / 4. + 0.5 * F->masses[1] * (F->vitesse[1] + F->vitesse_prev[1]) * (F->vitesse[1] + F->vitesse_prev[1]) / 4.;
   }

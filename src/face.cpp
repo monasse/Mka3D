@@ -281,7 +281,7 @@ void Face::solve_vitesse(const double &dt, const double& t, const double& T) {
 void Face::solve_vitesse_MEMM(const double &dt, const double& t, const double& T) {
   u_prev2 = u_prev;
   u_prev = u;
-  u = u_prev2 + 2 * F * dt / m;
+  u = u_prev2 + 2. * F * dt / m;
 }
 
 /*void Face::test_fissuration(double const& Gc, const double& t, Matrix const& contrainte1, Matrix const& contrainte2, std::vector<Face>::const_iterator faces_begin, std::vector<Face>::const_iterator faces_end) {
